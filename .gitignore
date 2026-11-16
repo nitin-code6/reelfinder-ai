@@ -9,6 +9,7 @@ KukuFmSample/
 KukuFmSample
 data/raw_confidential/
 uploads/
+outputs/
 *.pdf.bak
 
 # Python
