@@ -4,7 +4,7 @@ import {
   Layers, Plus, Trash2, FileArchive, RefreshCw, Sparkles, Check, X
 } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
-import { getShows, createShow, uploadScreenplay, processEpisode } from '../api';
+import { getShows, createShow, uploadScreenplay, processEpisode, getErrorMessage } from '../api';
 
 export default function Upload() {
   const navigate = useNavigate();
@@ -62,7 +62,7 @@ export default function Upload() {
       setNewShowTitle('');
       setNewShowDesc('');
     } catch (err) {
-      setErrorMsg('Failed to create series: ' + (err.response?.data?.detail || err.message));
+      setErrorMsg('Failed to create series: ' + getErrorMessage(err));
     }
   }
 
@@ -113,10 +113,17 @@ export default function Upload() {
 
     try {
       const res = await uploadScreenplay(selectedShowId, selectedFiles);
-      setUploadProgress(50);
+      setUploadProgress(40);
       setProcessingStatus('Parsing cues, scenes, and character dialogue...');
 
-      const uploadedEpisodes = res.data?.episodes || [];
+      const uploadedEpisodes = Array.isArray(res.data) ? res.data : (res.data?.episodes || []);
+
+      if (uploadedEpisodes.length === 0) {
+        setErrorMsg('Upload completed, but no episodes were identified. Ensure the files contain valid screenplay text.');
+        setCurrentStep(2);
+        return;
+      }
+
       let parsedCount = 0;
       let totalPromosDiscovered = 0;
 
@@ -125,18 +132,18 @@ export default function Upload() {
         setProcessingStatus(`Analyzing hooks & cliffhangers: Ep ${ep.episode_number} (${i + 1}/${uploadedEpisodes.length})...`);
         try {
           const promoRes = await processEpisode(ep.id);
-          const found = promoRes.data ? promoRes.data.length : 0;
+          const found = Array.isArray(promoRes.data) ? promoRes.data.length : 0;
           totalPromosDiscovered += found;
           parsedCount++;
         } catch (procErr) {
           console.warn(`Episode ${ep.id} discovery notice:`, procErr);
         }
 
-        const currentPct = 50 + Math.round(((i + 1) / uploadedEpisodes.length) * 50);
+        const currentPct = 40 + Math.round(((i + 1) / uploadedEpisodes.length) * 60);
         setUploadProgress(currentPct);
 
         if (i < uploadedEpisodes.length - 1) {
-          await new Promise(r => setTimeout(r, 400));
+          await new Promise(r => setTimeout(r, 200));
         }
       }
 
@@ -148,7 +155,8 @@ export default function Upload() {
       });
 
     } catch (err) {
-      setErrorMsg('Upload error: ' + (err.response?.data?.detail || err.message));
+      console.error('Upload error:', err);
+      setErrorMsg('Upload error: ' + getErrorMessage(err));
       setCurrentStep(2);
     }
   }

@@ -3,7 +3,7 @@ import {
   Sparkles, Filter, Check, X, ArrowUpRight, Clock, AlertTriangle, 
   CheckCircle2, ShieldCheck, Download, ArrowUpDown, ChevronRight, Eye, AlertCircle
 } from 'lucide-react';
-import { getPromos, getShows, approvePromo, rejectPromo } from '../api';
+import { getPromos, getShows, approvePromo, rejectPromo, getErrorMessage } from '../api';
 import { Link, useNavigate } from 'react-router-dom';
 
 export default function Promos() {
@@ -65,7 +65,7 @@ export default function Promos() {
       setPromos(prev => prev.map(p => p.id === promo.id ? { ...p, approval_status: 'approved' } : p));
       showToast(`✓ ${promo.promo_identifier} approved for export!`);
     } catch (err) {
-      alert('Error approving promo: ' + (err.response?.data?.detail || err.message));
+      alert('Error approving promo: ' + getErrorMessage(err));
     }
   }
 
@@ -76,7 +76,7 @@ export default function Promos() {
       setPromos(prev => prev.map(p => p.id === promo.id ? { ...p, approval_status: 'rejected' } : p));
       showToast(`✗ ${promo.promo_identifier} marked as rejected.`);
     } catch (err) {
-      alert('Error rejecting promo: ' + (err.response?.data?.detail || err.message));
+      alert('Error rejecting promo: ' + getErrorMessage(err));
     }
   }
 

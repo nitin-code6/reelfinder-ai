@@ -63,7 +63,7 @@ class FileService:
 
         with zipfile.ZipFile(zip_path, "r") as zf:
             for member in zf.infolist():
-                if member.is_dir():
+                if member.is_dir() or member.filename.startswith("__MACOSX") or Path(member.filename).name.startswith("."):
                     continue
                 
                 # Check for Zip Slip vulnerability

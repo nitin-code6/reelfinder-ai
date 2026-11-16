@@ -18,7 +18,7 @@ import {
   Film
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import { getShows, createShow, getEpisodes, getEpisode, processEpisode, inspectEpisode, getPromos } from '../api';
+import { getShows, createShow, getEpisodes, getEpisode, processEpisode, inspectEpisode, getPromos, getErrorMessage } from '../api';
 
 export default function Shows() {
   const [shows, setShows] = useState([]);
@@ -106,7 +106,7 @@ export default function Shows() {
       await loadShows();
       handleSelectShow(res.data);
     } catch (err) {
-      alert('Error creating show: ' + (err.response?.data?.detail || err.message));
+      alert('Error creating show: ' + getErrorMessage(err));
     } finally {
       setCreating(false);
     }
@@ -149,12 +149,13 @@ export default function Shows() {
         setShowPromos(pr.data || []);
       }
     } catch (err) {
+      const errMsg = getErrorMessage(err);
       setEpisodes(prev => prev.map(ep => ep.id === epId ? {
         ...ep,
         processing_status: 'failed',
-        error_message: err.response?.data?.detail || err.message
+        error_message: errMsg
       } : ep));
-      alert('Processing failed: ' + (err.response?.data?.detail || err.message));
+      alert('Processing failed: ' + errMsg);
     } finally {
       setProcessingId(null);
     }
@@ -201,10 +202,11 @@ export default function Shows() {
       } catch (err) {
         console.error(`Batch processing failed for Ep ${ep.episode_number}:`, err);
         failed++;
+        const errMsg = getErrorMessage(err);
         setEpisodes(prev => prev.map(e => e.id === ep.id ? {
           ...e,
           processing_status: 'failed',
-          error_message: err.response?.data?.detail || err.message
+          error_message: errMsg
         } : e));
         setBatchProgress(prev => ({ ...prev, failed }));
       }

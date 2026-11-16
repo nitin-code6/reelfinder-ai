@@ -35,10 +35,11 @@ def extract_episode_number(filename: str) -> int:
 @router.post("/upload", response_model=List[EpisodeRead], status_code=status.HTTP_201_CREATED)
 async def upload_episodes(
     show_id: int = Form(...),
-    file: UploadFile = File(...),
+    file: Optional[UploadFile] = File(None),
+    files: Optional[List[UploadFile]] = File(None),
     db: Session = Depends(get_db)
 ):
-    """Uploads single TXT/PDF or a ZIP archive containing multiple screenplay files."""
+    """Uploads single TXT/PDF or a ZIP archive containing multiple screenplay files, or multiple individual files."""
     show_repo = ShowRepository(db)
     ep_repo = EpisodeRepository(db)
     
@@ -46,52 +47,70 @@ async def upload_episodes(
     if not show:
         raise HTTPException(status_code=404, detail="Target show does not exist.")
 
-    saved_path, sha256 = file_service.save_upload(file)
+    # Gather all provided files
+    upload_list: List[UploadFile] = []
+    if files:
+        upload_list.extend([f for f in files if f and f.filename])
+    if file and file.filename:
+        if not any(f.filename == file.filename for f in upload_list):
+            upload_list.append(file)
+
+    if not upload_list:
+        raise HTTPException(status_code=400, detail="No screenplay files uploaded.")
+
     created_episodes = []
 
-    if saved_path.suffix.lower() == ".zip":
-        extract_dir = file_service.upload_dir / f"show_{show_id}_{sha256[:8]}"
-        extracted_files = file_service.extract_zip(saved_path, extract_dir)
-        
-        for ep_file in extracted_files:
-            ep_num = extract_episode_number(ep_file.name)
+    for up_file in upload_list:
+        try:
+            saved_path, sha256 = file_service.save_upload(up_file)
+        except Exception as e:
+            raise HTTPException(status_code=400, detail=f"File validation failed for '{up_file.filename}': {str(e)}")
+
+        if saved_path.suffix.lower() == ".zip":
+            extract_dir = file_service.upload_dir / f"show_{show_id}_{sha256[:8]}"
+            extracted_files = file_service.extract_zip(saved_path, extract_dir)
             
-            # Check if episode already exists for this show
+            for ep_file in extracted_files:
+                ep_num = extract_episode_number(ep_file.name)
+                
+                # Check if episode already exists for this show
+                existing = ep_repo.get_by_show_and_number(show_id, ep_num)
+                if existing:
+                    # Update existing record
+                    existing.file_path = str(ep_file)
+                    existing.original_filename = ep_file.name
+                    db.commit()
+                    db.refresh(existing)
+                    if not any(e.id == existing.id for e in created_episodes):
+                        created_episodes.append(existing)
+                else:
+                    new_ep = ep_repo.create(EpisodeCreate(
+                        show_id=show_id,
+                        episode_number=ep_num,
+                        original_filename=ep_file.name,
+                        file_path=str(ep_file)
+                    ))
+                    created_episodes.append(new_ep)
+        else:
+            ep_num = extract_episode_number(saved_path.name)
             existing = ep_repo.get_by_show_and_number(show_id, ep_num)
             if existing:
-                # Update existing record
-                existing.file_path = str(ep_file)
-                existing.original_filename = ep_file.name
+                existing.file_path = str(saved_path)
+                existing.original_filename = saved_path.name
                 db.commit()
                 db.refresh(existing)
-                created_episodes.append(existing)
+                if not any(e.id == existing.id for e in created_episodes):
+                    created_episodes.append(existing)
             else:
                 new_ep = ep_repo.create(EpisodeCreate(
                     show_id=show_id,
                     episode_number=ep_num,
-                    original_filename=ep_file.name,
-                    file_path=str(ep_file)
+                    original_filename=saved_path.name,
+                    file_path=str(saved_path)
                 ))
                 created_episodes.append(new_ep)
-    else:
-        ep_num = extract_episode_number(saved_path.name)
-        existing = ep_repo.get_by_show_and_number(show_id, ep_num)
-        if existing:
-            existing.file_path = str(saved_path)
-            existing.original_filename = saved_path.name
-            db.commit()
-            db.refresh(existing)
-            created_episodes.append(existing)
-        else:
-            new_ep = ep_repo.create(EpisodeCreate(
-                show_id=show_id,
-                episode_number=ep_num,
-                original_filename=saved_path.name,
-                file_path=str(saved_path)
-            ))
-            created_episodes.append(new_ep)
 
-    return created_episodes
+    return sorted(created_episodes, key=lambda x: x.episode_number)
 
 
 @router.get("/", response_model=List[EpisodeRead])

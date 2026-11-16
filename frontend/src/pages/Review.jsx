@@ -5,7 +5,7 @@ import {
   Sparkles, Check, X, FileText, ArrowRight, RefreshCw, AlertCircle, ArrowLeft,
   CheckCheck, Download
 } from 'lucide-react';
-import { getPromo, getPromos, approvePromo, rejectPromo, submitFeedback } from '../api';
+import { getPromo, getPromos, approvePromo, rejectPromo, submitFeedback, getErrorMessage } from '../api';
 
 function parseTimestampToSec(ts) {
   if (!ts) return 0;
@@ -148,7 +148,7 @@ export default function Review() {
         setSelectedPromo(updated.data);
       }
     } catch (err) {
-      alert('Error updating decision: ' + (err.response?.data?.detail || err.message));
+      alert('Error updating decision: ' + getErrorMessage(err));
     } finally {
       setSubmitting(false);
     }
