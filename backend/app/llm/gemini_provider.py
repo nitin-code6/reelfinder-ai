@@ -107,7 +107,7 @@ class GeminiProvider(BaseLLMProvider):
                         }
                     )
 
-                    response = model.generate_content(prompt)
+                    response = model.generate_content(prompt, request_options={"timeout": 6.0})
                     raw_text = response.text.strip()
 
                     # Strip markdown code blocks if present
@@ -141,7 +141,7 @@ class GeminiProvider(BaseLLMProvider):
                                         "temperature": temperature,
                                     }
                                 )
-                                response = model.generate_content(prompt)
+                                response = model.generate_content(prompt, request_options={"timeout": 6.0})
                                 raw_text = response.text.strip()
                                 if raw_text.startswith("```json"): raw_text = raw_text[7:]
                                 if raw_text.endswith("```"): raw_text = raw_text[:-3]
