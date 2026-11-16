@@ -54,9 +54,9 @@ class RankingService:
 
         # Apply deterministic validation penalties
         if validation_status == "warning":
-            base_score = max(0.0, base_score - 5.0)
+            base_score = max(0.0, round(base_score - 5.0, 1))
         elif validation_status == "invalid":
-            base_score = max(0.0, base_score - 30.0)
+            base_score = 0.0  # Rejected candidate receives zero score
 
         return base_score
 

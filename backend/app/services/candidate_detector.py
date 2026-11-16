@@ -61,6 +61,13 @@ class CandidateDetector:
             else:
                 screenplay = self.txt_parser.parse_file(file_path)
 
+            all_lines = screenplay.get_all_lines()
+            if not screenplay.scenes or not all_lines:
+                error_msg = f"Screenplay file '{file_path.name}' contains no parseable scenes or dialogue lines."
+                logger.error(error_msg)
+                ep_repo.update_status(episode_id, ProcessingStatus.FAILED.value, error_msg)
+                return []
+
             # Update episode metadata
             ep_repo.update_metadata(
                 episode_id=episode_id,
@@ -80,6 +87,11 @@ class CandidateDetector:
                 system_instruction=SYSTEM_PROMPT_PROMO_DISCOVERY,
                 response_schema=AIPromoDiscoveryResponse
             )
+
+            # 4. Remove previous promos for this show & episode to guarantee zero duplicates
+            deleted_prev = promo_repo.delete_by_show_and_episode(episode.show_id, episode.episode_number)
+            if deleted_prev > 0:
+                logger.info(f"Purged {deleted_prev} existing promo(s) for Show {episode.show_id} Ep {episode.episode_number} to prevent duplicates.")
 
             saved_promos: List[Promo] = []
 

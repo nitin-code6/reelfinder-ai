@@ -40,12 +40,17 @@ def get_promo(promo_id: int, db: Session = Depends(get_db)):
 
 @router.post("/{promo_id}/approve", response_model=PromoRead)
 def approve_promo(promo_id: int, db: Session = Depends(get_db)):
-    """Human-in-the-loop: editor approves recommendation."""
+    """Human-in-the-loop: editor approves recommendation with technical validation check."""
     repo = PromoRepository(db)
-    promo = repo.update_approval(promo_id, "approved")
+    promo = repo.get_by_id(promo_id)
     if not promo:
         raise HTTPException(status_code=404, detail="Promo not found")
-    return promo
+    if promo.validation_status == "invalid":
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Cannot approve promo candidate: Technical validation failed ({promo.validation_notes or 'Invalid timestamps or duration'})."
+        )
+    return repo.update_approval(promo_id, "approved")
 
 
 @router.post("/{promo_id}/reject", response_model=PromoRead)
@@ -64,9 +69,14 @@ def submit_feedback(
     feedback_in: EditorFeedbackCreate,
     db: Session = Depends(get_db)
 ):
-    """Submits editor decision and comments."""
+    """Submits editor decision and comments with technical validation check."""
     repo = PromoRepository(db)
     promo = repo.get_by_id(promo_id)
     if not promo:
         raise HTTPException(status_code=404, detail="Promo not found")
+    if feedback_in.decision == "approved" and promo.validation_status == "invalid":
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Cannot approve promo candidate: Technical validation failed ({promo.validation_notes or 'Invalid timestamps or duration'})."
+        )
     return repo.add_feedback(promo_id, feedback_in)

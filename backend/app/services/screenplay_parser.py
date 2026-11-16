@@ -7,6 +7,24 @@ from app.core.exceptions import ScreenplayParseException
 from app.core.logging import logger
 
 
+def is_valid_timestamp_string(ts_str: str) -> bool:
+    """Validates whether a string is a properly formed timestamp (e.g. 00:11.30, (01:15.50), 00:01:15.50)."""
+    if not ts_str:
+        return False
+    clean_ts = ts_str.strip().strip("()").strip("[]")
+    parts = clean_ts.split(":")
+    if len(parts) not in (1, 2, 3):
+        return False
+    try:
+        for p in parts:
+            val = float(p)
+            if val < 0:
+                return False
+        return True
+    except (ValueError, TypeError):
+        return False
+
+
 def parse_timestamp_to_seconds(ts_str: str) -> float:
     """
     Converts timestamps in formats like:
@@ -14,19 +32,29 @@ def parse_timestamp_to_seconds(ts_str: str) -> float:
       - (01:15.50) or 01:15.50 -> 75.50
       - 00:01:15.50 -> 75.50
       - 01:15 -> 75.0
+    Returns 0.0 if malformed or invalid.
     """
+    if not ts_str:
+        return 0.0
     clean_ts = ts_str.strip().strip("()").strip("[]")
     parts = clean_ts.split(":")
     try:
         if len(parts) == 3:  # HH:MM:SS.ss
-            return float(parts[0]) * 3600 + float(parts[1]) * 60 + float(parts[2])
+            h, m, s = float(parts[0]), float(parts[1]), float(parts[2])
+            if h < 0 or m < 0 or s < 0:
+                return 0.0
+            return h * 3600 + m * 60 + s
         elif len(parts) == 2:  # MM:SS.ss
-            return float(parts[0]) * 60 + float(parts[1])
+            m, s = float(parts[0]), float(parts[1])
+            if m < 0 or s < 0:
+                return 0.0
+            return m * 60 + s
         elif len(parts) == 1:
-            return float(parts[0])
+            s = float(parts[0])
+            return s if s >= 0 else 0.0
         else:
             return 0.0
-    except ValueError:
+    except (ValueError, TypeError):
         return 0.0
 
 
@@ -109,6 +137,9 @@ class TxtScreenplayParser(BaseScreenplayParser):
         return self.parse_text(content, episode_fallback=fallback_ep)
 
     def parse_text(self, text: str, episode_fallback: int = 1) -> ParsedScreenplay:
+        if not text or not text.strip():
+            raise ScreenplayParseException("Screenplay content is empty or contains only whitespace.")
+
         lines = text.splitlines()
         
         episode_number = episode_fallback
@@ -267,19 +298,9 @@ class TxtScreenplayParser(BaseScreenplayParser):
         if current_scene:
             scenes.append(current_scene)
 
-        # Fallback if no explicit scenes detected: treat whole file as Scene 1
-        if not scenes:
-            all_sec = 0.0
-            scenes.append(ParsedScene(
-                scene_number=1,
-                heading="SCENE 01",
-                start_timestamp="00:00.00",
-                end_timestamp="02:00.00",
-                start_seconds=0.0,
-                end_seconds=120.0,
-                duration_seconds=120.0,
-                lines=[]
-            ))
+        # If no scenes were parsed or none contain any dialogue/action lines, parsing has failed
+        if not scenes or not any(s.lines for s in scenes):
+            raise ScreenplayParseException("Screenplay parsing failed: no valid scenes or dialogue cues found in content.")
 
         total_dur = max([s.end_seconds for s in scenes]) if scenes else 0.0
 

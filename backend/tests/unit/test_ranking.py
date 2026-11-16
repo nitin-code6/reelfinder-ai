@@ -43,7 +43,7 @@ def test_ranking_penalties():
     )
     assert score_warn == 85.0  # 90.0 - 5.0
 
-    # Status invalid incurs 30 point penalty
+    # Status invalid candidates receive 0.0 score (rejected)
     score_inv = service.calculate_overall_score(
         hook_score=9.0,
         cliffhanger_score=9.0,
@@ -52,7 +52,7 @@ def test_ranking_penalties():
         continuity_score=9.0,
         validation_status="invalid"
     )
-    assert score_inv == 60.0  # 90.0 - 30.0
+    assert score_inv == 0.0
 
 
 def test_ranking_explain_breakdown():

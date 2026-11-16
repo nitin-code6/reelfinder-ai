@@ -1,6 +1,7 @@
 from pathlib import Path
 import pytest
 from app.services.screenplay_parser import TxtScreenplayParser, PdfScreenplayParser
+from app.core.exceptions import ScreenplayParseException
 
 FIXTURES_DIR = Path(__file__).parent.parent / "fixtures"
 
@@ -38,10 +39,17 @@ def test_parse_valid_screenplay_txt():
 def test_parse_invalid_malformed_screenplay():
     invalid_file = FIXTURES_DIR / "invalid_screenplay.txt"
     parser = TxtScreenplayParser()
-    # Should not throw uncaught exception, but gracefully produce fallback structure
-    screenplay = parser.parse_file(invalid_file)
-    assert screenplay is not None
-    assert isinstance(screenplay.episode_number, int)
+    # Malformed screenplays without valid dialogue or scenes must raise ScreenplayParseException
+    with pytest.raises(ScreenplayParseException):
+        parser.parse_file(invalid_file)
+
+
+def test_parse_empty_screenplay():
+    parser = TxtScreenplayParser()
+    with pytest.raises(ScreenplayParseException):
+        parser.parse_text("")
+    with pytest.raises(ScreenplayParseException):
+        parser.parse_text("   \n\n\t   ")
 
 
 def test_parse_from_raw_string():

@@ -18,6 +18,7 @@ class PromoRepository:
         show_id: Optional[int] = None,
         episode_number: Optional[int] = None,
         approval_status: Optional[str] = None,
+        validation_status: Optional[str] = None,
         skip: int = 0,
         limit: int = 100
     ) -> List[Promo]:
@@ -28,8 +29,23 @@ class PromoRepository:
             query = query.filter(Promo.primary_episode_number == episode_number)
         if approval_status:
             query = query.filter(Promo.approval_status == approval_status)
+        if validation_status:
+            query = query.filter(Promo.validation_status == validation_status)
         
         return query.order_by(Promo.overall_score.desc()).offset(skip).limit(limit).all()
+
+    def delete_by_show_and_episode(self, show_id: int, episode_number: int) -> int:
+        """Deletes all existing promos for a given show and episode to prevent duplicates."""
+        promos = self.db.query(Promo).filter(
+            Promo.show_id == show_id,
+            Promo.primary_episode_number == episode_number
+        ).all()
+        count = len(promos)
+        for promo in promos:
+            self.db.delete(promo)
+        if count > 0:
+            self.db.commit()
+        return count
 
     def create(self, promo_in: PromoCreate) -> Promo:
         promo = Promo(

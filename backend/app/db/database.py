@@ -10,7 +10,7 @@ if settings.DATABASE_URL.startswith("sqlite"):
     Path(os.path.dirname(os.path.abspath(db_path))).mkdir(parents=True, exist_ok=True)
     connect_args = {"check_same_thread": False}
 else:
-    connect_args = {}
+    connect_args = {"connect_timeout": 3}
 
 engine = create_engine(
     settings.DATABASE_URL,

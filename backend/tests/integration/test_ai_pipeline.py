@@ -65,3 +65,35 @@ def test_ai_pipeline_end_to_end(test_db):
     promo_repo = PromoRepository(test_db)
     approved = promo_repo.update_approval(first_promo.id, "approved")
     assert approved.approval_status == "approved"
+
+
+def test_ai_pipeline_prevents_duplicate_promos(test_db):
+    show = Show(title="Duplicate Test Show", language="English")
+    test_db.add(show)
+    test_db.commit()
+
+    sample_file = FIXTURES_DIR / "sample_screenplay.txt"
+    ep = Episode(
+        show_id=show.id,
+        episode_number=1,
+        original_filename="sample_screenplay.txt",
+        file_path=str(sample_file),
+        processing_status=ProcessingStatus.PENDING.value
+    )
+    test_db.add(ep)
+    test_db.commit()
+
+    detector = CandidateDetector(llm_provider=MockLLMProvider())
+    promos_run1 = detector.process_episode(ep.id, test_db)
+    count_run1 = len(promos_run1)
+    assert count_run1 >= 1
+
+    # Reprocess the exact same episode
+    promos_run2 = detector.process_episode(ep.id, test_db)
+    count_run2 = len(promos_run2)
+
+    promo_repo = PromoRepository(test_db)
+    all_stored_promos = promo_repo.list_promos(show_id=show.id, episode_number=1)
+
+    assert count_run1 == count_run2
+    assert len(all_stored_promos) == count_run1  # No duplicate records created!

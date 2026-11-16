@@ -82,4 +82,41 @@ def test_validator_snaps_approximate_timestamps():
 
     assert res.is_valid is True
     assert res.status == "warning"
-    assert any("snapped to nearest screenplay cue" in l for l in res.limitations)
+    assert any("aligned with nearest cue" in l or "snapped" in l for l in res.limitations)
+
+
+def test_validator_rejects_invented_timestamps():
+    sample_file = FIXTURES_DIR / "sample_screenplay.txt"
+    parser = TxtScreenplayParser()
+    screenplay = parser.parse_file(sample_file)
+
+    validator = TimestampValidator(min_duration=20.0, max_duration=60.0)
+    
+    # Timestamps completely fabricated (not in screenplay)
+    res = validator.validate_candidate(
+        candidate_start_ts="08:00.00",
+        candidate_end_ts="08:30.00",
+        screenplay=screenplay
+    )
+
+    assert res.is_valid is False
+    assert res.status == "invalid"
+    assert any("does not exist in source screenplay cues" in l for l in res.limitations)
+
+
+def test_validator_rejects_malformed_timestamp_strings():
+    sample_file = FIXTURES_DIR / "sample_screenplay.txt"
+    parser = TxtScreenplayParser()
+    screenplay = parser.parse_file(sample_file)
+
+    validator = TimestampValidator()
+    
+    res = validator.validate_candidate(
+        candidate_start_ts="invalid_time",
+        candidate_end_ts="00:30.00",
+        screenplay=screenplay
+    )
+
+    assert res.is_valid is False
+    assert res.status == "invalid"
+    assert any("Malformed timestamp format" in l for l in res.limitations)

@@ -4,7 +4,6 @@ from typing import Type, TypeVar, List
 from pydantic import BaseModel
 import google.generativeai as genai
 from app.llm.base_provider import BaseLLMProvider
-from app.llm.mock_provider import MockLLMProvider
 from app.core.config import settings
 from app.core.logging import logger
 from app.core.exceptions import LLMInferenceException
@@ -24,7 +23,6 @@ class GeminiProvider(BaseLLMProvider):
     def __init__(self, api_key: str = settings.GEMINI_API_KEY, model_name: str = settings.GEMINI_MODEL):
         self.api_key = api_key
         self.model_name = model_name or "gemini-3.8-flash"
-        self.mock_fallback = MockLLMProvider()
         self.quota_exceeded = False
         if self.api_key:
             genai.configure(api_key=self.api_key)
@@ -38,12 +36,10 @@ class GeminiProvider(BaseLLMProvider):
         response_schema: Type[T],
         temperature: float = 0.2
     ) -> T:
-        if not self.api_key or self.quota_exceeded:
-            if self.quota_exceeded:
-                logger.info("Gemini quota previously exhausted (429). Fast-routing to heuristic discovery engine.")
-            else:
-                logger.warning("GEMINI_API_KEY not configured. Falling back to deterministic mock provider.")
-            return self.mock_fallback.generate_structured(prompt, system_instruction, response_schema)
+        if not self.api_key:
+            raise LLMInferenceException("GEMINI_API_KEY is not configured.")
+        if self.quota_exceeded:
+            raise LLMInferenceException("Gemini API daily quota limit previously exceeded (429).")
 
         # Build list of models to try, starting with configured model
         models_to_try = [self.model_name] + [m for m in FALLBACK_MODELS if m != self.model_name]
@@ -85,17 +81,20 @@ class GeminiProvider(BaseLLMProvider):
                     logger.warning(f"Gemini model '{current_model}' attempt {attempt} failed: {err_msg}")
                     last_error = e
 
-                    # Quota exceeded (429): fast-fail all future calls and switch immediately to heuristic engine
+                    # Quota exceeded (429): fast-fail
                     if "429" in err_msg or "quota" in err_msg.lower():
-                        logger.warning("Gemini API daily quota limit reached (429). Enabling fast heuristic fallback.")
+                        logger.warning("Gemini API daily quota limit reached (429).")
                         self.quota_exceeded = True
-                        return self.mock_fallback.generate_structured(prompt, system_instruction, response_schema)
+                        raise LLMInferenceException(f"Gemini API daily quota limit exceeded (429): {err_msg}")
+
+                    # Auth / API key failure (400, 403): fast-fail immediately without retries
+                    if any(k in err_msg.lower() for k in ["api_key", "invalid", "unregistered", "permission denied", "forbidden", "400", "403"]):
+                        raise LLMInferenceException(f"Gemini API authentication failed: {err_msg}")
 
                     # If 404 not found, immediately move to next model without wasting retries
                     if "404" in err_msg or "not found" in err_msg.lower():
                         break
                     time.sleep(delay)
 
-        logger.error(f"All Gemini models exhausted. Error: {last_error}. Gracefully falling back to heuristic mock provider to preserve uninterrupted editing workflow.")
-        return self.mock_fallback.generate_structured(prompt, system_instruction, response_schema)
+        raise LLMInferenceException(f"All Gemini models exhausted. Last error: {last_error}")
 

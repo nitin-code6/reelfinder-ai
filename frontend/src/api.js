@@ -15,6 +15,7 @@ export const processAllEpisodes = (showId) => api.post(`/api/shows/${showId}/pro
 
 export const getEpisodes = (showId) => api.get(`/api/episodes/?show_id=${showId}`);
 export const getEpisode = (id) => api.get(`/api/episodes/${id}`);
+export const inspectEpisode = (id) => api.get(`/api/episodes/${id}/inspection`);
 export const processEpisode = (id) => api.post(`/api/episodes/${id}/process`);
 export const uploadScreenplay = (showId, file) => {
   const formData = new FormData();

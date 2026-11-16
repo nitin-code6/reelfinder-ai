@@ -12,9 +12,6 @@ from app.routes.episodes import router as episodes_router
 from app.routes.promos import router as promos_router
 from app.routes.export import router as export_router
 
-# Create database tables
-Base.metadata.create_all(bind=engine)
-
 app = FastAPI(
     title=settings.PROJECT_NAME,
     version=settings.VERSION,
@@ -49,6 +46,14 @@ app.include_router(export_router, prefix="/api")
 
 @app.on_event("startup")
 def startup_event():
+    import os
+    if os.environ.get("TESTING") == "1":
+        logger.info("TESTING mode active: skipping startup PostgreSQL table creation.")
+        return
+    try:
+        Base.metadata.create_all(bind=engine)
+    except Exception as e:
+        logger.warning(f"Database table auto-creation skipped: {e}")
     logger.info(f"{settings.PROJECT_NAME} v{settings.VERSION} started in {settings.ENVIRONMENT} mode.")
 
 
