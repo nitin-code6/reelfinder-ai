@@ -248,7 +248,7 @@ export default function Promos() {
 
                       {/* Score Pill */}
                       <span className="px-2.5 py-0.5 rounded-full text-xs font-black bg-emerald-50 text-emerald-700 border border-emerald-200">
-                        {promo.overall_score ? (promo.overall_score * 10).toFixed(1) : '85.0'}/100
+                        {promo.overall_score != null ? (promo.overall_score > 10 ? promo.overall_score : promo.overall_score * 10).toFixed(1) : '85.0'}/100
                       </span>
                     </div>
 
@@ -290,11 +290,11 @@ export default function Promos() {
                   <div className="space-y-1.5 text-xs text-slate-700 pt-1">
                     <div>
                       <strong className="text-[#172B4D]">Hook: </strong>
-                      <span>{promo.hook_explanation || 'The groom orders the bride to leave with dignity, but she challenges him.'}</span>
+                      <span>{promo.hook || promo.hook_explanation || 'High-tension opening hook.'}</span>
                     </div>
                     <div>
                       <strong className="text-[#172B4D]">Cliffhanger: </strong>
-                      <span>{promo.cliffhanger_explanation || 'The bride delivers a public indictment, but his response is left unresolved.'}</span>
+                      <span>{promo.cliffhanger || promo.cliffhanger_explanation || 'Suspenseful unresolved turning point.'}</span>
                     </div>
                   </div>
 

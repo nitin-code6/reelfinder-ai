@@ -578,11 +578,11 @@ export default function Shows() {
                   <div className="grid grid-cols-3 gap-3">
                     <div className="p-3 bg-slate-50 rounded-lg border border-slate-200 text-center">
                       <div className="text-[10px] font-semibold text-slate-500">Cues</div>
-                      <div className="text-base font-bold text-[#172B4D]">{inspectionData.cues_count || 0}</div>
+                      <div className="text-base font-bold text-[#172B4D]">{inspectionData.total_cues ?? inspectionData.cues?.length ?? 0}</div>
                     </div>
                     <div className="p-3 bg-slate-50 rounded-lg border border-slate-200 text-center">
                       <div className="text-[10px] font-semibold text-slate-500">Scenes</div>
-                      <div className="text-base font-bold text-[#172B4D]">{inspectionData.scenes_count || 0}</div>
+                      <div className="text-base font-bold text-[#172B4D]">{inspectionData.scene_count ?? inspectionData.scenes?.length ?? 0}</div>
                     </div>
                     <div className="p-3 bg-teal-50 rounded-lg border border-teal-200 text-center">
                       <div className="text-[10px] font-semibold text-[#0F766E]">Duration</div>
@@ -594,12 +594,18 @@ export default function Shows() {
                     <h4 className="text-xs font-bold text-[#172B4D] mb-1.5">Parsed Cues & Timecodes:</h4>
                     <div className="bg-slate-900 text-slate-200 rounded-lg p-3 text-xs font-mono max-h-56 overflow-y-auto space-y-1">
                       {inspectionData.cues && inspectionData.cues.length > 0 ? (
-                        inspectionData.cues.map((c, i) => (
-                          <div key={i} className="flex gap-2">
-                            <span className="text-teal-400 shrink-0">[{c.timestamp || '00:00.00'}]</span>
-                            <span className="text-slate-300">{c.speaker ? `${c.speaker}: ` : ''}{c.text}</span>
-                          </div>
-                        ))
+                        inspectionData.cues.map((c, i) => {
+                          const timeDisplay = c.start_timestamp
+                            ? (c.end_timestamp ? `${c.start_timestamp} - ${c.end_timestamp}` : c.start_timestamp)
+                            : (c.timestamp || '00:00.00');
+
+                          return (
+                            <div key={i} className="flex gap-2">
+                              <span className="text-teal-400 shrink-0 font-mono">[{timeDisplay}]</span>
+                              <span className="text-slate-300">{c.speaker ? `${c.speaker}: ` : ''}{c.text}</span>
+                            </div>
+                          );
+                        })
                       ) : (
                         <div className="text-slate-500 italic">No cues parsed for this episode.</div>
                       )}

@@ -157,7 +157,9 @@ export default function Review() {
   const endSec = firstSeg ? parseTimestampToSec(firstSeg.end_timestamp) : 0;
   const isChronological = firstSeg ? (endSec > startSec || firstSeg.duration_seconds > 0) : false;
 
-  const score100 = selectedPromo.overall_score ? (selectedPromo.overall_score * 10).toFixed(1) : '90.5';
+  const score100 = selectedPromo.overall_score != null
+    ? (selectedPromo.overall_score > 10 ? selectedPromo.overall_score : selectedPromo.overall_score * 10).toFixed(1)
+    : '90.5';
 
   return (
     <div className="space-y-6">
@@ -272,7 +274,7 @@ export default function Review() {
           <div className="space-y-1">
             <span className="text-xs font-bold text-[#172B4D] block">Starting Cue</span>
             <p className="p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs italic text-slate-800 leading-relaxed font-serif">
-              &ldquo;{firstSeg?.first_line || selectedPromo.hook_dialogue || 'Profile close-up of Juliana turning her face back toward the altar, tears still shimmering on her cheeks.'}&rdquo;
+              &ldquo;{firstSeg?.first_line || selectedPromo.hook || 'Opening scene dialogue cue.'}&rdquo;
             </p>
           </div>
 
@@ -280,7 +282,7 @@ export default function Review() {
           <div className="space-y-1">
             <span className="text-xs font-bold text-[#172B4D] block">Ending Cue</span>
             <p className="p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs italic text-slate-800 leading-relaxed font-serif">
-              &ldquo;{firstSeg?.last_line || selectedPromo.cliffhanger_dialogue || "Close-up on Juliana's face, calm, dignified, and unwavering."}&rdquo;
+              &ldquo;{firstSeg?.last_line || selectedPromo.cliffhanger || 'Terminating scene cliffhanger cue.'}&rdquo;
             </p>
           </div>
 
@@ -288,7 +290,7 @@ export default function Review() {
           <div className="space-y-1">
             <span className="text-xs font-bold text-[#172B4D] block">Excerpt (Context)</span>
             <p className="p-3 bg-[#F5F7FA] border border-slate-200 rounded-xl text-xs italic text-slate-700 leading-relaxed font-serif">
-              &ldquo;{firstSeg?.excerpt || selectedPromo.hook_explanation || "The shift from victim to victor is visually and verbally clear. The bride's transformation from tearful to defiant is self-explanatory, and the final line is a powerful, standalone statement of empowerment."}&rdquo;
+              &ldquo;{firstSeg?.excerpt || selectedPromo.reason || selectedPromo.standalone_context || selectedPromo.hook || 'Screenplay dramatic narrative context.'}&rdquo;
             </p>
           </div>
         </div>
@@ -308,11 +310,11 @@ export default function Review() {
           {/* 5 Factors Progress Bars matching Panel 5 */}
           <div className="space-y-3.5">
             {[
-              { label: 'Hook Strength (25%)', score: selectedPromo.hook_strength || 9.0 },
-              { label: 'Cliffhanger Suspense (25%)', score: selectedPromo.cliffhanger_strength || 9.5 },
-              { label: 'Standalone Context (20%)', score: selectedPromo.standalone_score || 8.5 },
-              { label: 'Emotional Impact (15%)', score: selectedPromo.emotional_resonance || 9.0 },
-              { label: 'Narrative Continuity (15%)', score: selectedPromo.audio_visual_score || 9.0 },
+              { label: 'Hook Strength (25%)', score: selectedPromo.hook_score ?? selectedPromo.hook_strength ?? 9.0 },
+              { label: 'Cliffhanger Suspense (25%)', score: selectedPromo.cliffhanger_score ?? selectedPromo.cliffhanger_strength ?? 9.5 },
+              { label: 'Standalone Context (20%)', score: selectedPromo.standalone_score ?? 8.5 },
+              { label: 'Emotional Impact (15%)', score: selectedPromo.emotional_impact_score ?? selectedPromo.emotional_resonance ?? 9.0 },
+              { label: 'Narrative Continuity (15%)', score: selectedPromo.continuity_score ?? selectedPromo.audio_visual_score ?? 9.0 },
             ].map((factor, idx) => {
               const val = factor.score;
               const pct = Math.round((val / 10) * 100);
