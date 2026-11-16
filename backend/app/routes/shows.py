@@ -6,6 +6,8 @@ from app.repositories.show_repository import ShowRepository
 from app.repositories.episode_repository import EpisodeRepository
 from app.repositories.promo_repository import PromoRepository
 from app.schemas.show import ShowCreate, ShowRead
+from app.services.candidate_detector import candidate_detector
+from app.core.logging import logger
 
 router = APIRouter(prefix="/shows", tags=["Shows"])
 
@@ -72,3 +74,28 @@ def delete_show(show_id: int, db: Session = Depends(get_db)):
     success = repo.delete(show_id)
     if not success:
         raise HTTPException(status_code=404, detail="Show not found")
+
+
+@router.post("/{show_id}/process-all")
+def process_all_episodes(show_id: int, db: Session = Depends(get_db)):
+    """Triggers batch processing across all episodes in the show."""
+    show_repo = ShowRepository(db)
+    ep_repo = EpisodeRepository(db)
+    show = show_repo.get_by_id(show_id)
+    if not show:
+        raise HTTPException(status_code=404, detail="Show not found")
+
+    episodes = ep_repo.list_by_show(show_id)
+    if not episodes:
+        raise HTTPException(status_code=400, detail="No episodes uploaded for this show.")
+
+    results = []
+    for ep in episodes:
+        try:
+            promos = candidate_detector.process_episode(ep.id, db)
+            results.append({"episode_number": ep.episode_number, "status": "completed", "promos_found": len(promos)})
+        except Exception as e:
+            results.append({"episode_number": ep.episode_number, "status": "failed", "error": str(e)})
+
+    return {"show_id": show_id, "total_processed": len(results), "details": results}
+

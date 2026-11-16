@@ -8,7 +8,9 @@ from app.db.database import get_db
 from app.repositories.show_repository import ShowRepository
 from app.repositories.episode_repository import EpisodeRepository
 from app.schemas.episode import EpisodeRead, EpisodeCreate
+from app.schemas.promo import PromoRead
 from app.services.file_service import file_service
+from app.services.candidate_detector import candidate_detector
 from app.core.logging import logger
 
 router = APIRouter(prefix="/episodes", tags=["Episodes"])
@@ -110,3 +112,29 @@ def get_episode(episode_id: int, db: Session = Depends(get_db)):
     if not ep:
         raise HTTPException(status_code=404, detail="Episode not found")
     return ep
+
+
+@router.post("/{episode_id}/process", response_model=List[PromoRead])
+def process_single_episode(episode_id: int, db: Session = Depends(get_db)):
+    """Triggers end-to-end AI discovery, validation, and scoring for a single episode."""
+    try:
+        promos = candidate_detector.process_episode(episode_id, db)
+        return promos
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get("/{episode_id}/status")
+def get_episode_status(episode_id: int, db: Session = Depends(get_db)):
+    """Retrieves current processing pipeline status."""
+    repo = EpisodeRepository(db)
+    ep = repo.get_by_id(episode_id)
+    if not ep:
+        raise HTTPException(status_code=404, detail="Episode not found")
+    return {
+        "episode_id": ep.id,
+        "episode_number": ep.episode_number,
+        "status": ep.processing_status,
+        "error_message": ep.error_message
+    }
+
