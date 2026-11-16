@@ -79,6 +79,8 @@ async def upload_episodes(
                     # Update existing record
                     existing.file_path = str(ep_file)
                     existing.original_filename = ep_file.name
+                    existing.processing_status = "pending"
+                    existing.error_message = None
                     db.commit()
                     db.refresh(existing)
                     if not any(e.id == existing.id for e in created_episodes):
@@ -97,6 +99,8 @@ async def upload_episodes(
             if existing:
                 existing.file_path = str(saved_path)
                 existing.original_filename = saved_path.name
+                existing.processing_status = "pending"
+                existing.error_message = None
                 db.commit()
                 db.refresh(existing)
                 if not any(e.id == existing.id for e in created_episodes):

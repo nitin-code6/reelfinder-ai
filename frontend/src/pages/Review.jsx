@@ -94,58 +94,73 @@ export default function Review() {
     }
   }
 
-  function promptDecision(decision) {
-    if (!selectedPromo) return;
+  const [autoAdvanceCountdown, setAutoAdvanceCountdown] = useState(0);
+  const [autoAdvanceTarget, setAutoAdvanceTarget] = useState(null);
+
+  useEffect(() => {
+    if (autoAdvanceCountdown > 0 && autoAdvanceTarget) {
+      const timer = setTimeout(() => {
+        if (autoAdvanceCountdown === 1) {
+          setSelectedPromo(autoAdvanceTarget);
+          setSearchParams({ id: autoAdvanceTarget.id });
+          setAutoAdvanceTarget(null);
+          setAutoAdvanceCountdown(0);
+        } else {
+          setAutoAdvanceCountdown(prev => prev - 1);
+        }
+      }, 1000);
+      return () => clearTimeout(timer);
+    }
+  }, [autoAdvanceCountdown, autoAdvanceTarget]);
+
+  function handleCancelAutoAdvance() {
+    setAutoAdvanceTarget(null);
+    setAutoAdvanceCountdown(0);
+  }
+
+  async function handleDecision(decision) {
+    if (!selectedPromo || submitting) return;
     if (decision === 'approved' && selectedPromo.validation_status === 'invalid') {
       alert(`Cannot approve invalid candidate: ${selectedPromo.limitations?.join(', ') || 'Technical validation failed'}.`);
       return;
     }
-    setConfirmModal({ open: true, decision });
-  }
-
-  async function executeDecision() {
-    const { decision } = confirmModal;
-    if (!selectedPromo || !decision) return;
 
     setSubmitting(true);
-    setConfirmModal({ open: false, decision: null });
+    const promoId = selectedPromo.id;
+    const promoIdentifier = selectedPromo.promo_identifier;
 
     try {
       if (comments.trim()) {
-        await submitFeedback(selectedPromo.id, {
+        await submitFeedback(promoId, {
           decision,
           comments: comments.trim(),
         });
       } else if (decision === 'approved') {
-        await approvePromo(selectedPromo.id);
+        await approvePromo(promoId);
       } else {
-        await rejectPromo(selectedPromo.id);
+        await rejectPromo(promoId);
       }
 
-      // Update in-memory list
+      // Immediately update current candidate state so buttons disappear and approved state renders
+      setSelectedPromo(prev => prev ? { ...prev, approval_status: decision } : null);
+
+      // Update list
       const updatedList = allPromos.map(p => 
-        p.id === selectedPromo.id ? { ...p, approval_status: decision } : p
+        p.id === promoId ? { ...p, approval_status: decision } : p
       );
       setAllPromos(updatedList);
 
       const decisionText = decision === 'approved' ? 'APPROVED for export' : 'REJECTED';
-      showToast(`✓ ${selectedPromo.promo_identifier} marked as ${decisionText}!`);
+      showToast(`✓ ${promoIdentifier} marked as ${decisionText}!`);
+      setComments('');
 
-      // Find next pending candidate to automatically move card forward
+      // Find next pending candidate
       const nextPending = updatedList.find((p, idx) => idx > currentIndex && p.approval_status === 'pending')
-        || updatedList.find(p => p.id !== selectedPromo.id && p.approval_status === 'pending');
+        || updatedList.find(p => p.id !== promoId && p.approval_status === 'pending');
 
       if (nextPending) {
-        // Smoothly auto-advance to next pending candidate
-        setTimeout(() => {
-          setSelectedPromo(nextPending);
-          setSearchParams({ id: nextPending.id });
-          setComments('');
-        }, 500);
-      } else {
-        // No more pending candidates! Refresh current candidate
-        const updated = await getPromo(selectedPromo.id);
-        setSelectedPromo(updated.data);
+        setAutoAdvanceTarget(nextPending);
+        setAutoAdvanceCountdown(2);
       }
     } catch (err) {
       alert('Error updating decision: ' + getErrorMessage(err));
@@ -394,29 +409,51 @@ export default function Review() {
           {/* Decision Section: Dynamically updates based on approval state! */}
           <div className="pt-3 border-t border-slate-100">
             {isApproved ? (
-              /* Already Approved State: Buttons gone, replaced with next action */
+              /* Already Approved State: Buttons gone, replaced with clear feedback and next action */
               <div className="space-y-3">
-                <div className="p-3.5 bg-emerald-50 border border-emerald-200 rounded-xl flex items-center justify-between text-xs">
-                  <div className="flex items-center gap-2">
-                    <CheckCircle2 className="w-5 h-5 text-emerald-600" />
-                    <div>
-                      <div className="font-bold text-emerald-800">✓ Approved for Export</div>
-                      <div className="text-[11px] text-emerald-600">Candidate is eligible and will be exported in final results.</div>
+                <div className="p-3.5 bg-emerald-50 border border-emerald-200 rounded-xl space-y-2">
+                  <div className="flex items-center justify-between text-xs">
+                    <div className="flex items-center gap-2">
+                      <CheckCircle2 className="w-5 h-5 text-emerald-600 shrink-0" />
+                      <div>
+                        <div className="font-bold text-emerald-800">✓ Approved for Export</div>
+                        <div className="text-[11px] text-emerald-700">Candidate marked eligible for marketing CSV and production JSON.</div>
+                      </div>
                     </div>
+                    <button
+                      type="button"
+                      onClick={() => handleDecision('rejected')}
+                      disabled={submitting}
+                      className="text-[11px] font-semibold text-slate-500 hover:text-rose-600 hover:underline px-2 py-1 rounded shrink-0"
+                    >
+                      Change to Reject
+                    </button>
                   </div>
-                  <button
-                    type="button"
-                    onClick={() => promptDecision('rejected')}
-                    className="text-[11px] font-semibold text-slate-500 hover:text-rose-600 hover:underline px-2 py-1 rounded"
-                  >
-                    Revoke
-                  </button>
+
+                  {autoAdvanceCountdown > 0 && autoAdvanceTarget && (
+                    <div className="flex items-center justify-between pt-1.5 border-t border-emerald-200/60 text-[11px]">
+                      <span className="text-emerald-800 font-medium flex items-center gap-1.5">
+                        <Clock className="w-3.5 h-3.5 animate-pulse text-emerald-600" />
+                        Next candidate in {autoAdvanceCountdown}s...
+                      </span>
+                      <button
+                        type="button"
+                        onClick={handleCancelAutoAdvance}
+                        className="text-[11px] text-emerald-800 font-semibold hover:underline"
+                      >
+                        Stay on Card
+                      </button>
+                    </div>
+                  )}
                 </div>
 
                 {nextPendingCandidate ? (
                   <button
                     type="button"
-                    onClick={() => navigateToCandidate(allPromos.findIndex(p => p.id === nextPendingCandidate.id))}
+                    onClick={() => {
+                      handleCancelAutoAdvance();
+                      navigateToCandidate(allPromos.findIndex(p => p.id === nextPendingCandidate.id));
+                    }}
                     className="w-full py-2.5 px-4 rounded-xl bg-[#0F766E] hover:bg-[#115E59] text-white text-xs font-bold shadow-sm transition-all flex items-center justify-center gap-2"
                   >
                     <span>Next: Review {nextPendingCandidate.promo_identifier}</span>
@@ -435,28 +472,49 @@ export default function Review() {
             ) : isRejected ? (
               /* Already Rejected State: Buttons gone, replaced with next action */
               <div className="space-y-3">
-                <div className="p-3.5 bg-rose-50 border border-rose-200 rounded-xl flex items-center justify-between text-xs">
-                  <div className="flex items-center gap-2">
-                    <X className="w-5 h-5 text-rose-600" />
-                    <div>
-                      <div className="font-bold text-rose-800">✗ Candidate Rejected</div>
-                      <div className="text-[11px] text-rose-600">Excluded from marketing exports.</div>
+                <div className="p-3.5 bg-rose-50 border border-rose-200 rounded-xl space-y-2">
+                  <div className="flex items-center justify-between text-xs">
+                    <div className="flex items-center gap-2">
+                      <X className="w-5 h-5 text-rose-600 shrink-0" />
+                      <div>
+                        <div className="font-bold text-rose-800">✗ Candidate Rejected</div>
+                        <div className="text-[11px] text-rose-600">Excluded from marketing deliverables and publishing exports.</div>
+                      </div>
                     </div>
+                    <button
+                      type="button"
+                      onClick={() => handleDecision('approved')}
+                      disabled={isInvalid || submitting}
+                      className="text-[11px] font-semibold text-[#0F766E] hover:underline px-2 py-1 rounded shrink-0"
+                    >
+                      Re-Approve
+                    </button>
                   </div>
-                  <button
-                    type="button"
-                    onClick={() => promptDecision('approved')}
-                    disabled={isInvalid}
-                    className="text-[11px] font-semibold text-[#0F766E] hover:underline px-2 py-1 rounded"
-                  >
-                    Re-Approve
-                  </button>
+
+                  {autoAdvanceCountdown > 0 && autoAdvanceTarget && (
+                    <div className="flex items-center justify-between pt-1.5 border-t border-rose-200/60 text-[11px]">
+                      <span className="text-rose-800 font-medium flex items-center gap-1.5">
+                        <Clock className="w-3.5 h-3.5 animate-pulse text-rose-600" />
+                        Next candidate in {autoAdvanceCountdown}s...
+                      </span>
+                      <button
+                        type="button"
+                        onClick={handleCancelAutoAdvance}
+                        className="text-[11px] text-rose-800 font-semibold hover:underline"
+                      >
+                        Stay on Card
+                      </button>
+                    </div>
+                  )}
                 </div>
 
                 {nextPendingCandidate ? (
                   <button
                     type="button"
-                    onClick={() => navigateToCandidate(allPromos.findIndex(p => p.id === nextPendingCandidate.id))}
+                    onClick={() => {
+                      handleCancelAutoAdvance();
+                      navigateToCandidate(allPromos.findIndex(p => p.id === nextPendingCandidate.id));
+                    }}
                     className="w-full py-2.5 px-4 rounded-xl bg-[#0F766E] hover:bg-[#115E59] text-white text-xs font-bold shadow-sm transition-all flex items-center justify-center gap-2"
                   >
                     <span>Next: Review {nextPendingCandidate.promo_identifier}</span>
@@ -473,69 +531,33 @@ export default function Review() {
                 )}
               </div>
             ) : (
-              /* Pending Review State: Show Reject & Approve Buttons */
+              /* Pending Review State: Show Direct Reject & Approve Buttons */
               <div className="flex items-center gap-3">
                 <button
                   type="button"
-                  onClick={() => promptDecision('rejected')}
+                  onClick={() => handleDecision('rejected')}
                   disabled={submitting}
                   className="flex-1 py-2.5 px-4 rounded-xl border border-rose-300 bg-white hover:bg-rose-50 text-rose-700 text-xs font-bold transition-colors flex items-center justify-center gap-1.5"
                 >
                   <X className="w-4 h-4" />
-                  <span>Reject</span>
+                  <span>{submitting ? 'Updating...' : 'Reject'}</span>
                 </button>
 
                 <button
                   type="button"
-                  onClick={() => promptDecision('approved')}
+                  onClick={() => handleDecision('approved')}
                   disabled={submitting || isInvalid}
                   title={isInvalid ? "Cannot approve: Technical validation failed" : "Approve candidate"}
                   className="flex-1 py-2.5 px-4 rounded-xl bg-[#0F766E] hover:bg-[#115E59] text-white text-xs font-bold shadow-sm transition-all flex items-center justify-center gap-1.5 disabled:opacity-40"
                 >
                   <Check className="w-4 h-4" />
-                  <span>Approve</span>
+                  <span>{submitting ? 'Approving...' : 'Approve for Export'}</span>
                 </button>
               </div>
             )}
           </div>
         </div>
       </div>
-
-      {/* Confirmation Modal */}
-      {confirmModal.open && (
-        <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-xl shadow-xl max-w-md w-full p-6 space-y-4 border border-slate-200">
-            <h3 className="text-sm font-bold text-[#172B4D]">
-              Confirm Editorial Decision
-            </h3>
-            <p className="text-xs text-[#64748B] leading-relaxed">
-              Are you sure you want to mark <strong>{selectedPromo.promo_identifier}</strong> as{' '}
-              <strong className={confirmModal.decision === 'approved' ? 'text-emerald-700' : 'text-rose-700'}>
-                {confirmModal.decision.toUpperCase()}
-              </strong>?
-              {confirmModal.decision === 'approved' && ' Approved candidates are automatically marked eligible for marketing CSV and publishing JSON exports.'}
-            </p>
-            <div className="flex items-center justify-end gap-2 pt-2">
-              <button
-                onClick={() => setConfirmModal({ open: false, decision: null })}
-                className="px-3.5 py-1.5 rounded-lg text-xs font-semibold text-slate-600 hover:bg-slate-100 transition-colors"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={executeDecision}
-                className={`px-4 py-1.5 rounded-lg text-xs font-bold text-white transition-colors shadow-xs ${
-                  confirmModal.decision === 'approved'
-                    ? 'bg-[#0F766E] hover:bg-[#115E59]'
-                    : 'bg-[#DC2626] hover:bg-rose-700'
-                }`}
-              >
-                Confirm {confirmModal.decision === 'approved' ? 'Approval' : 'Rejection'}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }

@@ -76,6 +76,43 @@ def delete_show(show_id: int, db: Session = Depends(get_db)):
         raise HTTPException(status_code=404, detail="Show not found")
 
 
+@router.post("/{show_id}/clear")
+def clear_show_data(show_id: int, db: Session = Depends(get_db)):
+    """Clears all episodes, segments, and promos for a show without deleting the show itself."""
+    from app.models.promo import Promo
+    from app.models.episode import Episode
+    show_repo = ShowRepository(db)
+    show = show_repo.get_by_id(show_id)
+    if not show:
+        raise HTTPException(status_code=404, detail="Show not found")
+    
+    promos_deleted = db.query(Promo).filter(Promo.show_id == show_id).delete(synchronize_session=False)
+    episodes_deleted = db.query(Episode).filter(Episode.show_id == show_id).delete(synchronize_session=False)
+    db.commit()
+    logger.info(f"Cleared show {show_id}: {episodes_deleted} episodes, {promos_deleted} promos removed.")
+    return {"message": f"Cleared {episodes_deleted} episodes and {promos_deleted} promos for '{show.title}'."}
+
+
+@router.post("/reset-all-data")
+def reset_all_data(db: Session = Depends(get_db)):
+    """Wipes all shows, episodes, promos, and feedback for a fresh start."""
+    from app.models.show import Show
+    from app.models.promo import Promo
+    from app.models.episode import Episode
+    
+    promos_deleted = db.query(Promo).delete(synchronize_session=False)
+    episodes_deleted = db.query(Episode).delete(synchronize_session=False)
+    shows_deleted = db.query(Show).delete(synchronize_session=False)
+    db.commit()
+    logger.info("Database reset: all shows, episodes, and promos deleted.")
+    return {
+        "message": "All data has been successfully cleared.",
+        "shows_deleted": shows_deleted,
+        "episodes_deleted": episodes_deleted,
+        "promos_deleted": promos_deleted
+    }
+
+
 @router.post("/{show_id}/process-all")
 def process_all_episodes(show_id: int, db: Session = Depends(get_db)):
     """Triggers batch processing across all episodes in the show."""

@@ -11,6 +11,9 @@ export const getHealth = () => api.get('/api/health');
 export const getShows = () => api.get('/api/shows/');
 export const createShow = (data) => api.post('/api/shows/', data);
 export const getShow = (id) => api.get(`/api/shows/${id}`);
+export const deleteShow = (id) => api.delete(`/api/shows/${id}`);
+export const clearShow = (id) => api.post(`/api/shows/${id}/clear`);
+export const resetAllData = () => api.post('/api/shows/reset-all-data');
 export const processAllEpisodes = (showId) => api.post(`/api/shows/${showId}/process-all`);
 
 export const getEpisodes = (showId) => api.get(`/api/episodes/?show_id=${showId}`);

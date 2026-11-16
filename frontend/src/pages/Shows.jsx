@@ -15,10 +15,23 @@ import {
   X,
   Eye,
   SlidersHorizontal,
-  Film
+  Film,
+  Trash2
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import { getShows, createShow, getEpisodes, getEpisode, processEpisode, inspectEpisode, getPromos, getErrorMessage } from '../api';
+import { 
+  getShows, 
+  createShow, 
+  getEpisodes, 
+  getEpisode, 
+  processEpisode, 
+  inspectEpisode, 
+  getPromos, 
+  deleteShow,
+  clearShow,
+  resetAllData,
+  getErrorMessage 
+} from '../api';
 
 export default function Shows() {
   const [shows, setShows] = useState([]);
@@ -37,6 +50,9 @@ export default function Shows() {
 
   // Reprocess confirm modal
   const [showConfirmModal, setShowConfirmModal] = useState(false);
+
+  // Delete & Clear Confirm Modal
+  const [deleteConfirm, setDeleteConfirm] = useState({ open: false, type: null, show: null });
 
   // Inspect Modal
   const [inspectModalOpen, setInspectModalOpen] = useState(false);
@@ -109,6 +125,41 @@ export default function Shows() {
       alert('Error creating show: ' + getErrorMessage(err));
     } finally {
       setCreating(false);
+    }
+  }
+
+  async function handleConfirmAction() {
+    if (!deleteConfirm.type) return;
+    try {
+      if (deleteConfirm.type === 'delete_show' && deleteConfirm.show) {
+        await deleteShow(deleteConfirm.show.id);
+        const remainingShows = shows.filter(s => s.id !== deleteConfirm.show.id);
+        setShows(remainingShows);
+        if (selectedShow?.id === deleteConfirm.show.id) {
+          if (remainingShows.length > 0) {
+            handleSelectShow(remainingShows[0]);
+          } else {
+            setSelectedShow(null);
+            setEpisodes([]);
+            setShowPromos([]);
+          }
+        }
+      } else if (deleteConfirm.type === 'clear_episodes' && deleteConfirm.show) {
+        await clearShow(deleteConfirm.show.id);
+        setEpisodes([]);
+        setShowPromos([]);
+        await loadShows();
+      } else if (deleteConfirm.type === 'reset_all') {
+        await resetAllData();
+        setShows([]);
+        setSelectedShow(null);
+        setEpisodes([]);
+        setShowPromos([]);
+      }
+    } catch (err) {
+      alert('Action failed: ' + getErrorMessage(err));
+    } finally {
+      setDeleteConfirm({ open: false, type: null, show: null });
     }
   }
 
@@ -238,7 +289,17 @@ export default function Shows() {
             <h3 className="text-xs font-bold text-[#172B4D] flex items-center gap-1.5">
               <span>Shows ({shows.length})</span>
             </h3>
-            <div className="flex items-center gap-1">
+            <div className="flex items-center gap-2">
+              {shows.length > 0 && (
+                <button
+                  type="button"
+                  onClick={() => setDeleteConfirm({ open: true, type: 'reset_all', show: null })}
+                  className="text-[11px] text-slate-400 hover:text-rose-600 font-semibold transition-colors"
+                  title="Reset all database shows, episodes, and promos"
+                >
+                  Reset All
+                </button>
+              )}
               <button
                 onClick={() => setShowModalOpen(true)}
                 className="text-xs text-[#0F766E] font-bold hover:underline flex items-center gap-0.5"
@@ -259,26 +320,39 @@ export default function Shows() {
               shows.map((show) => {
                 const isSelected = selectedShow?.id === show.id;
                 return (
-                  <button
+                  <div
                     key={show.id}
-                    onClick={() => handleSelectShow(show)}
-                    className={`w-full text-left p-2.5 rounded-xl border transition-all flex items-center gap-3 ${
+                    className={`group w-full p-2.5 rounded-xl border transition-all flex items-center justify-between gap-2 cursor-pointer ${
                       isSelected
                         ? 'bg-[#CCFBF1]/30 border-[#0F766E] text-[#0F766E]'
                         : 'border-slate-100 bg-[#F5F7FA] hover:bg-slate-100 text-[#172B4D]'
                     }`}
+                    onClick={() => handleSelectShow(show)}
                   >
-                    {/* Thumbnail Avatar */}
-                    <div className="w-10 h-10 rounded-lg bg-gradient-to-tr from-[#172B4D] to-[#0F766E] text-white flex items-center justify-center shrink-0 font-bold text-xs shadow-xs">
-                      {show.title.substring(0, 2).toUpperCase()}
-                    </div>
-                    <div className="min-w-0 flex-1">
-                      <div className="text-xs font-bold text-[#172B4D] truncate">{show.title}</div>
-                      <div className="text-[10px] text-slate-500 mt-0.5">
-                        {show.language || 'English'} &bull; {show.total_episodes || 0} episodes
+                    <div className="flex items-center gap-3 min-w-0 flex-1">
+                      {/* Thumbnail Avatar */}
+                      <div className="w-10 h-10 rounded-lg bg-gradient-to-tr from-[#172B4D] to-[#0F766E] text-white flex items-center justify-center shrink-0 font-bold text-xs shadow-xs">
+                        {show.title.substring(0, 2).toUpperCase()}
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <div className="text-xs font-bold text-[#172B4D] truncate">{show.title}</div>
+                        <div className="text-[10px] text-slate-500 mt-0.5">
+                          {show.language || 'English'} &bull; {show.episode_count ?? show.total_episodes ?? 0} episodes
+                        </div>
                       </div>
                     </div>
-                  </button>
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setDeleteConfirm({ open: true, type: 'delete_show', show });
+                      }}
+                      className="opacity-0 group-hover:opacity-100 p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-all shrink-0"
+                      title={`Delete series "${show.title}"`}
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
                 );
               })
             )}
@@ -303,23 +377,45 @@ export default function Shows() {
                   </div>
                 </div>
 
-                {/* Re-process All Action */}
-                {!isBatchRunning ? (
+                {/* Actions: Re-process, Clear Episodes, Delete Series */}
+                <div className="flex items-center gap-2 flex-wrap">
+                  {!isBatchRunning ? (
+                    <button
+                      onClick={() => setShowConfirmModal(true)}
+                      disabled={episodes.length === 0}
+                      className="px-3 py-1.5 rounded-lg border border-slate-300 hover:bg-slate-50 text-xs font-bold text-[#172B4D] transition-colors disabled:opacity-40"
+                    >
+                      Re-process All
+                    </button>
+                  ) : (
+                    <button
+                      onClick={() => { stopRequestedRef.current = true; }}
+                      className="px-3.5 py-1.5 rounded-lg bg-rose-50 border border-rose-200 text-xs font-bold text-rose-700 transition-colors"
+                    >
+                      Pause Batch
+                    </button>
+                  )}
+
                   <button
-                    onClick={() => setShowConfirmModal(true)}
+                    type="button"
+                    onClick={() => setDeleteConfirm({ open: true, type: 'clear_episodes', show: selectedShow })}
                     disabled={episodes.length === 0}
-                    className="px-3.5 py-1.5 rounded-lg border border-slate-300 hover:bg-slate-50 text-xs font-bold text-[#172B4D] transition-colors disabled:opacity-40"
+                    className="px-3 py-1.5 rounded-lg border border-amber-300 bg-amber-50/40 hover:bg-amber-100/50 text-xs font-bold text-amber-800 transition-colors disabled:opacity-40"
+                    title="Clear all episodes and promos for this series to re-upload"
                   >
-                    Re-process All
+                    Clear Episodes
                   </button>
-                ) : (
+
                   <button
-                    onClick={() => { stopRequestedRef.current = true; }}
-                    className="px-3.5 py-1.5 rounded-lg bg-rose-50 border border-rose-200 text-xs font-bold text-rose-700 transition-colors"
+                    type="button"
+                    onClick={() => setDeleteConfirm({ open: true, type: 'delete_show', show: selectedShow })}
+                    className="px-3 py-1.5 rounded-lg border border-rose-200 bg-rose-50/40 hover:bg-rose-100/50 text-xs font-bold text-rose-700 transition-colors flex items-center gap-1"
+                    title="Delete this entire series"
                   >
-                    Pause Batch
+                    <Trash2 className="w-3.5 h-3.5" />
+                    <span>Delete</span>
                   </button>
-                )}
+                </div>
               </div>
 
               {/* 4 Stat Boxes */}
@@ -625,6 +721,55 @@ export default function Shows() {
                 className="px-4 py-1.5 rounded-lg text-xs font-semibold text-slate-700 bg-white border border-slate-300 hover:bg-slate-100"
               >
                 Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Delete / Clear / Reset Confirmation Modal */}
+      {deleteConfirm.open && (
+        <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-xl shadow-xl max-w-md w-full p-6 space-y-4 border border-slate-200">
+            <div className="flex items-center gap-3 text-rose-700">
+              <div className="p-2 bg-rose-50 rounded-lg border border-rose-200">
+                <Trash2 className="w-5 h-5 text-rose-600" />
+              </div>
+              <h3 className="text-sm font-bold text-[#172B4D]">
+                {deleteConfirm.type === 'delete_show'
+                  ? `Delete "${deleteConfirm.show?.title}"?`
+                  : deleteConfirm.type === 'clear_episodes'
+                  ? `Clear Episodes for "${deleteConfirm.show?.title}"?`
+                  : 'Reset All Data?'}
+              </h3>
+            </div>
+
+            <p className="text-xs text-[#64748B] leading-relaxed">
+              {deleteConfirm.type === 'delete_show'
+                ? `This will permanently delete the series "${deleteConfirm.show?.title}", including all uploaded screenplays, parsed cues, and discovered promo candidates.`
+                : deleteConfirm.type === 'clear_episodes'
+                ? `This will remove all episodes and promo candidates for "${deleteConfirm.show?.title}". The series itself will remain so you can upload fresh screenplays.`
+                : 'This will reset the entire database: deleting all series, screenplays, and promotional moments. You can start completely fresh.'}
+            </p>
+
+            <div className="flex items-center justify-end gap-2 pt-2">
+              <button
+                type="button"
+                onClick={() => setDeleteConfirm({ open: false, type: null, show: null })}
+                className="px-3.5 py-1.5 rounded-lg text-xs font-semibold text-slate-600 hover:bg-slate-100 transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={handleConfirmAction}
+                className="px-4 py-1.5 rounded-lg text-xs font-bold text-white bg-rose-600 hover:bg-rose-700 transition-colors shadow-xs"
+              >
+                {deleteConfirm.type === 'delete_show'
+                  ? 'Delete Series'
+                  : deleteConfirm.type === 'clear_episodes'
+                  ? 'Clear Episodes'
+                  : 'Reset All Data'}
               </button>
             </div>
           </div>
