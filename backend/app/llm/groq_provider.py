@@ -26,10 +26,14 @@ class GroqProvider(BaseLLMProvider):
         self.api_key = api_key
         self.model_name = model_name or "openai/gpt-oss-120b"
         self.api_url = "https://api.groq.com/openai/v1/chat/completions"
-        self.quota_exceeded = False
+        self.cooldown_until = 0.0
 
         if not self.api_key:
             logger.info("GroqProvider initialized without API key. Will defer to secondary provider.")
+
+    @property
+    def quota_exceeded(self) -> bool:
+        return time.time() < self.cooldown_until
 
     def generate_structured(
         self,
@@ -39,7 +43,7 @@ class GroqProvider(BaseLLMProvider):
         temperature: float = 0.2
     ) -> T:
         if not self.api_key or self.quota_exceeded:
-            raise LLMInferenceException("Groq API key not configured or quota limit reached.")
+            raise LLMInferenceException("Groq API key not configured or temporarily in rate-limit cooldown.")
 
         models_to_try = [self.model_name] + [m for m in GROQ_FALLBACK_MODELS if m != self.model_name]
         headers = {
@@ -91,9 +95,23 @@ class GroqProvider(BaseLLMProvider):
                     return parsed_obj
 
                 elif resp.status_code == 429:
-                    logger.warning(f"Groq rate limit / quota exceeded (429): {resp.text}")
-                    self.quota_exceeded = True
-                    raise LLMInferenceException("Groq quota limit exceeded (429).")
+                    logger.warning(f"Groq rate limit (429) on model '{current_model}': {resp.text}. Pausing 2s before retry...")
+                    time.sleep(2.0)
+                    try:
+                        with httpx.Client(timeout=15.0) as retry_client:
+                            retry_resp = retry_client.post(self.api_url, headers=headers, json=payload)
+                        if retry_resp.status_code == 200:
+                            data = retry_resp.json()
+                            content = data["choices"][0]["message"]["content"].strip()
+                            if content.startswith("```json"): content = content[7:]
+                            if content.endswith("```"): content = content[:-3]
+                            parsed_obj = response_schema.model_validate_json(content.strip())
+                            logger.info(f"Groq retry succeeded on '{current_model}'.")
+                            self.model_name = current_model
+                            return parsed_obj
+                    except Exception as re_err:
+                        logger.warning(f"Groq retry on '{current_model}' failed: {re_err}")
+                    continue
 
                 else:
                     err_msg = f"Groq HTTP {resp.status_code}: {resp.text}"
@@ -104,4 +122,5 @@ class GroqProvider(BaseLLMProvider):
                 logger.warning(f"Groq error with '{current_model}': {str(e)}")
                 last_error = e
 
+        self.cooldown_until = time.time() + 10.0
         raise LLMInferenceException(f"All Groq models failed. Last error: {last_error}")

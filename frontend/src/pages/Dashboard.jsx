@@ -1,8 +1,17 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { 
-  Film, Video, Sparkles, CheckCircle2, Clock, ArrowRight, 
-  AlertCircle, ShieldCheck, FileSpreadsheet, RefreshCw, UploadCloud, ChevronRight
+  Layers, 
+  CheckCircle2, 
+  AlertCircle, 
+  Sparkles, 
+  Clock, 
+  UploadCloud, 
+  PlayCircle, 
+  ArrowRight, 
+  Clapperboard,
+  RefreshCw,
+  Film
 } from 'lucide-react';
 import { getShows, getPromos, getEpisodes } from '../api';
 
@@ -15,11 +24,9 @@ export default function Dashboard() {
     validPromos: 0,
     pendingApprovals: 0,
     approvedPromos: 0,
-    rejectedPromos: 0,
   });
   const [seriesWorkflow, setSeriesWorkflow] = useState([]);
-  const [recentDecisions, setRecentDecisions] = useState([]);
-  const [recentCandidates, setRecentCandidates] = useState([]);
+  const [recentActivity, setRecentActivity] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -31,12 +38,11 @@ export default function Dashboard() {
     try {
       const [showsRes, promosRes] = await Promise.all([
         getShows(),
-        getPromos({ limit: 50 })
+        getPromos({ limit: 100 })
       ]);
       const shows = showsRes.data || [];
       const promos = promosRes.data || [];
 
-      // Fetch episodes across registered shows
       let allEpisodes = [];
       const workflowItems = [];
 
@@ -49,9 +55,6 @@ export default function Dashboard() {
           const showPromos = promos.filter(p => p.show_id === show.id);
           const parsedCount = eps.filter(e => e.processing_status === 'completed').length;
           const failedCount = eps.filter(e => e.processing_status === 'failed').length;
-          const validCount = showPromos.filter(p => p.validation_status === 'valid' || p.validation_status === 'warning').length;
-          const pendingCount = showPromos.filter(p => p.approval_status === 'pending').length;
-          const approvedCount = showPromos.filter(p => p.approval_status === 'approved').length;
 
           workflowItems.push({
             id: show.id,
@@ -60,10 +63,8 @@ export default function Dashboard() {
             totalEpisodes: eps.length,
             parsedCount,
             failedCount,
-            discoveredPromos: showPromos.length,
-            validCount,
-            pendingCount,
-            approvedCount,
+            progressPercent: eps.length > 0 ? Math.round((parsedCount / eps.length) * 100) : 0,
+            status: failedCount > 0 ? 'warning' : parsedCount === eps.length && eps.length > 0 ? 'completed' : 'processing',
           });
         } catch (e) {
           console.error(`Failed to load episodes for show ${show.id}`, e);
@@ -75,7 +76,6 @@ export default function Dashboard() {
       const validCandidates = promos.filter(p => p.validation_status === 'valid' || p.validation_status === 'warning').length;
       const pendingApprovals = promos.filter(p => p.approval_status === 'pending').length;
       const approvedPromos = promos.filter(p => p.approval_status === 'approved').length;
-      const rejectedPromos = promos.filter(p => p.approval_status === 'rejected').length;
 
       setStats({
         totalShows: shows.length,
@@ -85,12 +85,54 @@ export default function Dashboard() {
         validPromos: validCandidates,
         pendingApprovals,
         approvedPromos,
-        rejectedPromos,
       });
 
       setSeriesWorkflow(workflowItems);
-      setRecentCandidates(promos.slice(0, 5));
-      setRecentDecisions(promos.filter(p => p.approval_status !== 'pending').slice(0, 5));
+
+      // Build real activity timeline
+      const activities = [];
+      if (workflowItems.length > 0) {
+        const topShow = workflowItems[0];
+        if (topShow.parsedCount > 0) {
+          activities.push({
+            id: 'act-parse',
+            icon: CheckCircle2,
+            iconColor: 'text-emerald-600 bg-emerald-50',
+            text: `${topShow.parsedCount} episodes parsed for "${topShow.title}"`,
+            time: 'Recently'
+          });
+        }
+      }
+      if (promos.length > 0) {
+        activities.push({
+          id: 'act-promos',
+          icon: Sparkles,
+          iconColor: 'text-teal-600 bg-teal-50',
+          text: `${promos.length} promo candidates discovered`,
+          time: 'Active'
+        });
+      }
+      const approvedSample = promos.find(p => p.approval_status === 'approved');
+      if (approvedSample) {
+        activities.push({
+          id: 'act-appr',
+          icon: CheckCircle2,
+          iconColor: 'text-emerald-600 bg-emerald-50',
+          text: `${approvedSample.promo_identifier} approved for export`,
+          time: 'Verified'
+        });
+      }
+      if (allEpisodes.length > 0) {
+        activities.push({
+          id: 'act-upload',
+          icon: UploadCloud,
+          iconColor: 'text-sky-600 bg-sky-50',
+          text: `Uploaded ${allEpisodes.length} screenplay files to library`,
+          time: 'Ready'
+        });
+      }
+      setRecentActivity(activities);
+
     } catch (err) {
       console.error('Failed to load dashboard data:', err);
     } finally {
@@ -98,309 +140,261 @@ export default function Dashboard() {
     }
   }
 
-  const workflowSteps = [
-    { num: '1', name: 'Upload', desc: 'TXT / PDF / ZIP screenplays', link: '/upload' },
-    { num: '2', name: 'Parse', desc: 'Cues, timecodes & scenes', link: '/shows' },
-    { num: '3', name: 'Discover', desc: '20-60s hooks & cliffhangers', link: '/promos' },
-    { num: '4', name: 'Review', desc: '5-factor editorial verification', link: '/review' },
-    { num: '5', name: 'Export', desc: 'Production CSV & JSON formats', link: '/export' },
-  ];
-
-  const statCards = [
-    { label: 'Total Shows', value: stats.totalShows, icon: Film, color: 'text-purple-700 bg-purple-50 border-purple-200' },
-    { label: 'Total Episodes', value: stats.totalEpisodes, icon: Video, color: 'text-slate-700 bg-slate-100 border-slate-200' },
-    { label: 'Parsed Successfully', value: stats.parsedEpisodes, icon: CheckCircle2, color: 'text-emerald-700 bg-emerald-50 border-emerald-200' },
-    { label: 'Failed Episodes', value: stats.failedEpisodes, icon: AlertCircle, color: 'text-rose-700 bg-rose-50 border-rose-200' },
-    { label: 'Valid Candidates', value: stats.validPromos, icon: ShieldCheck, color: 'text-blue-700 bg-blue-50 border-blue-200' },
-    { label: 'Pending Approvals', value: stats.pendingApprovals, icon: Clock, color: 'text-amber-700 bg-amber-50 border-amber-200' },
-    { label: 'Approved Promos', value: stats.approvedPromos, icon: Sparkles, color: 'text-purple-700 bg-purple-50 border-purple-200' },
-  ];
-
-  if (loading) {
-    return (
-      <div className="flex flex-col items-center justify-center min-h-[50vh] space-y-3">
-        <RefreshCw className="w-8 h-8 text-purple-600 animate-spin" />
-        <span className="text-sm font-medium text-slate-500">Loading dashboard metrics...</span>
-      </div>
-    );
-  }
-
   return (
-    <div className="space-y-8">
-      {/* Top Section */}
-      <div className="bg-white border border-slate-200 rounded-xl p-6 sm:p-8 shadow-xs">
-        <div className="max-w-3xl space-y-3">
-          <div className="inline-flex items-center gap-2 px-2.5 py-1 rounded-md bg-purple-50 text-purple-700 text-xs font-semibold border border-purple-200/60">
-            Microdrama Promotional Intelligence
-          </div>
-          <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight">
-            ReelFinder AI
-          </h1>
-          <p className="text-slate-600 text-sm sm:text-base leading-relaxed">
-            Discover, evaluate, and rank promotional moments from microdrama screenplays.
-            Deterministic timestamp validation guarantees zero fabricated timecodes, while five-factor scoring
-            detects high-converting viral hooks and cliffhangers.
-          </p>
-
-          {/* Primary Action Buttons */}
-          <div className="pt-2 flex flex-wrap gap-3">
-            <Link
-              to="/upload"
-              className="inline-flex items-center gap-2 px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg text-xs font-semibold shadow-xs transition-colors"
-            >
-              <UploadCloud className="w-4 h-4" />
-              Upload Screenplays
-            </Link>
-            <Link
-              to="/promos"
-              className="inline-flex items-center gap-2 px-4 py-2 bg-white hover:bg-slate-50 text-slate-800 rounded-lg text-xs font-semibold border border-slate-300 transition-colors shadow-xs"
-            >
-              <Sparkles className="w-4 h-4 text-purple-600" />
-              View Discovered Promos
-            </Link>
-          </div>
-        </div>
-
-        {/* Compact Workflow Steps Banner */}
-        <div className="mt-8 pt-6 border-t border-slate-100">
-          <span className="text-[11px] font-bold tracking-wider uppercase text-slate-400 block mb-3">
-            Processing Workflow
-          </span>
-          <div className="grid grid-cols-1 sm:grid-cols-5 gap-2">
-            {workflowSteps.map((step, idx) => (
+    <div className="space-y-6">
+      {/* Top Hero Card */}
+      <div className="bg-white border border-slate-200 rounded-2xl p-6 sm:p-8 shadow-xs relative overflow-hidden">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+          {/* Left Text & CTA */}
+          <div className="lg:col-span-5 space-y-4">
+            <h1 className="text-2xl sm:text-3xl font-extrabold text-[#172B4D] tracking-tight leading-snug">
+              Find the Best <br />
+              <span className="text-[#0F766E]">Promo Moments</span>
+            </h1>
+            <p className="text-xs sm:text-sm text-[#64748B] leading-relaxed">
+              Discover, evaluate, and rank high-converting promo moments from your microdrama screenplays.
+            </p>
+            <div className="flex flex-wrap items-center gap-3 pt-2">
               <Link
-                key={step.num}
-                to={step.link}
-                className="group p-3 rounded-lg bg-slate-50 hover:bg-purple-50/60 border border-slate-200 hover:border-purple-200 transition-all flex flex-col justify-between"
+                to="/upload"
+                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#0F766E] hover:bg-[#115E59] text-white text-xs font-bold shadow-sm transition-all"
               >
-                <div className="flex items-center justify-between mb-1">
-                  <span className="w-5 h-5 rounded-full bg-slate-200 group-hover:bg-purple-600 group-hover:text-white text-slate-700 text-[11px] font-bold flex items-center justify-center transition-colors">
-                    {step.num}
-                  </span>
-                  <ChevronRight className="w-3.5 h-3.5 text-slate-400 group-hover:text-purple-600 transition-colors" />
-                </div>
-                <div>
-                  <h4 className="text-xs font-bold text-slate-900 group-hover:text-purple-900 transition-colors">
-                    {step.name}
-                  </h4>
-                  <p className="text-[11px] text-slate-500 line-clamp-1">
-                    {step.desc}
-                  </p>
-                </div>
+                <UploadCloud className="w-4 h-4" />
+                <span>Upload Screenplay</span>
+                <ArrowRight className="w-3.5 h-3.5 ml-0.5" />
               </Link>
-            ))}
-          </div>
-        </div>
-      </div>
-
-      {/* Real Statistics Grid */}
-      <div>
-        <h2 className="text-xs font-bold uppercase tracking-wider text-slate-500 mb-3">
-          Platform Statistics (Live Backend Metrics)
-        </h2>
-        <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-3">
-          {statCards.map((c, i) => {
-            const Icon = c.icon;
-            return (
-              <div
-                key={i}
-                className="bg-white border border-slate-200 rounded-xl p-4 shadow-xs flex flex-col justify-between"
+              <Link
+                to="/promos"
+                className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white hover:bg-slate-50 border border-slate-200 text-[#172B4D] text-xs font-semibold shadow-xs transition-all"
               >
-                <div className="flex items-center justify-between mb-2">
-                  <span className="text-[11px] font-medium text-slate-500 leading-tight">
-                    {c.label}
-                  </span>
-                  <div className={`p-1.5 rounded-md ${c.color} border`}>
-                    <Icon className="w-3.5 h-3.5" />
-                  </div>
-                </div>
-                <div className="text-xl sm:text-2xl font-extrabold text-slate-900">
-                  {c.value}
+                <PlayCircle className="w-4 h-4 text-[#0F766E]" />
+                <span>View Discovered Promos</span>
+              </Link>
+            </div>
+          </div>
+
+          {/* Center Illustration Graphic */}
+          <div className="hidden md:flex lg:col-span-3 items-center justify-center">
+            <div className="relative w-44 h-40 flex items-center justify-center">
+              <div className="absolute inset-0 bg-teal-50 rounded-full blur-xl opacity-70" />
+              <div className="relative bg-gradient-to-tr from-[#0F766E] to-[#14B8A6] p-6 rounded-2xl shadow-lg text-white transform -rotate-3 hover:rotate-0 transition-transform">
+                <Clapperboard className="w-16 h-16 text-white" />
+                <div className="absolute bottom-2 right-2 bg-white/20 px-2 py-0.5 rounded text-[10px] font-bold">
+                  20-60s
                 </div>
               </div>
-            );
-          })}
-        </div>
-      </div>
-
-      {/* Workflow Status per Series */}
-      <div className="bg-white border border-slate-200 rounded-xl p-6 shadow-xs">
-        <div className="flex items-center justify-between mb-4">
-          <div>
-            <h2 className="text-base font-bold text-slate-900">Series Processing Progress</h2>
-            <p className="text-xs text-slate-500">Live breakdown of parsing, validation and editorial state by series</p>
+            </div>
           </div>
-          <Link
-            to="/shows"
-            className="text-xs font-semibold text-purple-600 hover:text-purple-700 flex items-center gap-1"
-          >
-            Manage Episodes <ArrowRight className="w-3.5 h-3.5" />
-          </Link>
-        </div>
 
-        {seriesWorkflow.length === 0 ? (
-          <div className="p-8 text-center bg-slate-50 rounded-lg border border-dashed border-slate-200 text-slate-500 text-xs">
-            No registered microdrama series found. Click "Upload Screenplays" to add your first dataset.
-          </div>
-        ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-left border-collapse text-xs">
-              <thead>
-                <tr className="border-b border-slate-200 text-slate-500 font-semibold bg-slate-50/70">
-                  <th className="py-2.5 px-3">Series Title</th>
-                  <th className="py-2.5 px-3">Total Episodes</th>
-                  <th className="py-2.5 px-3">Parsed</th>
-                  <th className="py-2.5 px-3">Failures</th>
-                  <th className="py-2.5 px-3">Discovered Promos</th>
-                  <th className="py-2.5 px-3">Valid Promos</th>
-                  <th className="py-2.5 px-3">Awaiting Review</th>
-                  <th className="py-2.5 px-3">Approved</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-100">
-                {seriesWorkflow.map((sw) => (
-                  <tr key={sw.id} className="hover:bg-slate-50/80 transition-colors">
-                    <td className="py-3 px-3 font-semibold text-slate-900">
-                      {sw.title} <span className="text-[10px] text-slate-400 font-normal">({sw.language})</span>
-                    </td>
-                    <td className="py-3 px-3 font-mono text-slate-700">{sw.totalEpisodes}</td>
-                    <td className="py-3 px-3">
-                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
-                        {sw.parsedCount}
-                      </span>
-                    </td>
-                    <td className="py-3 px-3">
-                      {sw.failedCount > 0 ? (
-                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-semibold bg-rose-50 text-rose-700 border border-rose-200">
-                          {sw.failedCount}
-                        </span>
-                      ) : (
-                        <span className="text-slate-400">0</span>
-                      )}
-                    </td>
-                    <td className="py-3 px-3 font-mono text-slate-700">{sw.discoveredPromos}</td>
-                    <td className="py-3 px-3">
-                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-semibold bg-blue-50 text-blue-700 border border-blue-200">
-                        {sw.validCount}
-                      </span>
-                    </td>
-                    <td className="py-3 px-3">
-                      {sw.pendingCount > 0 ? (
-                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-semibold bg-amber-50 text-amber-700 border border-amber-200">
-                          {sw.pendingCount}
-                        </span>
-                      ) : (
-                        <span className="text-slate-400">0</span>
-                      )}
-                    </td>
-                    <td className="py-3 px-3">
-                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-semibold bg-purple-50 text-purple-700 border border-purple-200">
-                        {sw.approvedCount}
-                      </span>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
-      </div>
-
-      {/* Recent Discovered Candidates & Recent Decisions */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Recent Discovered Candidates */}
-        <div className="bg-white border border-slate-200 rounded-xl p-5 shadow-xs">
-          <div className="flex items-center justify-between mb-3">
-            <h3 className="text-sm font-bold text-slate-900 flex items-center gap-1.5">
-              <Sparkles className="w-4 h-4 text-purple-600" />
-              Latest Discovered Promos
+          {/* Right "How It Works" Card */}
+          <div className="lg:col-span-4 bg-[#F5F7FA] border border-slate-200/80 rounded-xl p-5 space-y-3">
+            <h3 className="text-xs font-bold uppercase tracking-wider text-[#172B4D]">
+              How It Works
             </h3>
-            <Link to="/promos" className="text-xs font-semibold text-purple-600 hover:text-purple-700">
-              View All ({stats.validPromos + stats.failedEpisodes})
-            </Link>
-          </div>
-
-          {recentCandidates.length === 0 ? (
-            <p className="text-xs text-slate-400 py-6 text-center">No promo candidates discovered yet.</p>
-          ) : (
-            <div className="divide-y divide-slate-100">
-              {recentCandidates.map((promo) => (
-                <div key={promo.id} className="py-3 flex items-center justify-between text-xs">
-                  <div>
-                    <div className="flex items-center gap-2">
-                      <span className="font-bold text-slate-900">{promo.promo_identifier}</span>
-                      <span className="text-slate-400">• Ep {promo.primary_episode_number}</span>
-                      <span className={`px-2 py-0.2 rounded text-[10px] font-semibold ${
-                        promo.validation_status === 'valid'
-                          ? 'bg-emerald-50 text-emerald-700'
-                          : promo.validation_status === 'warning'
-                          ? 'bg-amber-50 text-amber-700'
-                          : 'bg-rose-50 text-rose-700'
-                      }`}>
-                        {promo.validation_status.toUpperCase()}
-                      </span>
-                    </div>
-                    <p className="text-slate-500 text-[11px] mt-0.5 line-clamp-1">{promo.hook}</p>
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <span className="font-mono font-bold text-slate-800">{promo.overall_score.toFixed(1)}/100</span>
-                    <Link
-                      to={`/review?id=${promo.id}`}
-                      className="px-2.5 py-1 bg-purple-50 hover:bg-purple-100 text-purple-700 rounded text-xs font-semibold transition-colors"
-                    >
-                      Review
-                    </Link>
-                  </div>
+            <div className="space-y-2.5">
+              {[
+                { step: 1, text: 'Upload your screenplays' },
+                { step: 2, text: 'Parse scenes and timestamps' },
+                { step: 3, text: 'Discover hooks & cliffhangers' },
+                { step: 4, text: 'Review and approve candidates' },
+                { step: 5, text: 'Export final results' }
+              ].map(item => (
+                <div key={item.step} className="flex items-center gap-2.5 text-xs text-[#172B4D]">
+                  <span className="w-5 h-5 rounded-full bg-[#CCFBF1] text-[#0F766E] font-bold flex items-center justify-center text-[10px] shrink-0">
+                    {item.step}
+                  </span>
+                  <span className="font-medium text-slate-700">{item.text}</span>
                 </div>
               ))}
             </div>
-          )}
+          </div>
         </div>
+      </div>
 
-        {/* Recent Editorial Decisions */}
-        <div className="bg-white border border-slate-200 rounded-xl p-5 shadow-xs">
-          <div className="flex items-center justify-between mb-3">
-            <h3 className="text-sm font-bold text-slate-900 flex items-center gap-1.5">
-              <CheckCircle2 className="w-4 h-4 text-emerald-600" />
-              Recent Editorial Decisions
-            </h3>
-            <Link to="/review" className="text-xs font-semibold text-purple-600 hover:text-purple-700">
-              Editorial Desk
+      {/* 6 Clean Metric Cards */}
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 sm:gap-4">
+        {[
+          {
+            label: 'Total Episodes',
+            value: stats.totalEpisodes,
+            icon: Layers,
+            iconColor: 'text-slate-600',
+            bgColor: 'bg-slate-100',
+          },
+          {
+            label: 'Parsed Successfully',
+            value: stats.parsedEpisodes,
+            icon: CheckCircle2,
+            iconColor: 'text-[#15803D]',
+            bgColor: 'bg-emerald-50',
+          },
+          {
+            label: 'Failed Episodes',
+            value: stats.failedEpisodes,
+            icon: AlertCircle,
+            iconColor: 'text-[#DC2626]',
+            bgColor: 'bg-rose-50',
+          },
+          {
+            label: 'Valid Candidates',
+            value: stats.validPromos,
+            icon: Sparkles,
+            iconColor: 'text-[#0F766E]',
+            bgColor: 'bg-teal-50',
+          },
+          {
+            label: 'Pending Reviews',
+            value: stats.pendingApprovals,
+            icon: Clock,
+            iconColor: 'text-[#D69E36]',
+            bgColor: 'bg-amber-50',
+          },
+          {
+            label: 'Approved Promos',
+            value: stats.approvedPromos,
+            icon: CheckCircle2,
+            iconColor: 'text-indigo-600',
+            bgColor: 'bg-indigo-50',
+          },
+        ].map((item, idx) => {
+          const Icon = item.icon;
+          return (
+            <div
+              key={idx}
+              className="bg-white border border-slate-200 rounded-xl p-4 shadow-xs hover:border-slate-300 transition-all space-y-2"
+            >
+              <div className="flex items-center justify-between">
+                <span className="text-[11px] font-semibold text-[#64748B] block truncate">
+                  {item.label}
+                </span>
+                <div className={`w-7 h-7 rounded-lg ${item.bgColor} flex items-center justify-center shrink-0`}>
+                  <Icon className={`w-3.5 h-3.5 ${item.iconColor}`} />
+                </div>
+              </div>
+              <div className="text-xl sm:text-2xl font-black text-[#172B4D] tracking-tight">
+                {loading ? '--' : item.value}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+
+      {/* Bottom Two Panels: Processing Progress by Series & Recent Activity */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        {/* Left: Processing Progress by Series */}
+        <div className="lg:col-span-7 bg-white border border-slate-200 rounded-xl p-5 shadow-xs space-y-4">
+          <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+            <h2 className="text-sm font-bold text-[#172B4D] flex items-center gap-2">
+              <Film className="w-4 h-4 text-[#0F766E]" />
+              <span>Processing Progress by Series</span>
+            </h2>
+            <Link
+              to="/shows"
+              className="text-xs font-semibold text-[#0F766E] hover:underline flex items-center gap-1"
+            >
+              <span>View Library</span>
+              <ArrowRight className="w-3 h-3" />
             </Link>
           </div>
 
-          {recentDecisions.length === 0 ? (
-            <p className="text-xs text-slate-400 py-6 text-center">No editorial decisions made yet.</p>
-          ) : (
-            <div className="divide-y divide-slate-100">
-              {recentDecisions.map((promo) => (
-                <div key={promo.id} className="py-3 flex items-center justify-between text-xs">
-                  <div>
+          <div className="space-y-3">
+            {loading ? (
+              <div className="p-8 text-center text-xs text-slate-400">Loading series...</div>
+            ) : seriesWorkflow.length === 0 ? (
+              <div className="p-8 text-center text-xs text-slate-400">
+                No series registered yet. <Link to="/upload" className="text-[#0F766E] font-bold hover:underline">Upload your first screenplay</Link>.
+              </div>
+            ) : (
+              seriesWorkflow.map(show => (
+                <div
+                  key={show.id}
+                  className="p-3.5 rounded-lg border border-slate-100 bg-[#F5F7FA] hover:bg-slate-100/60 transition-colors flex items-center justify-between gap-4"
+                >
+                  <div className="min-w-0 flex-1">
                     <div className="flex items-center gap-2">
-                      <span className="font-bold text-slate-900">{promo.promo_identifier}</span>
-                      <span className="text-slate-400">• Ep {promo.primary_episode_number}</span>
+                      <span className="font-bold text-xs text-[#172B4D] truncate">{show.title}</span>
+                      <span className="text-[10px] text-slate-500 bg-white border border-slate-200 px-1.5 py-0.2 rounded font-medium">
+                        {show.language}
+                      </span>
                     </div>
-                    <p className="text-slate-500 text-[11px] mt-0.5 line-clamp-1">{promo.cliffhanger}</p>
+                    <div className="text-[11px] text-slate-500 mt-0.5">
+                      {show.totalEpisodes} Episodes
+                    </div>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <span className={`px-2 py-0.5 rounded text-[11px] font-bold ${
-                      promo.approval_status === 'approved'
-                        ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
-                        : 'bg-rose-50 text-rose-700 border border-rose-200'
-                    }`}>
-                      {promo.approval_status.toUpperCase()}
-                    </span>
-                    <Link
-                      to={`/review?id=${promo.id}`}
-                      className="px-2 py-1 text-slate-500 hover:text-slate-900 font-medium"
-                    >
-                      Details
-                    </Link>
+
+                  <div className="w-36 sm:w-44 shrink-0 space-y-1">
+                    <div className="flex items-center justify-between text-[11px] font-semibold text-[#172B4D]">
+                      <span>{show.parsedCount} / {show.totalEpisodes} Parsed</span>
+                      <span className="text-[10px] text-slate-500">{show.progressPercent}%</span>
+                    </div>
+                    <div className="w-full bg-slate-200 h-1.5 rounded-full overflow-hidden">
+                      <div
+                        className="bg-[#0F766E] h-1.5 rounded-full transition-all duration-500"
+                        style={{ width: `${show.progressPercent}%` }}
+                      />
+                    </div>
+                  </div>
+
+                  <div className="shrink-0">
+                    {show.parsedCount === show.totalEpisodes && show.totalEpisodes > 0 ? (
+                      <CheckCircle2 className="w-4 h-4 text-[#15803D]" />
+                    ) : show.failedCount > 0 ? (
+                      <AlertCircle className="w-4 h-4 text-[#D69E36]" />
+                    ) : (
+                      <Clock className="w-4 h-4 text-slate-400" />
+                    )}
                   </div>
                 </div>
-              ))}
-            </div>
-          )}
+              ))
+            )}
+          </div>
+        </div>
+
+        {/* Right: Recent Activity */}
+        <div className="lg:col-span-5 bg-white border border-slate-200 rounded-xl p-5 shadow-xs space-y-4">
+          <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+            <h2 className="text-sm font-bold text-[#172B4D] flex items-center gap-2">
+              <Sparkles className="w-4 h-4 text-[#0F766E]" />
+              <span>Recent Activity</span>
+            </h2>
+            <Link
+              to="/promos"
+              className="text-xs font-semibold text-[#0F766E] hover:underline flex items-center gap-1"
+            >
+              <span>View All</span>
+              <ArrowRight className="w-3 h-3" />
+            </Link>
+          </div>
+
+          <div className="space-y-3">
+            {recentActivity.length === 0 ? (
+              <div className="p-8 text-center text-xs text-slate-400">
+                No recent activity. Upload screenplays to begin.
+              </div>
+            ) : (
+              recentActivity.map(act => {
+                const Icon = act.icon;
+                return (
+                  <div
+                    key={act.id}
+                    className="flex items-start gap-3 p-3 rounded-lg border border-slate-100 bg-[#F5F7FA]"
+                  >
+                    <div className={`w-7 h-7 rounded-lg ${act.iconColor} flex items-center justify-center shrink-0 mt-0.5`}>
+                      <Icon className="w-3.5 h-3.5" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-xs font-semibold text-[#172B4D] truncate">
+                        {act.text}
+                      </p>
+                      <span className="text-[10px] text-slate-400 font-medium">
+                        {act.time}
+                      </span>
+                    </div>
+                  </div>
+                );
+              })
+            )}
+          </div>
         </div>
       </div>
     </div>

@@ -1,40 +1,52 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { 
-  Film, Plus, Play, CheckCircle2, Clock, AlertCircle, RefreshCw, Layers, 
-  Pause, Sparkles, ArrowRight, Check, AlertTriangle, FileText, Eye, X, 
-  Cpu, Database, ShieldCheck
+  Plus, 
+  RefreshCw, 
+  Play, 
+  Layers, 
+  CheckCircle2, 
+  AlertCircle, 
+  Clock, 
+  FileText, 
+  ChevronRight, 
+  Sparkles,
+  Pause,
+  RotateCcw,
+  X,
+  ExternalLink
 } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import { getShows, createShow, getEpisodes, getEpisode, processEpisode, inspectEpisode } from '../api';
 
 export default function Shows() {
-  const navigate = useNavigate();
   const [shows, setShows] = useState([]);
   const [selectedShow, setSelectedShow] = useState(null);
   const [episodes, setEpisodes] = useState([]);
-  const [loading, setLoading] = useState(true);
-  
-  // Create show modal
-  const [showCreateModal, setShowCreateModal] = useState(false);
-  const [newTitle, setNewTitle] = useState('');
-  const [newDesc, setNewDesc] = useState('');
+  const [loadingShows, setLoadingShows] = useState(true);
+  const [loadingEpisodes, setLoadingEpisodes] = useState(false);
+
+  // New Show Form State
+  const [showModalOpen, setShowModalOpen] = useState(false);
+  const [title, setTitle] = useState('');
+  const [language, setLanguage] = useState('English');
+  const [description, setDescription] = useState('');
+  const [creating, setCreating] = useState(false);
 
   // Reprocess confirm modal
   const [showConfirmModal, setShowConfirmModal] = useState(false);
+  const [confirmMode, setConfirmMode] = useState('all'); // 'all' | 'failed'
 
-  // Episode inspection modal
+  // Inspect Modal
   const [inspectModalOpen, setInspectModalOpen] = useState(false);
   const [inspectingEpisode, setInspectingEpisode] = useState(null);
   const [inspectionData, setInspectionData] = useState(null);
   const [inspectionLoading, setInspectionLoading] = useState(false);
-  
-  // Single episode processing state
+
+  // Processing state
   const [processingId, setProcessingId] = useState(null);
-  
-  // Batch processing state
   const [isBatchRunning, setIsBatchRunning] = useState(false);
   const [currentBatchEp, setCurrentBatchEp] = useState(null);
-  const [batchProgress, setBatchProgress] = useState({ current: 0, total: 0, completed: 0, failed: 0, promosFound: 0 });
+  const [batchProgress, setBatchProgress] = useState({ current: 0, total: 0, completed: 0, failed: 0 });
   const stopRequestedRef = useRef(false);
 
   useEffect(() => {
@@ -42,54 +54,57 @@ export default function Shows() {
   }, []);
 
   async function loadShows() {
-    setLoading(true);
+    setLoadingShows(true);
     try {
       const res = await getShows();
-      setShows(res.data);
-      if (res.data.length > 0 && !selectedShow) {
-        selectShow(res.data[0]);
+      const list = res.data || [];
+      setShows(list);
+      if (list.length > 0 && !selectedShow) {
+        handleSelectShow(list[0]);
       }
     } catch (err) {
       console.error('Failed to load shows:', err);
     } finally {
-      setLoading(false);
+      setLoadingShows(false);
     }
   }
 
-  async function selectShow(show) {
+  async function handleSelectShow(show) {
     setSelectedShow(show);
+    setLoadingEpisodes(true);
     try {
       const res = await getEpisodes(show.id);
       setEpisodes(res.data || []);
-      if (isBatchRunning) {
-        stopRequestedRef.current = true;
-        setIsBatchRunning(false);
-      }
     } catch (err) {
       console.error('Failed to load episodes:', err);
+      setEpisodes([]);
+    } finally {
+      setLoadingEpisodes(false);
     }
   }
 
   async function handleCreateShow(e) {
     e.preventDefault();
-    if (!newTitle.trim()) return;
+    if (!title.trim()) return;
+    setCreating(true);
     try {
       const res = await createShow({
-        title: newTitle.trim(),
-        language: 'English',
-        description: newDesc.trim(),
+        title: title.trim(),
+        language: language.trim(),
+        description: description.trim() || undefined,
       });
-      setShowCreateModal(false);
-      setNewTitle('');
-      setNewDesc('');
+      setShowModalOpen(false);
+      setTitle('');
+      setDescription('');
       await loadShows();
-      selectShow(res.data);
+      handleSelectShow(res.data);
     } catch (err) {
       alert('Error creating show: ' + (err.response?.data?.detail || err.message));
+    } finally {
+      setCreating(false);
     }
   }
 
-  // Open inspection modal for an episode
   async function handleInspectEpisode(ep) {
     setInspectingEpisode(ep);
     setInspectModalOpen(true);
@@ -99,34 +114,32 @@ export default function Shows() {
       const res = await inspectEpisode(ep.id);
       setInspectionData(res.data);
     } catch (err) {
-      console.error('Failed to load inspection data:', err);
+      console.error('Failed to inspect episode:', err);
     } finally {
       setInspectionLoading(false);
     }
   }
 
-  // Process a single episode
   async function handleProcessEpisode(epId) {
     if (isBatchRunning) return;
     setProcessingId(epId);
-    
     setEpisodes(prev => prev.map(ep => ep.id === epId ? { ...ep, processing_status: 'processing' } : ep));
-    
+
     try {
       const promoRes = await processEpisode(epId);
       const epRes = await getEpisode(epId);
       const foundCount = promoRes.data ? promoRes.data.length : 0;
-      
-      setEpisodes(prev => prev.map(ep => ep.id === epId ? { 
-        ...epRes.data, 
-        processing_status: 'completed', 
-        promos_found: foundCount 
+
+      setEpisodes(prev => prev.map(ep => ep.id === epId ? {
+        ...epRes.data,
+        processing_status: 'completed',
+        promos_found: foundCount
       } : ep));
     } catch (err) {
-      setEpisodes(prev => prev.map(ep => ep.id === epId ? { 
-        ...ep, 
-        processing_status: 'failed', 
-        error_message: err.response?.data?.detail || err.message 
+      setEpisodes(prev => prev.map(ep => ep.id === epId ? {
+        ...ep,
+        processing_status: 'failed',
+        error_message: err.response?.data?.detail || err.message
       } : ep));
       alert('Processing failed: ' + (err.response?.data?.detail || err.message));
     } finally {
@@ -134,16 +147,14 @@ export default function Shows() {
     }
   }
 
-  // Sequential batch processing
-  async function startBatchProcessing(pendingOnly = false) {
+  async function startBatchProcessing(mode = 'all') {
     if (isBatchRunning || !selectedShow || episodes.length === 0) return;
-
     setShowConfirmModal(false);
     stopRequestedRef.current = false;
     setIsBatchRunning(true);
 
-    const targetEpisodes = pendingOnly 
-      ? episodes.filter(e => e.processing_status === 'pending' || e.processing_status === 'failed')
+    const targetEpisodes = mode === 'failed'
+      ? episodes.filter(e => e.processing_status === 'failed' || e.processing_status === 'pending')
       : [...episodes];
 
     if (targetEpisodes.length === 0) {
@@ -156,16 +167,13 @@ export default function Shows() {
       total: targetEpisodes.length,
       completed: 0,
       failed: 0,
-      promosFound: 0,
     });
 
-    let completedCount = 0;
-    let failedCount = 0;
-    let totalPromosFound = 0;
+    let completed = 0;
+    let failed = 0;
 
     for (let i = 0; i < targetEpisodes.length; i++) {
       if (stopRequestedRef.current) break;
-
       const ep = targetEpisodes[i];
       setCurrentBatchEp(ep);
       setBatchProgress(prev => ({ ...prev, current: i + 1 }));
@@ -175,33 +183,30 @@ export default function Shows() {
       try {
         const res = await processEpisode(ep.id);
         const epData = await getEpisode(ep.id);
-
         const found = res.data?.length || 0;
-        totalPromosFound += found;
-        completedCount++;
+        completed++;
 
-        setEpisodes(prev => prev.map(e => e.id === ep.id ? { 
-          ...epData.data, 
-          processing_status: 'completed', 
-          promos_found: found 
+        setEpisodes(prev => prev.map(e => e.id === ep.id ? {
+          ...epData.data,
+          processing_status: 'completed',
+          promos_found: found
         } : e));
 
-        setBatchProgress(prev => ({ 
-          ...prev, 
-          completed: completedCount,
-          promosFound: totalPromosFound
-        }));
-
+        setBatchProgress(prev => ({ ...prev, completed }));
       } catch (err) {
-        console.error(`Batch processing failed for Episode ${ep.episode_number}:`, err);
-        failedCount++;
-        setEpisodes(prev => prev.map(e => e.id === ep.id ? { 
-          ...e, 
-          processing_status: 'failed', 
-          error_message: err.response?.data?.detail || err.message 
+        console.error(`Batch processing failed for Ep ${ep.episode_number}:`, err);
+        failed++;
+        setEpisodes(prev => prev.map(e => e.id === ep.id ? {
+          ...e,
+          processing_status: 'failed',
+          error_message: err.response?.data?.detail || err.message
         } : e));
+        setBatchProgress(prev => ({ ...prev, failed }));
+      }
 
-        setBatchProgress(prev => ({ ...prev, failed: failedCount }));
+      // 400ms throttle between episodes to protect AI provider rate limits
+      if (i < targetEpisodes.length - 1) {
+        await new Promise(r => setTimeout(r, 400));
       }
     }
 
@@ -209,448 +214,318 @@ export default function Shows() {
     setCurrentBatchEp(null);
   }
 
-  function handleStopBatch() {
-    stopRequestedRef.current = true;
-  }
-
   const completedCount = episodes.filter(e => e.processing_status === 'completed').length;
-  const pendingCount = episodes.filter(e => e.processing_status === 'pending').length;
   const failedCount = episodes.filter(e => e.processing_status === 'failed').length;
+  const pendingCount = episodes.filter(e => e.processing_status === 'pending').length;
   const totalEpisodes = episodes.length;
   const progressPercent = totalEpisodes > 0 ? Math.round((completedCount / totalEpisodes) * 100) : 0;
 
   return (
     <div className="space-y-6">
-      {/* Header */}
+      {/* Top Action Bar */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-slate-900 tracking-tight">Shows & Episodes Management</h1>
-          <p className="text-xs text-slate-500">
-            Screenplay parsing, cue-sheet timestamp validation, and AI promotional moment discovery.
+          <h2 className="text-xl font-bold text-[#172B4D] tracking-tight">Library & Episode Management</h2>
+          <p className="text-xs text-[#64748B]">
+            Screenplay parsing, cue-sheet timestamp validation, and promotional moment discovery.
           </p>
         </div>
         <button
-          onClick={() => setShowCreateModal(true)}
-          className="inline-flex items-center gap-2 px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg text-xs font-semibold transition-colors shadow-xs"
+          onClick={() => setShowModalOpen(true)}
+          className="inline-flex items-center gap-2 px-4 py-2 bg-[#0F766E] hover:bg-[#115E59] text-white rounded-xl text-xs font-bold shadow-sm transition-all"
         >
           <Plus className="w-4 h-4" />
-          Create Show
+          <span>New Series</span>
         </button>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Shows Sidebar */}
-        <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-xs space-y-3">
-          <div className="flex items-center justify-between px-2">
-            <h2 className="text-xs font-bold text-slate-700 uppercase tracking-wider">Registered Series</h2>
-            <span className="text-xs text-slate-400 font-semibold">{shows.length}</span>
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+        {/* Left: Registered Series List */}
+        <div className="lg:col-span-4 bg-white border border-slate-200 rounded-xl p-4 shadow-xs space-y-3">
+          <div className="flex items-center justify-between pb-2 border-b border-slate-100">
+            <h3 className="text-xs font-bold uppercase tracking-wider text-[#172B4D]">
+              Registered Series ({shows.length})
+            </h3>
+            <button
+              onClick={loadShows}
+              className="text-slate-400 hover:text-slate-600 p-1 rounded"
+              title="Refresh series"
+            >
+              <RefreshCw className="w-3.5 h-3.5" />
+            </button>
           </div>
 
-          {shows.length === 0 ? (
-            <p className="text-xs text-slate-400 p-2">No shows created yet.</p>
-          ) : (
-            <div className="space-y-1">
-              {shows.map((show) => {
+          <div className="space-y-1.5 max-h-[600px] overflow-y-auto">
+            {loadingShows ? (
+              <div className="p-8 text-center text-xs text-slate-400">Loading series...</div>
+            ) : shows.length === 0 ? (
+              <div className="p-8 text-center text-xs text-slate-400">
+                No series registered yet.
+              </div>
+            ) : (
+              shows.map((show) => {
                 const isSelected = selectedShow?.id === show.id;
                 return (
                   <button
                     key={show.id}
-                    onClick={() => selectShow(show)}
-                    className={`w-full text-left p-3 rounded-lg text-xs transition-all flex items-center justify-between ${
+                    onClick={() => handleSelectShow(show)}
+                    className={`w-full text-left p-3 rounded-lg border transition-all flex items-center justify-between ${
                       isSelected
-                        ? 'bg-purple-50 text-purple-950 border border-purple-200 font-semibold shadow-xs'
-                        : 'hover:bg-slate-50 text-slate-700 border border-transparent'
+                        ? 'bg-teal-50/70 border-[#0F766E] text-[#0F766E]'
+                        : 'border-slate-100 bg-[#F5F7FA] hover:bg-slate-100 text-[#172B4D]'
                     }`}
                   >
-                    <div className="truncate pr-2">
-                      <div className="font-bold text-sm text-slate-900 truncate">{show.title}</div>
-                      <div className="text-[11px] text-slate-500 mt-0.5">
-                        {show.language} &bull; {show.episode_count || 0} episodes
+                    <div className="min-w-0 pr-2">
+                      <div className="text-xs font-bold truncate">{show.title}</div>
+                      <div className="text-[10px] text-slate-500 mt-0.5">
+                        {show.language || 'English'} &bull; {show.total_episodes || 0} episodes
                       </div>
                     </div>
-                    <Film className={`w-4 h-4 shrink-0 ${isSelected ? 'text-purple-600' : 'text-slate-400'}`} />
+                    <ChevronRight className={`w-4 h-4 shrink-0 ${isSelected ? 'text-[#0F766E]' : 'text-slate-400'}`} />
                   </button>
                 );
-              })}
-            </div>
-          )}
+              })
+            )}
+          </div>
         </div>
 
-        {/* Selected Series Detail & Episodes View */}
-        <div className="lg:col-span-2 bg-white rounded-xl border border-slate-200 p-6 shadow-xs space-y-6">
+        {/* Right: Selected Series Episode Table */}
+        <div className="lg:col-span-8 space-y-4">
           {selectedShow ? (
-            <>
-              {/* Series Overview Header */}
-              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center pb-4 border-b border-slate-100 gap-4">
+            <div className="bg-white border border-slate-200 rounded-xl p-5 shadow-xs space-y-5">
+              {/* Series Summary Banner */}
+              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 pb-4 border-b border-slate-100">
                 <div>
-                  <div className="flex items-center gap-2">
-                    <h2 className="text-xl font-bold text-slate-900">{selectedShow.title}</h2>
-                    <span className="px-2 py-0.5 rounded text-[10px] font-semibold bg-slate-100 text-slate-700">
-                      {selectedShow.language}
+                  <h3 className="text-lg font-bold text-[#172B4D]">{selectedShow.title}</h3>
+                  <div className="flex items-center gap-2 text-xs text-[#64748B] mt-0.5">
+                    <span className="font-medium">{selectedShow.language}</span>
+                    <span>&bull;</span>
+                    <span>{totalEpisodes} Episodes Uploaded</span>
+                  </div>
+                </div>
+
+                {/* Batch Action Buttons */}
+                <div className="flex items-center gap-2">
+                  {failedCount > 0 && !isBatchRunning && (
+                    <button
+                      onClick={() => {
+                        setConfirmMode('failed');
+                        setShowConfirmModal(true);
+                      }}
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-amber-50 hover:bg-amber-100 border border-amber-200 text-amber-800 rounded-lg text-xs font-bold transition-all"
+                    >
+                      <RotateCcw className="w-3.5 h-3.5 text-amber-600" />
+                      <span>Retry Failed ({failedCount})</span>
+                    </button>
+                  )}
+
+                  {!isBatchRunning ? (
+                    <button
+                      onClick={() => {
+                        setConfirmMode('all');
+                        setShowConfirmModal(true);
+                      }}
+                      disabled={episodes.length === 0}
+                      className="inline-flex items-center gap-1.5 px-3.5 py-1.5 bg-[#0F766E] hover:bg-[#115E59] text-white rounded-lg text-xs font-bold shadow-xs transition-all disabled:opacity-50"
+                    >
+                      <Play className="w-3.5 h-3.5" />
+                      <span>Process All Episodes</span>
+                    </button>
+                  ) : (
+                    <button
+                      onClick={() => { stopRequestedRef.current = true; }}
+                      className="inline-flex items-center gap-1.5 px-3.5 py-1.5 bg-rose-50 hover:bg-rose-100 border border-rose-200 text-rose-700 rounded-lg text-xs font-bold transition-all"
+                    >
+                      <Pause className="w-3.5 h-3.5 text-rose-600" />
+                      <span>Pause Batch</span>
+                    </button>
+                  )}
+                </div>
+              </div>
+
+              {/* Progress Bar during Batch */}
+              {isBatchRunning && (
+                <div className="p-3.5 bg-teal-50/50 border border-teal-200/60 rounded-xl space-y-2">
+                  <div className="flex items-center justify-between text-xs">
+                    <span className="font-semibold text-[#0F766E] flex items-center gap-1.5">
+                      <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                      Processing: Ep {currentBatchEp?.episode_number} ({currentBatchEp?.original_filename})
+                    </span>
+                    <span className="text-[11px] font-bold text-slate-600">
+                      Step {batchProgress.current} / {batchProgress.total}
                     </span>
                   </div>
-                  <p className="text-xs text-slate-500 mt-0.5">
-                    {selectedShow.description || 'No series description provided.'}
-                  </p>
-                </div>
-                
-                {episodes.length > 0 && (
-                  <div className="flex items-center gap-2">
-                    {isBatchRunning ? (
-                      <button
-                        onClick={handleStopBatch}
-                        className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-200 rounded-lg text-xs font-semibold transition-colors"
-                      >
-                        <Pause className="w-3.5 h-3.5" />
-                        Pause Batch
-                      </button>
-                    ) : (
-                      <div className="flex items-center gap-2">
-                        {pendingCount > 0 && (
-                          <button
-                            onClick={() => startBatchProcessing(true)}
-                            className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-purple-600 hover:bg-purple-700 text-white rounded-lg text-xs font-semibold transition-colors shadow-xs"
-                          >
-                            <Play className="w-3.5 h-3.5" />
-                            Process Pending ({pendingCount})
-                          </button>
-                        )}
-                        <button
-                          onClick={() => setShowConfirmModal(true)}
-                          className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-xs font-semibold transition-colors"
-                        >
-                          <RefreshCw className="w-3.5 h-3.5" />
-                          Re-process All ({totalEpisodes})
-                        </button>
-                      </div>
-                    )}
-                  </div>
-                )}
-              </div>
-
-              {/* Series Statistics Breakdown */}
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                <div className="p-3 bg-slate-50 rounded-lg border border-slate-200">
-                  <span className="text-[11px] font-medium text-slate-500 block">Total Episodes</span>
-                  <span className="text-lg font-bold text-slate-900">{totalEpisodes}</span>
-                </div>
-                <div className="p-3 bg-emerald-50/60 rounded-lg border border-emerald-200/80">
-                  <span className="text-[11px] font-medium text-emerald-700 block">Parsed Successfully</span>
-                  <span className="text-lg font-bold text-emerald-800">{completedCount}</span>
-                </div>
-                <div className="p-3 bg-rose-50/60 rounded-lg border border-rose-200/80">
-                  <span className="text-[11px] font-medium text-rose-700 block">Failed Episodes</span>
-                  <span className="text-lg font-bold text-rose-800">{failedCount}</span>
-                </div>
-                <div className="p-3 bg-purple-50/60 rounded-lg border border-purple-200/80">
-                  <span className="text-[11px] font-medium text-purple-700 block">Awaiting Processing</span>
-                  <span className="text-lg font-bold text-purple-800">{pendingCount}</span>
-                </div>
-              </div>
-
-              {/* Live Batch Progress Banner */}
-              {totalEpisodes > 0 && (
-                <div className={`p-4 rounded-xl border transition-all ${
-                  isBatchRunning 
-                    ? 'bg-purple-50/50 border-purple-200 shadow-xs' 
-                    : completedCount === totalEpisodes
-                    ? 'bg-emerald-50/50 border-emerald-200'
-                    : 'bg-slate-50 border-slate-200'
-                }`}>
-                  <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 mb-2">
-                    <div className="flex items-center gap-2">
-                      {isBatchRunning ? (
-                        <div className="flex items-center gap-2 text-purple-800 font-semibold text-xs">
-                          <RefreshCw className="w-4 h-4 animate-spin text-purple-600" />
-                          <span>Currently Processing: <strong>Episode {currentBatchEp?.episode_number}</strong> ({currentBatchEp?.original_filename})</span>
-                        </div>
-                      ) : completedCount === totalEpisodes ? (
-                        <div className="flex items-center gap-2 text-emerald-700 font-semibold text-xs">
-                          <CheckCircle2 className="w-4 h-4 text-emerald-600" />
-                          <span>All {totalEpisodes} episodes parsed & candidate promos discovered!</span>
-                        </div>
-                      ) : (
-                        <div className="flex items-center gap-2 text-slate-600 font-medium text-xs">
-                          <Clock className="w-4 h-4 text-slate-400" />
-                          <span>Progress: {completedCount} of {totalEpisodes} completed</span>
-                        </div>
-                      )}
-                    </div>
-                    
-                    {completedCount > 0 && (
-                      <button
-                        onClick={() => navigate('/promos')}
-                        className="inline-flex items-center gap-1.5 text-xs font-semibold text-purple-700 hover:text-purple-800 transition-colors"
-                      >
-                        <Sparkles className="w-3.5 h-3.5" />
-                        View Ranked Promos
-                        <ArrowRight className="w-3 h-3" />
-                      </button>
-                    )}
-                  </div>
-
-                  {/* Progress Bar */}
-                  <div className="w-full bg-slate-200 h-2 rounded-full overflow-hidden mb-2">
-                    <div 
-                      className={`h-full transition-all duration-300 rounded-full ${
-                        isBatchRunning ? 'bg-purple-600 animate-pulse' : 'bg-emerald-600'
-                      }`}
-                      style={{ width: `${progressPercent}%` }}
+                  <div className="w-full bg-slate-200 h-2 rounded-full overflow-hidden">
+                    <div
+                      className="bg-[#0F766E] h-2 rounded-full transition-all duration-300"
+                      style={{ width: `${Math.round((batchProgress.current / batchProgress.total) * 100)}%` }}
                     />
                   </div>
-
-                  {/* Summary Metric Pills */}
-                  <div className="flex flex-wrap items-center gap-2 text-[11px]">
-                    <span className="font-semibold text-slate-700">
-                      Overall: <strong className="text-purple-700">{progressPercent}%</strong>
-                    </span>
-                    <span className="text-slate-300">&bull;</span>
-                    <span className="px-2 py-0.5 rounded bg-white border border-slate-200 text-slate-700 font-medium">
-                      Done: <strong>{completedCount}</strong>
-                    </span>
-                    {pendingCount > 0 && (
-                      <span className="px-2 py-0.5 rounded bg-slate-200 text-slate-800 font-medium">
-                        Pending: <strong>{pendingCount}</strong>
-                      </span>
-                    )}
-                    {failedCount > 0 && (
-                      <span className="px-2 py-0.5 rounded bg-rose-100 text-rose-800 font-medium">
-                        Failed: <strong>{failedCount}</strong>
-                      </span>
-                    )}
-                    {isBatchRunning && (
-                      <span className="px-2 py-0.5 rounded bg-purple-100 text-purple-800 font-medium animate-pulse">
-                        Step: <strong>{batchProgress.current} / {batchProgress.total}</strong>
-                      </span>
-                    )}
+                  <div className="flex items-center justify-between text-[11px] text-slate-500">
+                    <span>Completed: <strong className="text-emerald-700">{batchProgress.completed}</strong></span>
+                    <span>Failed: <strong className="text-rose-700">{batchProgress.failed}</strong></span>
                   </div>
                 </div>
               )}
 
-              {/* Episodes Table */}
-              {episodes.length === 0 ? (
-                <div className="text-center py-12 text-slate-400 bg-slate-50 rounded-xl border border-dashed border-slate-200">
-                  <Layers className="w-8 h-8 mx-auto mb-2 text-slate-300" />
-                  <p className="text-xs font-semibold text-slate-700">No screenplays uploaded for this series.</p>
-                  <p className="text-[11px] text-slate-400 mt-1">Upload TXT, PDF, or a multi-episode ZIP archive on the Upload page.</p>
-                </div>
-              ) : (
-                <div className="overflow-x-auto border border-slate-200 rounded-xl max-h-[520px] overflow-y-auto">
-                  <table className="w-full text-left text-xs">
-                    <thead className="sticky top-0 bg-slate-50 border-b border-slate-200 z-10 text-slate-500 font-semibold">
+              {/* Episode Table */}
+              <div className="overflow-x-auto">
+                <table className="w-full text-left text-xs border-collapse">
+                  <thead>
+                    <tr className="border-b border-slate-200 text-[#64748B] font-bold">
+                      <th className="py-2.5 px-3">EP #</th>
+                      <th className="py-2.5 px-3">SCREENPLAY FILE</th>
+                      <th className="py-2.5 px-3">SCENES</th>
+                      <th className="py-2.5 px-3">EST. DURATION</th>
+                      <th className="py-2.5 px-3">PIPELINE STATUS</th>
+                      <th className="py-2.5 px-3 text-right">ACTION</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-100">
+                    {loadingEpisodes ? (
                       <tr>
-                        <th className="py-2.5 px-3">Ep #</th>
-                        <th className="py-2.5 px-3">Screenplay File</th>
-                        <th className="py-2.5 px-3">Scenes</th>
-                        <th className="py-2.5 px-3">Duration</th>
-                        <th className="py-2.5 px-3">Pipeline Status</th>
-                        <th className="py-2.5 px-3 text-right">Actions</th>
+                        <td colSpan={6} className="py-8 text-center text-slate-400">Loading episodes...</td>
                       </tr>
-                    </thead>
-                    <tbody className="divide-y divide-slate-100">
-                      {episodes.map((ep) => {
+                    ) : episodes.length === 0 ? (
+                      <tr>
+                        <td colSpan={6} className="py-8 text-center text-slate-400">
+                          No episodes in this series. <Link to="/upload" className="text-[#0F766E] font-bold hover:underline">Upload screenplays</Link>.
+                        </td>
+                      </tr>
+                    ) : (
+                      episodes.map((ep) => {
                         const isCurrent = currentBatchEp?.id === ep.id;
                         const isProcessing = ep.processing_status === 'processing' || isCurrent || processingId === ep.id;
                         const isDone = ep.processing_status === 'completed';
                         const isFailed = ep.processing_status === 'failed';
 
                         return (
-                          <tr key={ep.id} className="hover:bg-slate-50/80 transition-colors">
-                            <td className="py-2.5 px-3 font-bold text-slate-900">
+                          <tr key={ep.id} className="hover:bg-slate-50 transition-colors">
+                            <td className="py-2.5 px-3 font-bold text-[#172B4D]">
                               Ep {ep.episode_number}
                             </td>
-                            <td className="py-2.5 px-3 font-mono text-[11px] text-slate-700 max-w-[200px] truncate" title={ep.original_filename}>
+                            <td className="py-2.5 px-3 font-mono text-[11px] text-slate-600 truncate max-w-[200px]" title={ep.original_filename}>
                               {ep.original_filename}
                             </td>
                             <td className="py-2.5 px-3 text-slate-600">
-                              {ep.scene_count ? `${ep.scene_count} scenes` : '-'}
+                              {ep.scene_count > 0 ? `${ep.scene_count} scenes` : '-'}
                             </td>
-                            <td className="py-2.5 px-3 font-mono text-slate-600">
-                              {ep.duration_estimate_seconds ? `${ep.duration_estimate_seconds}s` : '-'}
+                            <td className="py-2.5 px-3 text-slate-600">
+                              {ep.duration_estimate_seconds > 0 ? `${ep.duration_estimate_seconds}s` : '-'}
                             </td>
                             <td className="py-2.5 px-3">
                               {isProcessing ? (
-                                <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-[10px] font-semibold bg-purple-50 text-purple-700 border border-purple-200 animate-pulse">
+                                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-teal-50 text-[#0F766E] border border-teal-200">
                                   <RefreshCw className="w-3 h-3 animate-spin" />
-                                  Parsing...
+                                  PROCESSING
                                 </span>
                               ) : isDone ? (
-                                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
-                                  <Check className="w-3 h-3" />
-                                  Parsed
+                                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-[#15803D] border border-emerald-200">
+                                  <CheckCircle2 className="w-3 h-3" />
+                                  DISCOVERED
                                 </span>
                               ) : isFailed ? (
-                                <span 
-                                  className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-semibold bg-rose-50 text-rose-700 border border-rose-200 cursor-help"
-                                  title={ep.error_message || 'Parsing error'}
-                                >
+                                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-rose-50 text-[#DC2626] border border-rose-200">
                                   <AlertCircle className="w-3 h-3" />
-                                  Failed
+                                  FAILED
                                 </span>
                               ) : (
-                                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-medium bg-slate-100 text-slate-600">
-                                  Uploaded
+                                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-slate-100 text-slate-600">
+                                  PENDING
                                 </span>
                               )}
                             </td>
-                            <td className="py-2.5 px-3 text-right">
-                              <div className="flex items-center justify-end gap-1.5">
-                                {/* Inspect details button */}
-                                <button
-                                  onClick={() => handleInspectEpisode(ep)}
-                                  className="p-1 rounded hover:bg-slate-200 text-slate-600 hover:text-slate-900 transition-colors"
-                                  title="Inspect Screenplay Cues & AI Details"
-                                >
-                                  <Eye className="w-3.5 h-3.5" />
-                                </button>
-
-                                {/* Process / Reprocess button */}
-                                <button
-                                  onClick={() => handleProcessEpisode(ep.id)}
-                                  disabled={isBatchRunning || isProcessing}
-                                  className={`px-2.5 py-1 rounded text-[11px] font-semibold transition-colors ${
-                                    isDone
-                                      ? 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
-                                      : 'bg-purple-600 hover:bg-purple-700 text-white shadow-xs'
-                                  }`}
-                                >
-                                  {isProcessing ? 'Working...' : isDone ? 'Re-run' : 'Discover Promos'}
-                                </button>
-                              </div>
+                            <td className="py-2.5 px-3 text-right space-x-1.5">
+                              <button
+                                onClick={() => handleInspectEpisode(ep)}
+                                className="px-2 py-1 rounded border border-slate-200 hover:bg-slate-100 text-[11px] font-semibold text-slate-700"
+                                title="Inspect cues & timestamps"
+                              >
+                                Inspect
+                              </button>
+                              <button
+                                onClick={() => handleProcessEpisode(ep.id)}
+                                disabled={isProcessing || isBatchRunning}
+                                className="px-2 py-1 rounded bg-[#0F766E] hover:bg-[#115E59] text-white text-[11px] font-semibold transition-all disabled:opacity-40"
+                              >
+                                {isDone ? 'Re-run' : 'Discover'}
+                              </button>
                             </td>
                           </tr>
                         );
-                      })}
-                    </tbody>
-                  </table>
-                </div>
-              )}
-            </>
+                      })
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </div>
           ) : (
-            <div className="text-center py-16 text-slate-400">
-              <Film className="w-10 h-10 mx-auto mb-2 text-slate-300" />
-              <p className="text-sm font-semibold text-slate-700">Select a series to view episodes</p>
+            <div className="bg-white border border-slate-200 rounded-xl p-12 text-center text-slate-400">
+              Select a series to view episodes
             </div>
           )}
         </div>
       </div>
 
-      {/* Episode Inspection Modal */}
-      {inspectModalOpen && inspectingEpisode && (
+      {/* New Series Modal */}
+      {showModalOpen && (
         <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-xl shadow-xl max-w-3xl w-full max-h-[85vh] flex flex-col overflow-hidden border border-slate-200">
-            {/* Modal Header */}
-            <div className="px-6 py-4 border-b border-slate-200 flex items-center justify-between bg-slate-50/70">
+          <div className="bg-white rounded-xl shadow-xl max-w-md w-full p-6 space-y-4 border border-slate-200">
+            <div className="flex items-center justify-between pb-2 border-b border-slate-100">
+              <h3 className="text-sm font-bold text-[#172B4D]">Register New Series</h3>
+              <button onClick={() => setShowModalOpen(false)} className="text-slate-400 hover:text-slate-600">
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+            <form onSubmit={handleCreateShow} className="space-y-3">
               <div>
-                <h3 className="text-base font-bold text-slate-900 flex items-center gap-2">
-                  <FileText className="w-4 h-4 text-purple-600" />
-                  Screenplay Inspection: Episode {inspectingEpisode.episode_number}
-                </h3>
-                <p className="text-xs text-slate-500 font-mono mt-0.5">{inspectingEpisode.original_filename}</p>
+                <label className="block text-xs font-semibold text-slate-700 mb-1">Series Title *</label>
+                <input
+                  type="text"
+                  required
+                  value={title}
+                  onChange={(e) => setTitle(e.target.value)}
+                  placeholder="e.g. Secret Billionaire Heir"
+                  className="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-lg text-xs focus:ring-2 focus:ring-[#0F766E] focus:outline-none"
+                />
               </div>
-              <button
-                onClick={() => setInspectModalOpen(false)}
-                className="p-1 rounded-md text-slate-400 hover:text-slate-700 hover:bg-slate-200 transition-colors"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-
-            {/* Modal Content */}
-            <div className="p-6 overflow-y-auto space-y-6 flex-1 text-xs">
-              {inspectionLoading ? (
-                <div className="flex flex-col items-center justify-center py-12 space-y-2">
-                  <RefreshCw className="w-6 h-6 text-purple-600 animate-spin" />
-                  <span className="text-slate-500 font-medium">Extracting screenplay cues & scene headers...</span>
-                </div>
-              ) : inspectionData ? (
-                <>
-                  {/* Meta Badges */}
-                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                    <div className="p-3 bg-slate-50 rounded-lg border border-slate-200">
-                      <span className="text-[11px] text-slate-500 block">Total Scenes</span>
-                      <strong className="text-sm text-slate-900">{inspectionData.scene_count}</strong>
-                    </div>
-                    <div className="p-3 bg-slate-50 rounded-lg border border-slate-200">
-                      <span className="text-[11px] text-slate-500 block">Extracted Cues</span>
-                      <strong className="text-sm text-slate-900">{inspectionData.total_cues}</strong>
-                    </div>
-                    <div className="p-3 bg-slate-50 rounded-lg border border-slate-200">
-                      <span className="text-[11px] text-slate-500 block">Duration</span>
-                      <strong className="text-sm text-slate-900">{inspectionData.duration_seconds}s</strong>
-                    </div>
-                    <div className="p-3 bg-slate-50 rounded-lg border border-slate-200">
-                      <span className="text-[11px] text-slate-500 block">Discovered Promos</span>
-                      <strong className="text-sm text-slate-900">{inspectionData.promos_count}</strong>
-                    </div>
-                  </div>
-
-                  {/* AI Provider Config */}
-                  <div className="p-3 bg-purple-50/60 rounded-lg border border-purple-200 flex items-center justify-between">
-                    <div className="flex items-center gap-2 text-purple-900">
-                      <Cpu className="w-4 h-4 text-purple-600 shrink-0" />
-                      <div>
-                        <span className="font-bold text-xs">AI Inference Engine:</span>{' '}
-                        <span className="text-xs">{inspectionData.ai_info.provider}</span>
-                      </div>
-                    </div>
-                    <span className="text-[11px] font-mono px-2 py-0.5 rounded bg-white text-purple-800 border border-purple-200">
-                      {inspectionData.ai_info.groq_model}
-                    </span>
-                  </div>
-
-                  {/* Parsing Warnings / Errors if any */}
-                  {inspectionData.warnings && inspectionData.warnings.length > 0 && (
-                    <div className="p-3 bg-amber-50 rounded-lg border border-amber-200 text-amber-900 space-y-1">
-                      <div className="font-bold flex items-center gap-1.5">
-                        <AlertTriangle className="w-4 h-4 text-amber-600" />
-                        Parser Notice
-                      </div>
-                      {inspectionData.warnings.map((w, idx) => (
-                        <p key={idx} className="text-xs">{w}</p>
-                      ))}
-                    </div>
-                  )}
-
-                  {/* Screenplay Excerpt & Scenes */}
-                  <div>
-                    <h4 className="font-bold text-slate-800 uppercase tracking-wider text-[11px] mb-2">
-                      Parsed Cues & Dialogue Segments ({inspectionData.cues.length} sampled)
-                    </h4>
-                    <div className="bg-slate-50 rounded-lg border border-slate-200 max-h-56 overflow-y-auto p-3 divide-y divide-slate-200/60 font-mono text-[11px]">
-                      {inspectionData.cues.length === 0 ? (
-                        <p className="text-slate-400">No formatted cues extracted.</p>
-                      ) : (
-                        inspectionData.cues.map((c, i) => (
-                          <div key={i} className="py-1.5 first:pt-0 last:pb-0 flex items-start gap-2">
-                            <span className="text-purple-700 shrink-0">
-                              [{c.start_timestamp} - {c.end_timestamp}]
-                            </span>
-                            <span className="font-bold text-slate-900 shrink-0">
-                              {c.speaker}:
-                            </span>
-                            <span className="text-slate-700">"{c.text}"</span>
-                          </div>
-                        ))
-                      )}
-                    </div>
-                  </div>
-                </>
-              ) : (
-                <p className="text-slate-400 text-center py-6">Could not load inspection details.</p>
-              )}
-            </div>
-
-            {/* Modal Footer */}
-            <div className="px-6 py-3 border-t border-slate-200 bg-slate-50 flex items-center justify-between">
-              <span className="text-[11px] text-slate-500">Verified against disk screenplay cue-sheet</span>
-              <button
-                onClick={() => setInspectModalOpen(false)}
-                className="px-4 py-1.5 bg-slate-200 hover:bg-slate-300 text-slate-800 rounded-lg text-xs font-semibold transition-colors"
-              >
-                Close
-              </button>
-            </div>
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 mb-1">Language</label>
+                <input
+                  type="text"
+                  value={language}
+                  onChange={(e) => setLanguage(e.target.value)}
+                  placeholder="e.g. English, Mandarin, Hindi"
+                  className="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-lg text-xs focus:ring-2 focus:ring-[#0F766E] focus:outline-none"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 mb-1">Description (Optional)</label>
+                <textarea
+                  rows={2}
+                  value={description}
+                  onChange={(e) => setDescription(e.target.value)}
+                  placeholder="Premise or genre..."
+                  className="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-lg text-xs focus:ring-2 focus:ring-[#0F766E] focus:outline-none"
+                />
+              </div>
+              <div className="flex items-center justify-end gap-2 pt-2">
+                <button
+                  type="button"
+                  onClick={() => setShowModalOpen(false)}
+                  className="px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-600 hover:bg-slate-100"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={creating}
+                  className="px-4 py-1.5 rounded-lg text-xs font-bold text-white bg-[#0F766E] hover:bg-[#115E59]"
+                >
+                  {creating ? 'Creating...' : 'Create Series'}
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}
@@ -659,81 +534,101 @@ export default function Shows() {
       {showConfirmModal && (
         <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center p-4 z-50">
           <div className="bg-white rounded-xl shadow-xl max-w-md w-full p-6 space-y-4 border border-slate-200">
-            <div className="flex items-center gap-3 text-amber-600">
-              <AlertTriangle className="w-6 h-6" />
-              <h3 className="text-base font-bold text-slate-900">Re-process All Episodes?</h3>
-            </div>
-            <p className="text-xs text-slate-600 leading-relaxed">
-              This will re-run screenplay parsing, cue extraction, and AI candidate discovery across all{' '}
-              <strong>{totalEpisodes} episodes</strong> of <em>{selectedShow?.title}</em>.
-              Existing promo candidates will be cleanly updated with zero duplicates.
+            <h3 className="text-sm font-bold text-[#172B4D]">
+              {confirmMode === 'failed' ? 'Retry Failed Episodes?' : 'Process All Episodes?'}
+            </h3>
+            <p className="text-xs text-[#64748B] leading-relaxed">
+              {confirmMode === 'failed'
+                ? `This will re-run screenplay parsing and promo discovery on ${failedCount} failed episode(s).`
+                : `This will sequentially process all ${totalEpisodes} episode(s) in "${selectedShow?.title}". Each episode discovers and ranks promo candidates.`}
             </p>
             <div className="flex items-center justify-end gap-2 pt-2">
               <button
                 onClick={() => setShowConfirmModal(false)}
-                className="px-3.5 py-2 rounded-lg text-xs font-semibold text-slate-600 hover:bg-slate-100 transition-colors"
+                className="px-3.5 py-1.5 rounded-lg text-xs font-semibold text-slate-600 hover:bg-slate-100"
               >
                 Cancel
               </button>
               <button
-                onClick={() => startBatchProcessing(false)}
-                className="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg text-xs font-semibold transition-colors shadow-xs"
+                onClick={() => startBatchProcessing(confirmMode)}
+                className="px-4 py-1.5 rounded-lg text-xs font-bold text-white bg-[#0F766E] hover:bg-[#115E59]"
               >
-                Confirm Re-process All
+                Confirm Start
               </button>
             </div>
           </div>
         </div>
       )}
 
-      {/* Create Show Modal */}
-      {showCreateModal && (
+      {/* Episode Inspection Modal */}
+      {inspectModalOpen && (
         <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center p-4 z-50">
-          <form
-            onSubmit={handleCreateShow}
-            className="bg-white rounded-xl shadow-xl max-w-md w-full p-6 space-y-4 border border-slate-200"
-          >
-            <h3 className="text-base font-bold text-slate-900">Create New Microdrama Series</h3>
-            
-            <div className="space-y-1">
-              <label className="block text-xs font-semibold text-slate-700">Series Title *</label>
-              <input
-                type="text"
-                required
-                value={newTitle}
-                onChange={(e) => setNewTitle(e.target.value)}
-                placeholder="e.g., I Married a Broken Soldier"
-                className="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-lg text-xs focus:ring-2 focus:ring-purple-500 focus:outline-none"
-              />
-            </div>
-
-            <div className="space-y-1">
-              <label className="block text-xs font-semibold text-slate-700">Description (Optional)</label>
-              <textarea
-                rows={3}
-                value={newDesc}
-                onChange={(e) => setNewDesc(e.target.value)}
-                placeholder="Short logline or premise..."
-                className="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-lg text-xs focus:ring-2 focus:ring-purple-500 focus:outline-none"
-              />
-            </div>
-
-            <div className="flex items-center justify-end gap-2 pt-2">
-              <button
-                type="button"
-                onClick={() => setShowCreateModal(false)}
-                className="px-3.5 py-2 rounded-lg text-xs font-semibold text-slate-600 hover:bg-slate-100 transition-colors"
-              >
-                Cancel
-              </button>
-              <button
-                type="submit"
-                className="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg text-xs font-semibold transition-colors shadow-xs"
-              >
-                Create Series
+          <div className="bg-white rounded-xl shadow-2xl max-w-3xl w-full max-h-[85vh] flex flex-col border border-slate-200 overflow-hidden">
+            <div className="p-4 border-b border-slate-100 flex items-center justify-between">
+              <div>
+                <h3 className="text-sm font-bold text-[#172B4D]">
+                  Episode Inspection: Ep {inspectingEpisode?.episode_number}
+                </h3>
+                <span className="text-[11px] text-slate-500 font-mono">
+                  {inspectingEpisode?.original_filename}
+                </span>
+              </div>
+              <button onClick={() => setInspectModalOpen(false)} className="text-slate-400 hover:text-slate-600">
+                <X className="w-5 h-5" />
               </button>
             </div>
-          </form>
+
+            <div className="flex-1 p-5 overflow-y-auto space-y-4">
+              {inspectionLoading ? (
+                <div className="p-12 text-center text-xs text-slate-400">Loading inspection data...</div>
+              ) : inspectionData ? (
+                <>
+                  <div className="grid grid-cols-3 gap-3">
+                    <div className="p-3 bg-slate-50 rounded-lg border border-slate-200">
+                      <div className="text-[10px] font-semibold text-slate-500">Cues Extracted</div>
+                      <div className="text-base font-bold text-[#172B4D]">{inspectionData.cues_count || 0}</div>
+                    </div>
+                    <div className="p-3 bg-slate-50 rounded-lg border border-slate-200">
+                      <div className="text-[10px] font-semibold text-slate-500">Scenes Detected</div>
+                      <div className="text-base font-bold text-[#172B4D]">{inspectionData.scenes_count || 0}</div>
+                    </div>
+                    <div className="p-3 bg-slate-50 rounded-lg border border-slate-200">
+                      <div className="text-[10px] font-semibold text-slate-500">Duration Range</div>
+                      <div className="text-base font-bold text-[#0F766E]">{inspectionData.duration_seconds || 0}s</div>
+                    </div>
+                  </div>
+
+                  {/* Dialogue cues preview */}
+                  <div>
+                    <h4 className="text-xs font-bold text-[#172B4D] mb-2">Screenplay Cues & Timecodes:</h4>
+                    <div className="bg-slate-900 text-slate-200 rounded-lg p-3 text-xs font-mono max-h-60 overflow-y-auto space-y-1">
+                      {inspectionData.cues && inspectionData.cues.length > 0 ? (
+                        inspectionData.cues.map((c, i) => (
+                          <div key={i} className="flex gap-2">
+                            <span className="text-teal-400 shrink-0">[{c.timestamp || '00:00.00'}]</span>
+                            <span className="text-slate-300">{c.speaker ? `${c.speaker}: ` : ''}{c.text}</span>
+                          </div>
+                        ))
+                      ) : (
+                        <div className="text-slate-500 italic">No cues parsed for this episode.</div>
+                      )}
+                    </div>
+                  </div>
+                </>
+              ) : (
+                <div className="p-12 text-center text-xs text-slate-400">No inspection details available.</div>
+              )}
+            </div>
+
+            <div className="p-3 bg-slate-50 border-t border-slate-200 flex justify-end">
+              <button
+                onClick={() => setInspectModalOpen(false)}
+                className="px-4 py-1.5 rounded-lg text-xs font-semibold text-slate-700 bg-white border border-slate-300 hover:bg-slate-100"
+              >
+                Close
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </div>

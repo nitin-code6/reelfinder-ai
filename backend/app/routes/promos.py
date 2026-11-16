@@ -46,9 +46,10 @@ def approve_promo(promo_id: int, db: Session = Depends(get_db)):
     if not promo:
         raise HTTPException(status_code=404, detail="Promo not found")
     if promo.validation_status == "invalid":
+        validation_reason = ", ".join(promo.limitations) if promo.limitations else "Invalid timestamps or duration"
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"Cannot approve promo candidate: Technical validation failed ({promo.validation_notes or 'Invalid timestamps or duration'})."
+            detail=f"Cannot approve promo candidate: Technical validation failed ({validation_reason})."
         )
     return repo.update_approval(promo_id, "approved")
 
@@ -75,8 +76,9 @@ def submit_feedback(
     if not promo:
         raise HTTPException(status_code=404, detail="Promo not found")
     if feedback_in.decision == "approved" and promo.validation_status == "invalid":
+        validation_reason = ", ".join(promo.limitations) if promo.limitations else "Invalid timestamps or duration"
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"Cannot approve promo candidate: Technical validation failed ({promo.validation_notes or 'Invalid timestamps or duration'})."
+            detail=f"Cannot approve promo candidate: Technical validation failed ({validation_reason})."
         )
     return repo.add_feedback(promo_id, feedback_in)

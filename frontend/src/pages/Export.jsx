@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { 
-  Download, FileSpreadsheet, FileCode, CheckCircle2, Filter, 
-  ShieldCheck, AlertTriangle, AlertCircle, Info, Clock, Check
+  Download, FileSpreadsheet, FileCode, CheckCircle2, ShieldCheck, 
+  AlertCircle, Sparkles, Check
 } from 'lucide-react';
 import { getShows, getPromos } from '../api';
 
@@ -33,12 +33,10 @@ export default function Export() {
     }
   }
 
-  // Calculate live breakdown metrics
   const metrics = useMemo(() => {
     const total = promos.length;
     const approved = promos.filter(p => p.approval_status === 'approved').length;
     const validApproved = promos.filter(p => p.approval_status === 'approved' && (p.validation_status === 'valid' || p.validation_status === 'warning')).length;
-    const pending = promos.filter(p => p.approval_status === 'pending').length;
     const invalidExcluded = promos.filter(p => p.validation_status === 'invalid').length;
 
     let willExport = 0;
@@ -54,7 +52,6 @@ export default function Export() {
       total,
       approved,
       validApproved,
-      pending,
       invalidExcluded,
       willExport
     };
@@ -68,18 +65,18 @@ export default function Export() {
   }
 
   function handleDownloadClick(format) {
-    setDownloadNotice(`Generating and downloading ${format.toUpperCase()} export...`);
+    setDownloadNotice(`Downloading ${format.toUpperCase()} export file...`);
     setTimeout(() => {
-      setDownloadNotice(`${format.toUpperCase()} export downloaded successfully.`);
-      setTimeout(() => setDownloadNotice(null), 3500);
-    }, 1000);
+      setDownloadNotice(`✓ ${format.toUpperCase()} export downloaded successfully.`);
+      setTimeout(() => setDownloadNotice(null), 3000);
+    }, 1200);
   }
 
   return (
-    <div className="max-w-4xl mx-auto space-y-8">
+    <div className="max-w-4xl mx-auto space-y-6">
       {/* Toast Notice */}
       {downloadNotice && (
-        <div className="fixed bottom-6 right-6 bg-slate-900 text-white text-xs px-4 py-2.5 rounded-lg shadow-lg z-50 flex items-center gap-2">
+        <div className="fixed bottom-6 right-6 bg-[#172B4D] text-white text-xs px-4 py-2.5 rounded-xl shadow-lg z-50 flex items-center gap-2 border border-white/20">
           <CheckCircle2 className="w-4 h-4 text-emerald-400" />
           <span>{downloadNotice}</span>
         </div>
@@ -87,172 +84,138 @@ export default function Export() {
 
       {/* Header */}
       <div>
-        <h1 className="text-2xl font-bold text-slate-900 tracking-tight">Export Promotional Campaigns</h1>
-        <p className="text-xs text-slate-500">
-          Export verified promotional cue-sheets and playlists to production-ready CSV (for editors & marketers) or validated JSON (for automated publishing pipelines).
+        <h2 className="text-xl font-bold text-[#172B4D] tracking-tight">Export Promotional Campaigns</h2>
+        <p className="text-xs text-[#64748B]">
+          Download validated promo cue-sheets for video editors and automated publishing pipelines.
         </p>
       </div>
 
-      <div className="bg-white border border-slate-200 rounded-xl p-6 shadow-xs space-y-6">
-        {/* Filters */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pb-6 border-b border-slate-100">
+      {/* Filters Bar */}
+      <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-xs">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
-            <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">
-              Filter by Series
-            </label>
+            <label className="block text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-1">Target Series</label>
             <select
               value={selectedShow}
               onChange={(e) => setSelectedShow(e.target.value)}
-              className="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-lg text-xs font-semibold focus:ring-2 focus:ring-purple-500 focus:outline-none"
+              className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-xs font-semibold text-[#172B4D] focus:outline-none focus:ring-1 focus:ring-[#0F766E]"
             >
               <option value="">All Registered Series</option>
-              {shows.map((s) => (
-                <option key={s.id} value={s.id}>
-                  {s.title} ({s.language})
-                </option>
+              {shows.map(s => (
+                <option key={s.id} value={s.id}>{s.title}</option>
               ))}
             </select>
           </div>
 
           <div>
-            <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">
-              Approval Status Filter
-            </label>
+            <label className="block text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-1">Editorial Scope</label>
             <select
               value={status}
               onChange={(e) => setStatus(e.target.value)}
-              className="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-lg text-xs font-semibold focus:ring-2 focus:ring-purple-500 focus:outline-none"
+              className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-xs font-semibold text-[#172B4D] focus:outline-none focus:ring-1 focus:ring-[#0F766E]"
             >
               <option value="approved">Approved Candidates Only (Recommended)</option>
-              <option value="pending">Pending Editorial Review Only</option>
+              <option value="pending">Pending Candidates</option>
               <option value="all">All Discovered Valid Candidates</option>
             </select>
           </div>
         </div>
+      </div>
 
-        {/* Live Export Eligibility Breakdown */}
-        <div className="space-y-3">
-          <h2 className="text-xs font-bold uppercase tracking-wider text-slate-700">
-            Export Records Breakdown & Eligibility Audit
-          </h2>
+      {/* Export Eligibility Summary */}
+      <div className="bg-white border border-slate-200 rounded-xl p-5 shadow-xs space-y-4">
+        <h3 className="text-xs font-bold uppercase tracking-wider text-[#172B4D] flex items-center gap-2">
+          <ShieldCheck className="w-4 h-4 text-[#0F766E]" />
+          <span>Export Eligibility Breakdown</span>
+        </h3>
 
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2.5 text-xs">
-            <div className="p-3 bg-slate-50 rounded-lg border border-slate-200">
-              <span className="text-[11px] text-slate-500 block">Total Discovered</span>
-              <strong className="text-sm font-bold text-slate-900">{metrics.total}</strong>
-            </div>
-            <div className="p-3 bg-purple-50/60 rounded-lg border border-purple-200">
-              <span className="text-[11px] text-purple-700 block">Approved</span>
-              <strong className="text-sm font-bold text-purple-900">{metrics.approved}</strong>
-            </div>
-            <div className="p-3 bg-emerald-50 rounded-lg border border-emerald-200">
-              <span className="text-[11px] text-emerald-700 block">Valid & Approved</span>
-              <strong className="text-sm font-bold text-emerald-800">{metrics.validApproved}</strong>
-            </div>
-            <div className="p-3 bg-amber-50 rounded-lg border border-amber-200">
-              <span className="text-[11px] text-amber-700 block">Pending Review</span>
-              <strong className="text-sm font-bold text-amber-800">{metrics.pending}</strong>
-            </div>
-            <div className="p-3 bg-rose-50 rounded-lg border border-rose-200">
-              <span className="text-[11px] text-rose-700 block">Invalid (Excluded)</span>
-              <strong className="text-sm font-bold text-rose-800">{metrics.invalidExcluded}</strong>
-            </div>
-            <div className="p-3 bg-purple-600 text-white rounded-lg shadow-xs flex flex-col justify-between">
-              <span className="text-[11px] text-purple-200 block">Will Export</span>
-              <strong className="text-base font-extrabold">{metrics.willExport} Records</strong>
-            </div>
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+          <div className="p-3 bg-slate-50 border border-slate-200 rounded-lg">
+            <span className="text-[10px] font-semibold text-slate-500 block">Total Candidates</span>
+            <span className="text-base font-bold text-[#172B4D]">{metrics.total}</span>
           </div>
-
-          <div className="p-3 bg-slate-50 rounded-lg border border-slate-200 text-xs text-slate-600 flex items-start gap-2">
-            <Info className="w-4 h-4 text-purple-600 shrink-0 mt-0.5" />
-            <span>
-              <strong>Integrity Guarantee:</strong> Only candidates with passed technical validation (accurate timestamps, 20-60s duration, valid source dialogue cues) are included in standard exports. Invalid candidates are automatically segregated into the audit log.
-            </span>
+          <div className="p-3 bg-emerald-50 border border-emerald-200 rounded-lg">
+            <span className="text-[10px] font-semibold text-emerald-700 block">Valid & Approved</span>
+            <span className="text-base font-bold text-emerald-800">{metrics.validApproved}</span>
+          </div>
+          <div className="p-3 bg-rose-50 border border-rose-200 rounded-lg">
+            <span className="text-[10px] font-semibold text-rose-700 block">Invalid (Excluded)</span>
+            <span className="text-base font-bold text-rose-800">{metrics.invalidExcluded}</span>
+          </div>
+          <div className="p-3 bg-teal-50 border border-teal-200 rounded-lg">
+            <span className="text-[10px] font-semibold text-[#0F766E] block">Eligible for Export</span>
+            <span className="text-base font-bold text-[#0F766E]">{metrics.willExport}</span>
           </div>
         </div>
 
-        {/* Empty State vs Export Cards */}
-        {metrics.willExport === 0 ? (
-          <div className="p-8 text-center bg-slate-50 rounded-xl border border-dashed border-slate-200 text-slate-500 space-y-2">
-            <AlertCircle className="w-8 h-8 mx-auto text-slate-300" />
-            <p className="text-xs font-bold text-slate-700">No eligible promo records match current export criteria.</p>
-            <p className="text-[11px] text-slate-400">
-              If you have pending candidates, review and approve them on the Editorial Review page, or change the filter to "Pending Review" or "All Valid Candidates".
-            </p>
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
-            {/* CSV Card */}
-            <div className="p-6 rounded-xl border border-slate-200 hover:border-purple-300 transition-all flex flex-col justify-between space-y-4 bg-slate-50/50">
-              <div className="space-y-2">
-                <div className="w-10 h-10 rounded-lg bg-emerald-100 text-emerald-700 flex items-center justify-center">
-                  <FileSpreadsheet className="w-5 h-5" />
-                </div>
-                <h3 className="font-bold text-slate-900 text-sm">CSV Marketing Spreadsheet</h3>
-                <p className="text-xs text-slate-500 leading-relaxed">
-                  Includes exact timecodes, durations, 5-factor quality scores, hook summaries, and editor approval statuses formatted for video editors and growth teams.
-                </p>
-              </div>
+        <p className="text-[11px] text-slate-500">
+          Only technically validated candidates (20–60s duration with matching screenplay cue timestamps) are included in exports.
+        </p>
+      </div>
 
-              <div className="pt-2">
-                <a
-                  href={getDownloadUrl('csv')}
-                  onClick={() => handleDownloadClick('csv')}
-                  download="kuku_promos_export.csv"
-                  className="w-full inline-flex items-center justify-center gap-2 py-2.5 px-4 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-bold transition-colors shadow-xs"
-                >
-                  <Download className="w-4 h-4" />
-                  Download CSV ({metrics.willExport} Records)
-                </a>
-              </div>
+      {/* Two Download Format Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {/* CSV Card */}
+        <div className="bg-white border border-slate-200 rounded-xl p-6 shadow-xs flex flex-col justify-between space-y-4 hover:border-[#0F766E] transition-all">
+          <div className="space-y-3">
+            <div className="w-10 h-10 rounded-xl bg-teal-50 text-[#0F766E] flex items-center justify-center">
+              <FileSpreadsheet className="w-5 h-5" />
             </div>
-
-            {/* JSON Card */}
-            <div className="p-6 rounded-xl border border-slate-200 hover:border-purple-300 transition-all flex flex-col justify-between space-y-4 bg-slate-50/50">
-              <div className="space-y-2">
-                <div className="w-10 h-10 rounded-lg bg-purple-100 text-purple-700 flex items-center justify-center">
-                  <FileCode className="w-5 h-5" />
-                </div>
-                <h3 className="font-bold text-slate-900 text-sm">Structured Production JSON</h3>
-                <p className="text-xs text-slate-500 leading-relaxed">
-                  Conforms strictly to the Kuku assignment JSON schema with multi-segment arrays, nested score factor objects, and source cue verification metadata.
-                </p>
-              </div>
-
-              <div className="pt-2">
-                <a
-                  href={getDownloadUrl('json')}
-                  onClick={() => handleDownloadClick('json')}
-                  download="kuku_promos_export.json"
-                  className="w-full inline-flex items-center justify-center gap-2 py-2.5 px-4 bg-purple-600 hover:bg-purple-700 text-white rounded-lg text-xs font-bold transition-colors shadow-xs"
-                >
-                  <Download className="w-4 h-4" />
-                  Download JSON ({metrics.willExport} Records)
-                </a>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Invalid Records Separate Export */}
-        {metrics.invalidExcluded > 0 && (
-          <div className="p-4 bg-rose-50/60 rounded-xl border border-rose-200 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs">
             <div>
-              <span className="font-bold text-rose-900 block">Rejected / Invalid Candidates Audit Report</span>
-              <p className="text-rose-700 text-[11px] mt-0.5">
-                {metrics.invalidExcluded} candidates were rejected due to duration or timestamp cue mismatches.
+              <h4 className="text-sm font-bold text-[#172B4D]">Marketing & Editorial CSV</h4>
+              <p className="text-xs text-[#64748B] mt-1 leading-relaxed">
+                Tabular format with timecodes, cue dialogue, hook & cliffhanger analyses, and overall score rankings. Compatible with Excel and video NLE cue-sheets.
               </p>
             </div>
-            <a
-              href={`/api/export/invalid/csv${selectedShow ? `?show_id=${selectedShow}` : ''}`}
-              download="invalid_candidates_audit.csv"
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-rose-100 hover:bg-rose-200 text-rose-800 rounded-lg text-xs font-semibold transition-colors shrink-0"
-            >
-              <Download className="w-3.5 h-3.5" />
-              Download Audit CSV
-            </a>
+            <div className="text-[11px] font-semibold text-[#0F766E]">
+              {metrics.willExport} record(s) ready for download
+            </div>
           </div>
-        )}
+
+          <a
+            href={getDownloadUrl('csv')}
+            onClick={() => handleDownloadClick('csv')}
+            className={`w-full py-2.5 px-4 rounded-xl text-xs font-bold flex items-center justify-center gap-2 shadow-sm transition-all ${
+              metrics.willExport === 0
+                ? 'bg-slate-100 text-slate-400 pointer-events-none'
+                : 'bg-[#0F766E] hover:bg-[#115E59] text-white'
+            }`}
+          >
+            <Download className="w-4 h-4" />
+            <span>Download CSV Spreadsheet</span>
+          </a>
+        </div>
+
+        {/* JSON Card */}
+        <div className="bg-white border border-slate-200 rounded-xl p-6 shadow-xs flex flex-col justify-between space-y-4 hover:border-[#0F766E] transition-all">
+          <div className="space-y-3">
+            <div className="w-10 h-10 rounded-xl bg-slate-100 text-slate-700 flex items-center justify-center">
+              <FileCode className="w-5 h-5" />
+            </div>
+            <div>
+              <h4 className="text-sm font-bold text-[#172B4D]">Structured Pipeline JSON</h4>
+              <p className="text-xs text-[#64748B] mt-1 leading-relaxed">
+                Full programmatic schema conforming strictly to Kuku assignment specs. Includes multi-segment breakdown, 5-factor scoring, and verified timecodes.
+              </p>
+            </div>
+            <div className="text-[11px] font-semibold text-[#0F766E]">
+              {metrics.willExport} record(s) ready for download
+            </div>
+          </div>
+
+          <a
+            href={getDownloadUrl('json')}
+            onClick={() => handleDownloadClick('json')}
+            className={`w-full py-2.5 px-4 rounded-xl text-xs font-bold flex items-center justify-center gap-2 shadow-sm transition-all ${
+              metrics.willExport === 0
+                ? 'bg-slate-100 text-slate-400 pointer-events-none'
+                : 'bg-[#172B4D] hover:bg-slate-800 text-white'
+            }`}
+          >
+            <Download className="w-4 h-4" />
+            <span>Download Structured JSON</span>
+          </a>
+        </div>
       </div>
     </div>
   );
