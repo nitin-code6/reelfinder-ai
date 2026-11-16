@@ -141,22 +141,237 @@ class TxtScreenplayParser(BaseScreenplayParser):
             raise ScreenplayParseException("Screenplay content is empty or contains only whitespace.")
 
         lines = text.splitlines()
+        cue_pattern = re.compile(r"^[\[\(]\s*([0-9:.]+)\s*[\]\)]\s*(.*)$")
+        has_bracket_ts = any(cue_pattern.match(l.strip()) for l in lines)
+
+        if has_bracket_ts:
+            try:
+                return self._parse_cue_sheet_text(text, episode_fallback=episode_fallback)
+            except ScreenplayParseException:
+                # If cue sheet failed, try block format as second chance
+                try:
+                    return self._parse_block_format_text(text, episode_fallback=episode_fallback)
+                except Exception:
+                    raise
+        else:
+            try:
+                return self._parse_block_format_text(text, episode_fallback=episode_fallback)
+            except ScreenplayParseException:
+                try:
+                    return self._parse_cue_sheet_text(text, episode_fallback=episode_fallback)
+                except Exception:
+                    raise
+
+    def _parse_cue_sheet_text(self, text: str, episode_fallback: int = 1) -> ParsedScreenplay:
+        """Parses timestamped cue sheet screenplays (e.g. [00:04.00] ACTION: ... or [00:12.00] DIALOGUE: ...)."""
+        lines = text.splitlines()
+        ep_num = episode_fallback
+        logline = ""
+        continuity_notes = ""
+
+        # 1. Header parsing
+        for raw_line in lines[:25]:
+            line = raw_line.strip()
+            ep_match = re.search(r"^(?:EPISODE(?:\s+NUMBER)?|EP)[\s:]*(?:Episode\s*)?0*(\d+)", line, re.IGNORECASE)
+            if ep_match:
+                ep_num = int(ep_match.group(1))
+            m_log = re.search(r"^(?:EPISODE\s+)?(?:LOGLINE|SYNOPSIS)[:\s]+(.+)", line, re.IGNORECASE)
+            if m_log:
+                logline = m_log.group(1).strip()
+            m_con = re.search(r"^CONTINUITY(?:\s+NOTES)?[:\s]+(.+)", line, re.IGNORECASE)
+            if m_con:
+                continuity_notes = m_con.group(1).strip()
+
+        cue_pattern = re.compile(r"^[\[\(]\s*([0-9:.]+)\s*[\]\)]\s*(.*)$")
+        items = []
+        current_scene_num = 1
+        current_heading = "SCENE 1"
+
+        for idx, raw_line in enumerate(lines):
+            line = raw_line.strip()
+            if not line:
+                continue
+
+            # Standalone SCENE header: 'SCENE 01' or 'SCENE 1'
+            m_sc = re.match(r"^SCENE\s+(\d+)", line, re.IGNORECASE)
+            if m_sc:
+                current_scene_num = int(m_sc.group(1))
+                current_heading = f"SCENE {current_scene_num}"
+                items.append({"type": "scene_header", "scene_num": current_scene_num, "heading": current_heading})
+                continue
+
+            # Slugline heading like 'INT. HOUSE - NIGHT' right after SCENE
+            m_slug = re.match(r"^(?:INT|EXT|INT/EXT|EXT/INT)[.\s]", line, re.IGNORECASE)
+            if m_slug:
+                current_heading = line
+                items.append({"type": "scene_heading_update", "heading": current_heading})
+                continue
+
+            m_ts = cue_pattern.match(line)
+            if m_ts:
+                ts_str = m_ts.group(1)
+                ts_sec = parse_timestamp_to_seconds(ts_str)
+                content = m_ts.group(2).strip()
+                
+                # Check if this timestamped line is a scene boundary e.g. '[00:00.00] SCENE: INT. ...'
+                m_ts_sc = re.match(r"^SCENE(?:\s+\d+)?:\s*(.+)$", content, re.IGNORECASE)
+                if m_ts_sc:
+                    heading = m_ts_sc.group(1).strip()
+                    items.append({"type": "scene_start", "ts_str": ts_str, "ts_sec": ts_sec, "heading": heading})
+                    continue
+
+                items.append({"type": "cue", "ts_str": ts_str, "ts_sec": ts_sec, "content": content})
+
+        scenes: List[ParsedScene] = []
+        current_scene: Optional[ParsedScene] = None
+
+        for i, it in enumerate(items):
+            if it["type"] == "scene_start":
+                if current_scene and current_scene.lines:
+                    scenes.append(current_scene)
+                sc_idx = len(scenes) + 1
+                current_scene = ParsedScene(
+                    scene_number=sc_idx,
+                    heading=it["heading"],
+                    start_timestamp=it["ts_str"],
+                    end_timestamp=it["ts_str"],
+                    start_seconds=it["ts_sec"],
+                    end_seconds=it["ts_sec"],
+                    duration_seconds=0.0,
+                    lines=[]
+                )
+            elif it["type"] == "scene_header":
+                if current_scene and current_scene.lines:
+                    scenes.append(current_scene)
+                current_scene = ParsedScene(
+                    scene_number=it["scene_num"],
+                    heading=it["heading"],
+                    start_timestamp="00:00.00",
+                    end_timestamp="00:00.00",
+                    start_seconds=0.0,
+                    end_seconds=0.0,
+                    duration_seconds=0.0,
+                    lines=[]
+                )
+            elif it["type"] == "scene_heading_update":
+                if current_scene:
+                    current_scene.heading = it["heading"]
+            elif it["type"] == "cue":
+                if not current_scene:
+                    current_scene = ParsedScene(
+                        scene_number=1,
+                        heading="SCENE 1",
+                        start_timestamp=it["ts_str"],
+                        end_timestamp=it["ts_str"],
+                        start_seconds=it["ts_sec"],
+                        end_seconds=it["ts_sec"],
+                        duration_seconds=0.0,
+                        lines=[]
+                    )
+
+                start_ts = it["ts_str"]
+                start_sec = it["ts_sec"]
+                
+                # Find next cue timestamp to determine end time
+                next_cue = None
+                for later in items[i+1:]:
+                    if later.get("ts_sec") is not None and later["ts_sec"] > start_sec:
+                        next_cue = later
+                        break
+                        
+                if next_cue:
+                    end_sec = next_cue["ts_sec"]
+                    end_ts = next_cue["ts_str"]
+                else:
+                    end_sec = start_sec + 4.0
+                    end_ts = format_seconds_to_timestamp(end_sec)
+
+                dur_sec = max(0.5, end_sec - start_sec)
+
+                content = it["content"]
+                line_type = "action"
+                speaker = None
+                parenthetical = None
+                text = content
+
+                m_act = re.match(r"^(?:\*\*ACTION:\*\*|ACTION:)\s*(.*)$", content, re.IGNORECASE)
+                if m_act:
+                    line_type = "action"
+                    text = m_act.group(1).strip("\"' ")
+                else:
+                    m_cam = re.match(r"^(?:\*\*CAMERA:\*\*|CAMERA:)\s*(.*)$", content, re.IGNORECASE)
+                    if m_cam:
+                        line_type = "camera"
+                        text = m_cam.group(1).strip("\"' ")
+                    else:
+                        m_dia = re.match(r"^DIALOGUE:\s*([A-Za-z0-9_\s]+?):\s*(.*)$", content, re.IGNORECASE)
+                        if m_dia:
+                            line_type = "dialogue"
+                            speaker = m_dia.group(1).strip()
+                            text = m_dia.group(2).strip("\"' ")
+                        else:
+                            m_spk = re.match(r"^([A-Z0-9_\s]+?)(?:\s*\((.+?)\))?:\s*(.*)$", content)
+                            if m_spk and len(m_spk.group(1).strip()) <= 25 and not m_spk.group(1).strip().lower().startswith(("scene", "http", "action", "camera")):
+                                line_type = "dialogue"
+                                speaker = m_spk.group(1).strip()
+                                parenthetical = m_spk.group(2).strip() if m_spk.group(2) else None
+                                text = m_spk.group(3).strip("\"' ")
+
+                current_scene.lines.append(ScreenplayLine(
+                    line_type=line_type,
+                    speaker=speaker,
+                    parenthetical=parenthetical,
+                    text=text,
+                    start_timestamp=start_ts,
+                    end_timestamp=end_ts,
+                    start_seconds=start_sec,
+                    end_seconds=end_sec,
+                    duration_seconds=dur_sec
+                ))
+
+        if current_scene and current_scene.lines:
+            scenes.append(current_scene)
+
+        for sc in scenes:
+            if sc.lines:
+                sc.start_timestamp = sc.lines[0].start_timestamp
+                sc.start_seconds = sc.lines[0].start_seconds
+                sc.end_timestamp = sc.lines[-1].end_timestamp
+                sc.end_seconds = sc.lines[-1].end_seconds
+                sc.duration_seconds = max(0.0, sc.end_seconds - sc.start_seconds)
+
+        if not scenes or not any(s.lines for s in scenes):
+            raise ScreenplayParseException("Screenplay parsing failed: no valid scenes or dialogue cues found in content.")
+
+        total_dur = max([s.end_seconds for s in scenes]) if scenes else 0.0
+        return ParsedScreenplay(
+            episode_number=ep_num,
+            logline=logline,
+            continuity_notes=continuity_notes,
+            scenes=scenes,
+            total_duration_seconds=total_dur
+        )
+
+    def _parse_block_format_text(self, text: str, episode_fallback: int = 1) -> ParsedScreenplay:
+        """Parses markdown-style block screenplays (e.g. **ACTION:**\\nStart: ...)."""
+        lines = text.splitlines()
         
         episode_number = episode_fallback
         logline = ""
         continuity_notes = ""
         
         # 1. Parse header metadata
-        for line in lines[:25]:
-            ep_match = re.search(r"^EPISODE NUMBER:\s*Episode\s*(\d+)", line, re.IGNORECASE)
+        for raw_line in lines[:25]:
+            line = raw_line.strip()
+            ep_match = re.search(r"^(?:EPISODE(?:\s+NUMBER)?|EP)[\s:]*(?:Episode\s*)?0*(\d+)", line, re.IGNORECASE)
             if ep_match:
                 episode_number = int(ep_match.group(1))
             
-            logline_match = re.search(r"^EPISODE LOGLINE:\s*(.+)", line, re.IGNORECASE)
+            logline_match = re.search(r"^(?:EPISODE\s+)?(?:LOGLINE|SYNOPSIS)[:\s]+(.+)", line, re.IGNORECASE)
             if logline_match:
                 logline = logline_match.group(1).strip()
                 
-            continuity_match = re.search(r"^CONTINUITY NOTES:\s*(.+)", line, re.IGNORECASE)
+            continuity_match = re.search(r"^CONTINUITY(?:\s+NOTES)?[:\s]+(.+)", line, re.IGNORECASE)
             if continuity_match:
                 continuity_notes = continuity_match.group(1).strip()
 
@@ -255,7 +470,6 @@ class TxtScreenplayParser(BaseScreenplayParser):
             # Detect Block Headers: **CAMERA:**, **ACTION:**, or **CHARACTER (Parenthetical):**
             block_header_match = re.search(r"^\*\*(.+?)\*\*:\s*$", line)
             if not block_header_match:
-                # Sometimes character line does not have trailing colon inside or outside
                 block_header_match = re.search(r"^\*\*(.+?):\*\*\s*$", line)
 
             if block_header_match:
@@ -268,7 +482,6 @@ class TxtScreenplayParser(BaseScreenplayParser):
                     current_block_type = "action"
                 else:
                     current_block_type = "dialogue"
-                    # Check for parenthetical e.g. "MATRIARCH (Cold, Commanding)"
                     paren_match = re.search(r"^([^(]+)\s*\((.+)\)$", header_content)
                     if paren_match:
                         current_speaker = paren_match.group(1).strip()
@@ -288,7 +501,6 @@ class TxtScreenplayParser(BaseScreenplayParser):
 
             # Text line within a block
             if current_block_type and line:
-                # Clean up quotes if present
                 clean_text = line.strip('"').strip("'")
                 current_text_lines.append(clean_text)
 
