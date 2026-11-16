@@ -6,13 +6,13 @@ import { getHealth } from '../api';
 const routeHeaders = {
   '/': { title: 'Overview', subtitle: 'Your microdrama promotional workspace' },
   '/overview': { title: 'Overview', subtitle: 'Your microdrama promotional workspace' },
-  '/shows': { title: 'Library', subtitle: 'Manage shows, screenplay parsing, and episode discovery' },
-  '/library': { title: 'Library', subtitle: 'Manage shows, screenplay parsing, and episode discovery' },
-  '/promos': { title: 'Discovery', subtitle: 'Discover, evaluate, and rank high-converting promotional moments' },
-  '/discovery': { title: 'Discovery', subtitle: 'Discover, evaluate, and rank high-converting promotional moments' },
-  '/review': { title: 'Review', subtitle: 'Human-in-the-loop candidate validation, scoring inspection, and editorial approval' },
-  '/upload': { title: 'Upload Screenplays', subtitle: 'Guided upload for TXT, PDF, or ZIP screenplay datasets' },
-  '/export': { title: 'Export', subtitle: 'Download validated eligible promo results in marketing CSV and JSON' },
+  '/shows': { title: 'Library', subtitle: 'Manage shows, episodes and processing status.' },
+  '/library': { title: 'Library', subtitle: 'Manage shows, episodes and processing status.' },
+  '/promos': { title: 'Promo Discovery', subtitle: 'AI-discovered promotional moments ranked by conversion potential.' },
+  '/discovery': { title: 'Promo Discovery', subtitle: 'AI-discovered promotional moments ranked by conversion potential.' },
+  '/review': { title: 'Editorial Review', subtitle: 'Verify screenplay evidence, scores and make an editorial decision.' },
+  '/upload': { title: 'Upload Screenplays', subtitle: 'Add screenplay files and start automated processing.' },
+  '/export': { title: 'Export Results', subtitle: 'Download approved and validated promotional results.' },
 };
 
 export default function Header({ onMenuClick }) {

@@ -25,8 +25,6 @@ export default function Dashboard() {
     pendingApprovals: 0,
     approvedPromos: 0,
   });
-  const [seriesWorkflow, setSeriesWorkflow] = useState([]);
-  const [recentActivity, setRecentActivity] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -38,34 +36,18 @@ export default function Dashboard() {
     try {
       const [showsRes, promosRes] = await Promise.all([
         getShows(),
-        getPromos({ limit: 100 })
+        getPromos({ limit: 150 })
       ]);
       const shows = showsRes.data || [];
       const promos = promosRes.data || [];
 
       let allEpisodes = [];
-      const workflowItems = [];
 
       for (const show of shows) {
         try {
           const epRes = await getEpisodes(show.id);
           const eps = epRes.data || [];
           allEpisodes = allEpisodes.concat(eps);
-
-          const showPromos = promos.filter(p => p.show_id === show.id);
-          const parsedCount = eps.filter(e => e.processing_status === 'completed').length;
-          const failedCount = eps.filter(e => e.processing_status === 'failed').length;
-
-          workflowItems.push({
-            id: show.id,
-            title: show.title,
-            language: show.language,
-            totalEpisodes: eps.length,
-            parsedCount,
-            failedCount,
-            progressPercent: eps.length > 0 ? Math.round((parsedCount / eps.length) * 100) : 0,
-            status: failedCount > 0 ? 'warning' : parsedCount === eps.length && eps.length > 0 ? 'completed' : 'processing',
-          });
         } catch (e) {
           console.error(`Failed to load episodes for show ${show.id}`, e);
         }
@@ -86,52 +68,6 @@ export default function Dashboard() {
         pendingApprovals,
         approvedPromos,
       });
-
-      setSeriesWorkflow(workflowItems);
-
-      // Build real activity timeline
-      const activities = [];
-      if (workflowItems.length > 0) {
-        const topShow = workflowItems[0];
-        if (topShow.parsedCount > 0) {
-          activities.push({
-            id: 'act-parse',
-            icon: CheckCircle2,
-            iconColor: 'text-emerald-600 bg-emerald-50',
-            text: `${topShow.parsedCount} episodes parsed for "${topShow.title}"`,
-            time: 'Recently'
-          });
-        }
-      }
-      if (promos.length > 0) {
-        activities.push({
-          id: 'act-promos',
-          icon: Sparkles,
-          iconColor: 'text-teal-600 bg-teal-50',
-          text: `${promos.length} promo candidates discovered`,
-          time: 'Active'
-        });
-      }
-      const approvedSample = promos.find(p => p.approval_status === 'approved');
-      if (approvedSample) {
-        activities.push({
-          id: 'act-appr',
-          icon: CheckCircle2,
-          iconColor: 'text-emerald-600 bg-emerald-50',
-          text: `${approvedSample.promo_identifier} approved for export`,
-          time: 'Verified'
-        });
-      }
-      if (allEpisodes.length > 0) {
-        activities.push({
-          id: 'act-upload',
-          icon: UploadCloud,
-          iconColor: 'text-sky-600 bg-sky-50',
-          text: `Uploaded ${allEpisodes.length} screenplay files to library`,
-          time: 'Ready'
-        });
-      }
-      setRecentActivity(activities);
 
     } catch (err) {
       console.error('Failed to load dashboard data:', err);
@@ -168,35 +104,35 @@ export default function Dashboard() {
                 className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white hover:bg-slate-50 border border-slate-200 text-[#172B4D] text-xs font-semibold shadow-xs transition-all"
               >
                 <PlayCircle className="w-4 h-4 text-[#0F766E]" />
-                <span>View Discovered Promos</span>
+                <span>View Promos</span>
               </Link>
             </div>
           </div>
 
           {/* Center Illustration Graphic */}
           <div className="hidden md:flex lg:col-span-3 items-center justify-center">
-            <div className="relative w-44 h-40 flex items-center justify-center">
+            <div className="relative w-40 h-36 flex items-center justify-center">
               <div className="absolute inset-0 bg-teal-50 rounded-full blur-xl opacity-70" />
-              <div className="relative bg-gradient-to-tr from-[#0F766E] to-[#14B8A6] p-6 rounded-2xl shadow-lg text-white transform -rotate-3 hover:rotate-0 transition-transform">
-                <Clapperboard className="w-16 h-16 text-white" />
-                <div className="absolute bottom-2 right-2 bg-white/20 px-2 py-0.5 rounded text-[10px] font-bold">
-                  20-60s
-                </div>
+              <div className="relative bg-gradient-to-tr from-[#0F766E] to-[#14B8A6] p-5 rounded-2xl shadow-md text-white flex flex-col items-center justify-center gap-2">
+                <Clapperboard className="w-14 h-14 text-white" />
+                <span className="text-[10px] font-bold bg-white/20 px-2 py-0.5 rounded-full">
+                  20–60s Promos
+                </span>
               </div>
             </div>
           </div>
 
-          {/* Right "How It Works" Card */}
+          {/* Right "Workflow" Card */}
           <div className="lg:col-span-4 bg-[#F5F7FA] border border-slate-200/80 rounded-xl p-5 space-y-3">
             <h3 className="text-xs font-bold uppercase tracking-wider text-[#172B4D]">
-              How It Works
+              Workflow
             </h3>
             <div className="space-y-2.5">
               {[
-                { step: 1, text: 'Upload your screenplays' },
-                { step: 2, text: 'Parse scenes and timestamps' },
+                { step: 1, text: 'Upload screenplays' },
+                { step: 2, text: 'Parse scenes & timestamps' },
                 { step: 3, text: 'Discover hooks & cliffhangers' },
-                { step: 4, text: 'Review and approve candidates' },
+                { step: 4, text: 'Review & approve' },
                 { step: 5, text: 'Export final results' }
               ].map(item => (
                 <div key={item.step} className="flex items-center gap-2.5 text-xs text-[#172B4D]">
@@ -211,7 +147,7 @@ export default function Dashboard() {
         </div>
       </div>
 
-      {/* 6 Clean Metric Cards */}
+      {/* 6 Metric Cards */}
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 sm:gap-4">
         {[
           {
@@ -222,14 +158,14 @@ export default function Dashboard() {
             bgColor: 'bg-slate-100',
           },
           {
-            label: 'Parsed Successfully',
+            label: 'Parsed',
             value: stats.parsedEpisodes,
             icon: CheckCircle2,
             iconColor: 'text-[#15803D]',
             bgColor: 'bg-emerald-50',
           },
           {
-            label: 'Failed Episodes',
+            label: 'Failed',
             value: stats.failedEpisodes,
             icon: AlertCircle,
             iconColor: 'text-[#DC2626]',
@@ -250,7 +186,7 @@ export default function Dashboard() {
             bgColor: 'bg-amber-50',
           },
           {
-            label: 'Approved Promos',
+            label: 'Approved',
             value: stats.approvedPromos,
             icon: CheckCircle2,
             iconColor: 'text-indigo-600',
@@ -277,125 +213,6 @@ export default function Dashboard() {
             </div>
           );
         })}
-      </div>
-
-      {/* Bottom Two Panels: Processing Progress by Series & Recent Activity */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-        {/* Left: Processing Progress by Series */}
-        <div className="lg:col-span-7 bg-white border border-slate-200 rounded-xl p-5 shadow-xs space-y-4">
-          <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-            <h2 className="text-sm font-bold text-[#172B4D] flex items-center gap-2">
-              <Film className="w-4 h-4 text-[#0F766E]" />
-              <span>Processing Progress by Series</span>
-            </h2>
-            <Link
-              to="/shows"
-              className="text-xs font-semibold text-[#0F766E] hover:underline flex items-center gap-1"
-            >
-              <span>View Library</span>
-              <ArrowRight className="w-3 h-3" />
-            </Link>
-          </div>
-
-          <div className="space-y-3">
-            {loading ? (
-              <div className="p-8 text-center text-xs text-slate-400">Loading series...</div>
-            ) : seriesWorkflow.length === 0 ? (
-              <div className="p-8 text-center text-xs text-slate-400">
-                No series registered yet. <Link to="/upload" className="text-[#0F766E] font-bold hover:underline">Upload your first screenplay</Link>.
-              </div>
-            ) : (
-              seriesWorkflow.map(show => (
-                <div
-                  key={show.id}
-                  className="p-3.5 rounded-lg border border-slate-100 bg-[#F5F7FA] hover:bg-slate-100/60 transition-colors flex items-center justify-between gap-4"
-                >
-                  <div className="min-w-0 flex-1">
-                    <div className="flex items-center gap-2">
-                      <span className="font-bold text-xs text-[#172B4D] truncate">{show.title}</span>
-                      <span className="text-[10px] text-slate-500 bg-white border border-slate-200 px-1.5 py-0.2 rounded font-medium">
-                        {show.language}
-                      </span>
-                    </div>
-                    <div className="text-[11px] text-slate-500 mt-0.5">
-                      {show.totalEpisodes} Episodes
-                    </div>
-                  </div>
-
-                  <div className="w-36 sm:w-44 shrink-0 space-y-1">
-                    <div className="flex items-center justify-between text-[11px] font-semibold text-[#172B4D]">
-                      <span>{show.parsedCount} / {show.totalEpisodes} Parsed</span>
-                      <span className="text-[10px] text-slate-500">{show.progressPercent}%</span>
-                    </div>
-                    <div className="w-full bg-slate-200 h-1.5 rounded-full overflow-hidden">
-                      <div
-                        className="bg-[#0F766E] h-1.5 rounded-full transition-all duration-500"
-                        style={{ width: `${show.progressPercent}%` }}
-                      />
-                    </div>
-                  </div>
-
-                  <div className="shrink-0">
-                    {show.parsedCount === show.totalEpisodes && show.totalEpisodes > 0 ? (
-                      <CheckCircle2 className="w-4 h-4 text-[#15803D]" />
-                    ) : show.failedCount > 0 ? (
-                      <AlertCircle className="w-4 h-4 text-[#D69E36]" />
-                    ) : (
-                      <Clock className="w-4 h-4 text-slate-400" />
-                    )}
-                  </div>
-                </div>
-              ))
-            )}
-          </div>
-        </div>
-
-        {/* Right: Recent Activity */}
-        <div className="lg:col-span-5 bg-white border border-slate-200 rounded-xl p-5 shadow-xs space-y-4">
-          <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-            <h2 className="text-sm font-bold text-[#172B4D] flex items-center gap-2">
-              <Sparkles className="w-4 h-4 text-[#0F766E]" />
-              <span>Recent Activity</span>
-            </h2>
-            <Link
-              to="/promos"
-              className="text-xs font-semibold text-[#0F766E] hover:underline flex items-center gap-1"
-            >
-              <span>View All</span>
-              <ArrowRight className="w-3 h-3" />
-            </Link>
-          </div>
-
-          <div className="space-y-3">
-            {recentActivity.length === 0 ? (
-              <div className="p-8 text-center text-xs text-slate-400">
-                No recent activity. Upload screenplays to begin.
-              </div>
-            ) : (
-              recentActivity.map(act => {
-                const Icon = act.icon;
-                return (
-                  <div
-                    key={act.id}
-                    className="flex items-start gap-3 p-3 rounded-lg border border-slate-100 bg-[#F5F7FA]"
-                  >
-                    <div className={`w-7 h-7 rounded-lg ${act.iconColor} flex items-center justify-center shrink-0 mt-0.5`}>
-                      <Icon className="w-3.5 h-3.5" />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-xs font-semibold text-[#172B4D] truncate">
-                        {act.text}
-                      </p>
-                      <span className="text-[10px] text-slate-400 font-medium">
-                        {act.time}
-                      </span>
-                    </div>
-                  </div>
-                );
-              })
-            )}
-          </div>
-        </div>
       </div>
     </div>
   );

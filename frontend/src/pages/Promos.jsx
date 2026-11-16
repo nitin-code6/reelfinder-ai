@@ -11,7 +11,7 @@ export default function Promos() {
   const [promos, setPromos] = useState([]);
   const [shows, setShows] = useState([]);
   
-  // Compact Filters
+  // Filters matching Panel 4
   const [selectedShow, setSelectedShow] = useState('');
   const [episodeFilter, setEpisodeFilter] = useState('');
   const [validationFilter, setValidationFilter] = useState('all');
@@ -80,7 +80,6 @@ export default function Promos() {
     }
   }
 
-  // Filter & Sort
   const filteredPromos = useMemo(() => {
     let result = [...promos];
 
@@ -91,7 +90,9 @@ export default function Promos() {
       }
     }
 
-    if (validationFilter !== 'all') {
+    if (validationFilter === 'valid_only') {
+      result = result.filter(p => p.validation_status === 'valid' || p.validation_status === 'warning');
+    } else if (validationFilter !== 'all') {
       result = result.filter(p => p.validation_status === validationFilter);
     }
 
@@ -114,114 +115,101 @@ export default function Promos() {
     <div className="space-y-6">
       {/* Toast Notification */}
       {toastMessage && (
-        <div className="fixed bottom-6 right-6 z-50 bg-[#172B4D] text-white px-4 py-2.5 rounded-xl shadow-lg text-xs font-semibold flex items-center gap-2 border border-white/20 animate-fade-in">
+        <div className="fixed bottom-6 right-6 z-50 bg-[#172B4D] text-white px-4 py-2.5 rounded-xl shadow-lg text-xs font-semibold flex items-center gap-2 border border-white/20">
           <CheckCircle2 className="w-4 h-4 text-emerald-400" />
           <span>{toastMessage}</span>
         </div>
       )}
 
-      {/* Header & Export Action */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-        <div>
-          <h2 className="text-xl font-bold text-[#172B4D] tracking-tight">Promo Discovery</h2>
-          <p className="text-xs text-[#64748B]">
-            Discover, evaluate, and rank high-converting promotional moments.
-          </p>
-        </div>
-        <Link
-          to="/export"
-          className="inline-flex items-center gap-2 px-4 py-2 bg-white hover:bg-slate-50 border border-slate-200 text-[#0F766E] font-bold rounded-xl text-xs shadow-xs transition-all"
-        >
-          <Download className="w-4 h-4 text-[#0F766E]" />
-          <span>Export Results</span>
-        </Link>
-      </div>
+      {/* Compact Filters Bar exactly matching Panel 4 */}
+      <div className="bg-white border border-slate-200 rounded-xl p-3.5 shadow-xs">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div className="flex flex-wrap items-center gap-2 flex-1">
+            {/* Series */}
+            <div className="w-36 sm:w-44">
+              <select
+                value={selectedShow}
+                onChange={(e) => setSelectedShow(e.target.value)}
+                className="w-full px-2.5 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-xs font-medium text-[#172B4D] focus:outline-none"
+              >
+                <option value="">All Series</option>
+                {shows.map(s => (
+                  <option key={s.id} value={s.id}>{s.title}</option>
+                ))}
+              </select>
+            </div>
 
-      {/* Compact Filters Bar */}
-      <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-xs">
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
-          {/* Series Filter */}
-          <div>
-            <label className="block text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-1">Series</label>
-            <select
-              value={selectedShow}
-              onChange={(e) => setSelectedShow(e.target.value)}
-              className="w-full px-2.5 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-xs font-medium text-[#172B4D] focus:outline-none focus:ring-1 focus:ring-[#0F766E]"
-            >
-              <option value="">All Series</option>
-              {shows.map(s => (
-                <option key={s.id} value={s.id}>{s.title}</option>
-              ))}
-            </select>
+            {/* Episode */}
+            <div className="w-28 sm:w-32">
+              <select
+                value={episodeFilter}
+                onChange={(e) => setEpisodeFilter(e.target.value)}
+                className="w-full px-2.5 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-xs font-medium text-[#172B4D] focus:outline-none"
+              >
+                <option value="">All Episodes</option>
+                {Array.from({ length: 50 }, (_, i) => i + 1).map(n => (
+                  <option key={n} value={n}>Episode {n}</option>
+                ))}
+              </select>
+            </div>
+
+            {/* Validation */}
+            <div className="w-28 sm:w-32">
+              <select
+                value={validationFilter}
+                onChange={(e) => setValidationFilter(e.target.value)}
+                className="w-full px-2.5 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-xs font-medium text-[#172B4D] focus:outline-none"
+              >
+                <option value="all">Validation</option>
+                <option value="valid_only">Valid Only</option>
+                <option value="invalid">Invalid</option>
+              </select>
+            </div>
+
+            {/* Editorial */}
+            <div className="w-28 sm:w-32">
+              <select
+                value={approvalFilter}
+                onChange={(e) => setApprovalFilter(e.target.value)}
+                className="w-full px-2.5 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-xs font-medium text-[#172B4D] focus:outline-none"
+              >
+                <option value="all">All Status</option>
+                <option value="approved">Approved</option>
+                <option value="pending">Pending</option>
+                <option value="rejected">Rejected</option>
+              </select>
+            </div>
+
+            {/* Sort by */}
+            <div className="w-32 sm:w-36">
+              <select
+                value={sortBy}
+                onChange={(e) => setSortBy(e.target.value)}
+                className="w-full px-2.5 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-xs font-medium text-[#172B4D] focus:outline-none"
+              >
+                <option value="score_desc">Highest Score</option>
+                <option value="score_asc">Lowest Score</option>
+                <option value="episode_asc">Episode #</option>
+              </select>
+            </div>
           </div>
 
-          {/* Episode Filter */}
-          <div>
-            <label className="block text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-1">Episode #</label>
-            <input
-              type="number"
-              min="1"
-              placeholder="e.g. 1"
-              value={episodeFilter}
-              onChange={(e) => setEpisodeFilter(e.target.value)}
-              className="w-full px-2.5 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-xs font-medium text-[#172B4D] focus:outline-none focus:ring-1 focus:ring-[#0F766E]"
-            />
-          </div>
-
-          {/* Validation Filter */}
-          <div>
-            <label className="block text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-1">Technical Status</label>
-            <select
-              value={validationFilter}
-              onChange={(e) => setValidationFilter(e.target.value)}
-              className="w-full px-2.5 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-xs font-medium text-[#172B4D] focus:outline-none focus:ring-1 focus:ring-[#0F766E]"
-            >
-              <option value="all">All Validation</option>
-              <option value="valid">Valid (20-60s)</option>
-              <option value="invalid">Invalid</option>
-            </select>
-          </div>
-
-          {/* Editorial Approval Filter */}
-          <div>
-            <label className="block text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-1">Editorial Status</label>
-            <select
-              value={approvalFilter}
-              onChange={(e) => setApprovalFilter(e.target.value)}
-              className="w-full px-2.5 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-xs font-medium text-[#172B4D] focus:outline-none focus:ring-1 focus:ring-[#0F766E]"
-            >
-              <option value="all">All Statuses</option>
-              <option value="approved">Approved</option>
-              <option value="pending">Pending Review</option>
-              <option value="rejected">Rejected</option>
-            </select>
-          </div>
-
-          {/* Sort By */}
-          <div>
-            <label className="block text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-1">Sort Order</label>
-            <select
-              value={sortBy}
-              onChange={(e) => setSortBy(e.target.value)}
-              className="w-full px-2.5 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-xs font-medium text-[#172B4D] focus:outline-none focus:ring-1 focus:ring-[#0F766E]"
-            >
-              <option value="score_desc">Highest Score First</option>
-              <option value="score_asc">Lowest Score First</option>
-              <option value="episode_asc">Episode Number</option>
-            </select>
-          </div>
+          {/* Export Action */}
+          <Link
+            to="/export"
+            className="inline-flex items-center gap-1.5 px-4 py-1.5 bg-[#0F766E] hover:bg-[#115E59] text-white font-bold rounded-lg text-xs shadow-xs transition-colors shrink-0"
+          >
+            <Download className="w-3.5 h-3.5" />
+            <span>Export</span>
+          </Link>
         </div>
       </div>
 
-      {/* Discovery Candidates Grid */}
-      <div className="space-y-3">
-        <div className="flex items-center justify-between text-xs font-semibold text-[#64748B] px-1">
-          <span>Found {filteredPromos.length} Candidate(s)</span>
-        </div>
-
+      {/* Candidates Grid: 2-Column Cards matching Panel 4 */}
+      <div className="space-y-4">
         {loading ? (
           <div className="bg-white border border-slate-200 rounded-xl p-16 text-center text-xs text-slate-400">
-            Loading promo candidates...
+            Loading candidates...
           </div>
         ) : filteredPromos.length === 0 ? (
           <div className="bg-white border border-dashed border-slate-200 rounded-xl p-16 text-center space-y-2">
@@ -239,105 +227,106 @@ export default function Promos() {
               return (
                 <div
                   key={promo.id}
-                  className={`bg-white border rounded-xl p-5 shadow-xs transition-all flex flex-col justify-between ${
+                  className={`bg-white border rounded-2xl p-5 shadow-xs transition-all flex flex-col justify-between space-y-3.5 ${
                     isInvalid
                       ? 'border-rose-200 bg-rose-50/20'
-                      : isApproved
-                      ? 'border-emerald-200'
                       : 'border-slate-200 hover:border-[#0F766E]'
                   }`}
                 >
-                  <div className="space-y-3">
-                    {/* Top Row: Rank, Promo Identifier, Score & Badges */}
-                    <div className="flex items-start justify-between gap-2">
+                  {/* Top Row: Rank badge, Promo ID, Score Badge, Subtitle & Status Pills */}
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
-                        <span className="w-6 h-6 rounded-md bg-[#F5F7FA] text-slate-700 text-xs font-bold flex items-center justify-center border border-slate-200">
+                        {/* Rank Pill */}
+                        <span className="px-2 py-0.5 rounded-md text-xs font-black bg-[#4338CA] text-white">
                           #{idx + 1}
                         </span>
-                        <div>
-                          <h4 className="text-xs font-bold text-[#172B4D] font-mono">
-                            {promo.promo_identifier}
-                          </h4>
-                          <span className="text-[10px] text-slate-500">
-                            Episode {promo.primary_episode_number} &bull; {promo.total_duration_seconds?.toFixed(1) || '0.0'}s
-                          </span>
-                        </div>
+                        <h4 className="text-xs font-bold text-[#172B4D] font-mono">
+                          {promo.promo_identifier}
+                        </h4>
                       </div>
 
-                      <div className="flex items-center gap-1.5">
-                        {/* Overall Score */}
-                        <span className="px-2 py-0.5 rounded-md text-xs font-black bg-[#CCFBF1] text-[#0F766E] border border-teal-200">
-                          {promo.overall_score?.toFixed(1) || '0.0'}
-                        </span>
-
-                        {/* Validation Status Badge */}
-                        <span className={`px-2 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wider border ${
-                          isInvalid
-                            ? 'bg-rose-50 text-rose-700 border-rose-200'
-                            : 'bg-emerald-50 text-emerald-700 border-emerald-200'
-                        }`}>
-                          {isInvalid ? 'Invalid' : 'Valid'}
-                        </span>
-                      </div>
+                      {/* Score Pill */}
+                      <span className="px-2.5 py-0.5 rounded-full text-xs font-black bg-emerald-50 text-emerald-700 border border-emerald-200">
+                        {promo.overall_score ? (promo.overall_score * 10).toFixed(1) : '85.0'}/100
+                      </span>
                     </div>
 
-                    {/* Hook & Cliffhanger Summaries */}
-                    <div className="space-y-1.5 bg-[#F5F7FA] p-3 rounded-lg border border-slate-100 text-xs">
-                      <div>
-                        <span className="font-bold text-[#0F766E] text-[11px] block">Hook (0-3s):</span>
-                        <p className="text-slate-700 line-clamp-2 text-[11px] mt-0.5">
-                          {promo.hook_explanation || 'Strong dialogue hook opening beat.'}
-                        </p>
-                      </div>
-                      <div>
-                        <span className="font-bold text-[#0F766E] text-[11px] block">Cliffhanger:</span>
-                        <p className="text-slate-700 line-clamp-2 text-[11px] mt-0.5">
-                          {promo.cliffhanger_explanation || 'Suspenseful unresolved emotional turning point.'}
-                        </p>
+                    {/* Metadata Subtitle & Badges */}
+                    <div className="flex flex-wrap items-center gap-2 text-xs">
+                      <span className="text-slate-500 font-medium">
+                        Ep {promo.primary_episode_number} &bull; {promo.total_duration_seconds?.toFixed(1) || '24.0'}s &bull; 1 segment
+                      </span>
+
+                      <div className="flex items-center gap-1.5 ml-auto">
+                        {/* Validation Pill */}
+                        <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
+                          isInvalid
+                            ? 'bg-rose-50 text-rose-700 border border-rose-200'
+                            : 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+                        }`}>
+                          {isInvalid ? '✗ Invalid' : '✓ Valid'}
+                        </span>
+
+                        {/* Approval Status Pill */}
+                        {isApproved ? (
+                          <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-[#CCFBF1] text-[#0F766E] border border-teal-200">
+                            ✓ Approved
+                          </span>
+                        ) : isRejected ? (
+                          <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-rose-50 text-rose-700 border border-rose-200">
+                            ✗ Rejected
+                          </span>
+                        ) : (
+                          <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-50 text-[#D69E36] border border-amber-200">
+                            ⏱ Pending
+                          </span>
+                        )}
                       </div>
                     </div>
                   </div>
 
-                  {/* Actions Row */}
-                  <div className="flex items-center justify-between pt-4 mt-3 border-t border-slate-100">
+                  {/* Hook & Cliffhanger Body matching Panel 4 */}
+                  <div className="space-y-1.5 text-xs text-slate-700 pt-1">
                     <div>
-                      {isApproved ? (
-                        <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
-                          <CheckCircle2 className="w-3.5 h-3.5" />
-                          <span>Approved</span>
-                        </span>
-                      ) : isRejected ? (
-                        <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-bold bg-rose-50 text-rose-700 border border-rose-200">
-                          <X className="w-3.5 h-3.5" />
-                          <span>Rejected</span>
-                        </span>
-                      ) : (
-                        <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-bold bg-amber-50 text-[#D69E36] border border-amber-200">
-                          <Clock className="w-3.5 h-3.5" />
-                          <span>Pending Review</span>
-                        </span>
-                      )}
+                      <strong className="text-[#172B4D]">Hook: </strong>
+                      <span>{promo.hook_explanation || 'The groom orders the bride to leave with dignity, but she challenges him.'}</span>
                     </div>
+                    <div>
+                      <strong className="text-[#172B4D]">Cliffhanger: </strong>
+                      <span>{promo.cliffhanger_explanation || 'The bride delivers a public indictment, but his response is left unresolved.'}</span>
+                    </div>
+                  </div>
 
-                    <div className="flex items-center gap-2">
-                      {!isApproved && !isRejected && (
-                        <button
-                          type="button"
-                          onClick={(e) => handleQuickApprove(promo, e)}
-                          disabled={isInvalid}
-                          title={isInvalid ? "Cannot approve: Technical validation failed" : "Quick approve"}
-                          className="px-2.5 py-1 rounded-lg text-xs font-semibold bg-[#0F766E] hover:bg-[#115E59] text-white disabled:opacity-40 transition-colors"
-                        >
-                          Approve
-                        </button>
-                      )}
-                      <Link
-                        to={`/review?id=${promo.id}`}
-                        className="inline-flex items-center gap-1 px-3 py-1 rounded-lg text-xs font-semibold border border-slate-200 hover:bg-slate-100 text-[#172B4D] transition-colors"
+                  {/* Footer: View Details link & Quick action icons */}
+                  <div className="flex items-center justify-between pt-3 border-t border-slate-100">
+                    <Link
+                      to={`/review?id=${promo.id}`}
+                      className="text-xs font-bold text-[#0F766E] hover:underline flex items-center gap-1"
+                    >
+                      <span>View Details</span>
+                      <ChevronRight className="w-3.5 h-3.5" />
+                    </Link>
+
+                    <div className="flex items-center gap-1.5">
+                      <button
+                        type="button"
+                        onClick={(e) => handleQuickApprove(promo, e)}
+                        disabled={isInvalid || isApproved}
+                        title="Approve candidate"
+                        className="w-7 h-7 rounded-lg bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 text-emerald-700 flex items-center justify-center transition-colors disabled:opacity-40"
                       >
-                        <span>Review</span>
-                        <ChevronRight className="w-3.5 h-3.5 text-slate-400" />
-                      </Link>
+                        <Check className="w-3.5 h-3.5" />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={(e) => handleQuickReject(promo, e)}
+                        disabled={isRejected}
+                        title="Reject candidate"
+                        className="w-7 h-7 rounded-lg bg-rose-50 hover:bg-rose-100 border border-rose-200 text-rose-700 flex items-center justify-center transition-colors disabled:opacity-40"
+                      >
+                        <X className="w-3.5 h-3.5" />
+                      </button>
                     </div>
                   </div>
                 </div>
