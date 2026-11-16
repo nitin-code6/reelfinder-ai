@@ -237,23 +237,39 @@ export default function Shows() {
 
       setEpisodes(prev => prev.map(e => e.id === ep.id ? { ...e, processing_status: 'processing' } : e));
 
-      try {
-        const res = await processEpisode(ep.id);
-        const epData = await getEpisode(ep.id);
-        const found = res.data?.length || 0;
-        completed++;
+      let success = false;
+      let lastErr = null;
 
-        setEpisodes(prev => prev.map(e => e.id === ep.id ? {
-          ...epData.data,
-          processing_status: 'completed',
-          promos_found: found
-        } : e));
+      // Robust batch processing with automatic retry for rate limits
+      for (let attempt = 1; attempt <= 2; attempt++) {
+        try {
+          const res = await processEpisode(ep.id);
+          const epData = await getEpisode(ep.id);
+          const found = res.data?.length || 0;
+          completed++;
+          success = true;
 
-        setBatchProgress(prev => ({ ...prev, completed }));
-      } catch (err) {
-        console.error(`Batch processing failed for Ep ${ep.episode_number}:`, err);
+          setEpisodes(prev => prev.map(e => e.id === ep.id ? {
+            ...epData.data,
+            processing_status: 'completed',
+            promos_found: found
+          } : e));
+
+          setBatchProgress(prev => ({ ...prev, completed }));
+          break;
+        } catch (err) {
+          lastErr = err;
+          if (attempt === 1 && !stopRequestedRef.current) {
+            console.warn(`Ep ${ep.episode_number} attempt 1 failed, retrying in 2s...`, err);
+            await new Promise(r => setTimeout(r, 2000));
+          }
+        }
+      }
+
+      if (!success) {
+        console.error(`Batch processing failed for Ep ${ep.episode_number}:`, lastErr);
         failed++;
-        const errMsg = getErrorMessage(err);
+        const errMsg = getErrorMessage(lastErr);
         setEpisodes(prev => prev.map(e => e.id === ep.id ? {
           ...e,
           processing_status: 'failed',
@@ -262,8 +278,9 @@ export default function Shows() {
         setBatchProgress(prev => ({ ...prev, failed }));
       }
 
-      if (i < targetEpisodes.length - 1) {
-        await new Promise(r => setTimeout(r, 400));
+      if (i < targetEpisodes.length - 1 && !stopRequestedRef.current) {
+        // Pacing delay (1200ms) to ensure smooth LLM throughput without hitting bursts
+        await new Promise(r => setTimeout(r, 1200));
       }
     }
 

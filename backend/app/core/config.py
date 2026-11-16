@@ -45,8 +45,20 @@ class Settings(BaseSettings):
     GROQ_API_KEY: str = Field(default="", env="GROQ_API_KEY")
     GROQ_MODEL: str = Field(default="openai/gpt-oss-120b", env="GROQ_MODEL")
     GEMINI_API_KEY: str = Field(default="", env="GEMINI_API_KEY")
+    GEMINI_API_KEY_2: str = Field(default="", env="GEMINI_API_KEY_2")
+    GEMINI_API_KEYS: str = Field(default="", env="GEMINI_API_KEYS")
     GEMINI_MODEL: str = Field(default="gemini-3.8-flash", env="GEMINI_MODEL")
     USE_MOCK_LLM: bool = Field(default=False, env="USE_MOCK_LLM")
+
+    def get_gemini_api_keys(self) -> List[str]:
+        keys = []
+        for raw in [self.GEMINI_API_KEY, self.GEMINI_API_KEY_2, self.GEMINI_API_KEYS]:
+            if raw:
+                for item in raw.split(","):
+                    k = item.strip()
+                    if k and k not in keys:
+                        keys.append(k)
+        return keys
     
     # Storage & File Upload
     UPLOAD_DIR: str = Field(default="./uploads", env="UPLOAD_DIR")

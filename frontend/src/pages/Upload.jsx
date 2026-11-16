@@ -130,20 +130,27 @@ export default function Upload() {
       for (let i = 0; i < uploadedEpisodes.length; i++) {
         const ep = uploadedEpisodes[i];
         setProcessingStatus(`Analyzing hooks & cliffhangers: Ep ${ep.episode_number} (${i + 1}/${uploadedEpisodes.length})...`);
-        try {
-          const promoRes = await processEpisode(ep.id);
-          const found = Array.isArray(promoRes.data) ? promoRes.data.length : 0;
-          totalPromosDiscovered += found;
-          parsedCount++;
-        } catch (procErr) {
-          console.warn(`Episode ${ep.id} discovery notice:`, procErr);
+        for (let attempt = 1; attempt <= 2; attempt++) {
+          try {
+            const promoRes = await processEpisode(ep.id);
+            const found = Array.isArray(promoRes.data) ? promoRes.data.length : 0;
+            totalPromosDiscovered += found;
+            parsedCount++;
+            break;
+          } catch (procErr) {
+            if (attempt === 1) {
+              await new Promise(r => setTimeout(r, 1500));
+            } else {
+              console.warn(`Episode ${ep.id} discovery notice:`, procErr);
+            }
+          }
         }
 
         const currentPct = 40 + Math.round(((i + 1) / uploadedEpisodes.length) * 60);
         setUploadProgress(currentPct);
 
         if (i < uploadedEpisodes.length - 1) {
-          await new Promise(r => setTimeout(r, 200));
+          await new Promise(r => setTimeout(r, 1200));
         }
       }
 

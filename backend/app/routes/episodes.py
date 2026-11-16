@@ -144,6 +144,12 @@ def process_single_episode(episode_id: int, db: Session = Depends(get_db)):
         promos = candidate_detector.process_episode(episode_id, db)
         return promos
     except Exception as e:
+        logger.error(f"Failed processing episode {episode_id}: {str(e)}", exc_info=True)
+        try:
+            repo = EpisodeRepository(db)
+            repo.update_status(episode_id, ProcessingStatus.FAILED.value, str(e))
+        except Exception:
+            pass
         raise HTTPException(status_code=500, detail=str(e))
 
 
