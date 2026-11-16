@@ -2,7 +2,8 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { useSearchParams, useNavigate, Link } from 'react-router-dom';
 import { 
   CheckCircle2, AlertTriangle, ShieldCheck, Clock, ChevronLeft, ChevronRight, 
-  Sparkles, Check, X, FileText, ArrowRight, RefreshCw, AlertCircle, ArrowLeft
+  Sparkles, Check, X, FileText, ArrowRight, RefreshCw, AlertCircle, ArrowLeft,
+  CheckCheck, Download
 } from 'lucide-react';
 import { getPromo, getPromos, approvePromo, rejectPromo, submitFeedback } from '../api';
 
@@ -37,7 +38,7 @@ export default function Review() {
   async function loadPromosAndSelect() {
     setLoading(true);
     try {
-      const res = await getPromos({ limit: 100 });
+      const res = await getPromos({ limit: 150 });
       const promosList = res.data || [];
       setAllPromos(promosList);
 
@@ -51,6 +52,7 @@ export default function Review() {
         }
       }
 
+      // Default to first pending promo if available, otherwise first promo
       const defaultPromo = promosList.find(p => p.approval_status === 'pending') || promosList[0];
       if (defaultPromo) {
         setSelectedPromo(defaultPromo);
@@ -65,13 +67,23 @@ export default function Review() {
 
   function showToast(msg) {
     setToastMsg(msg);
-    setTimeout(() => setToastMsg(null), 3000);
+    setTimeout(() => setToastMsg(null), 3500);
   }
 
   const currentIndex = useMemo(() => {
     if (!selectedPromo || allPromos.length === 0) return -1;
     return allPromos.findIndex(p => p.id === selectedPromo.id);
   }, [selectedPromo, allPromos]);
+
+  const pendingPromos = useMemo(() => {
+    return allPromos.filter(p => p.approval_status === 'pending');
+  }, [allPromos]);
+
+  const nextPendingCandidate = useMemo(() => {
+    if (!selectedPromo || allPromos.length === 0) return null;
+    return allPromos.find((p, idx) => idx > currentIndex && p.approval_status === 'pending' && p.id !== selectedPromo.id)
+      || allPromos.find(p => p.approval_status === 'pending' && p.id !== selectedPromo.id);
+  }, [allPromos, currentIndex, selectedPromo]);
 
   function navigateToCandidate(index) {
     if (index >= 0 && index < allPromos.length) {
@@ -110,12 +122,31 @@ export default function Review() {
         await rejectPromo(selectedPromo.id);
       }
 
-      // Refresh promo
-      const updated = await getPromo(selectedPromo.id);
-      setSelectedPromo(updated.data);
-      setAllPromos(prev => prev.map(p => p.id === updated.data.id ? updated.data : p));
-      setComments('');
-      showToast(`✓ ${selectedPromo.promo_identifier} marked as ${decision.toUpperCase()}!`);
+      // Update in-memory list
+      const updatedList = allPromos.map(p => 
+        p.id === selectedPromo.id ? { ...p, approval_status: decision } : p
+      );
+      setAllPromos(updatedList);
+
+      const decisionText = decision === 'approved' ? 'APPROVED for export' : 'REJECTED';
+      showToast(`✓ ${selectedPromo.promo_identifier} marked as ${decisionText}!`);
+
+      // Find next pending candidate to automatically move card forward
+      const nextPending = updatedList.find((p, idx) => idx > currentIndex && p.approval_status === 'pending')
+        || updatedList.find(p => p.id !== selectedPromo.id && p.approval_status === 'pending');
+
+      if (nextPending) {
+        // Smoothly auto-advance to next pending candidate
+        setTimeout(() => {
+          setSelectedPromo(nextPending);
+          setSearchParams({ id: nextPending.id });
+          setComments('');
+        }, 500);
+      } else {
+        // No more pending candidates! Refresh current candidate
+        const updated = await getPromo(selectedPromo.id);
+        setSelectedPromo(updated.data);
+      }
     } catch (err) {
       alert('Error updating decision: ' + (err.response?.data?.detail || err.message));
     } finally {
@@ -153,10 +184,6 @@ export default function Review() {
 
   const firstSeg = selectedPromo.segments && selectedPromo.segments.length > 0 ? selectedPromo.segments[0] : null;
 
-  const startSec = firstSeg ? parseTimestampToSec(firstSeg.start_timestamp) : 0;
-  const endSec = firstSeg ? parseTimestampToSec(firstSeg.end_timestamp) : 0;
-  const isChronological = firstSeg ? (endSec > startSec || firstSeg.duration_seconds > 0) : false;
-
   const score100 = selectedPromo.overall_score != null
     ? (selectedPromo.overall_score > 10 ? selectedPromo.overall_score : selectedPromo.overall_score * 10).toFixed(1)
     : '90.5';
@@ -165,7 +192,7 @@ export default function Review() {
     <div className="space-y-6">
       {/* Toast Notice */}
       {toastMsg && (
-        <div className="fixed bottom-6 right-6 z-50 bg-[#172B4D] text-white px-4 py-2.5 rounded-xl shadow-lg text-xs font-semibold flex items-center gap-2 border border-white/20">
+        <div className="fixed bottom-6 right-6 z-50 bg-[#172B4D] text-white px-4 py-2.5 rounded-xl shadow-lg text-xs font-semibold flex items-center gap-2 border border-white/20 animate-fade-in">
           <CheckCircle2 className="w-4 h-4 text-emerald-400" />
           <span>{toastMsg}</span>
         </div>
@@ -198,7 +225,7 @@ export default function Review() {
               )}
               {!isApproved && !isRejected && (
                 <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-amber-50 text-[#D69E36] border border-amber-200">
-                  Pending
+                  Pending Review
                 </span>
               )}
 
@@ -228,6 +255,11 @@ export default function Review() {
           </button>
           <span className="text-xs text-slate-500 font-medium">
             {currentIndex + 1} of {allPromos.length}
+            {pendingPromos.length > 0 && (
+              <span className="ml-1 text-[11px] text-amber-600 font-bold">
+                ({pendingPromos.length} pending)
+              </span>
+            )}
           </span>
           <button
             onClick={() => navigateToCandidate(currentIndex + 1)}
@@ -295,7 +327,7 @@ export default function Review() {
           </div>
         </div>
 
-        {/* RIGHT COLUMN (Col 6): AI Evaluation & Validation Checks */}
+        {/* RIGHT COLUMN (Col 6): AI Evaluation & Decision */}
         <div className="lg:col-span-6 bg-white border border-slate-200 rounded-2xl p-6 shadow-xs space-y-5">
           <div className="flex items-center justify-between pb-2 border-b border-slate-100">
             <h3 className="text-sm font-bold text-[#172B4D]">
@@ -359,28 +391,112 @@ export default function Review() {
             </div>
           </div>
 
-          {/* Decision Action Buttons matching Panel 5 */}
-          <div className="flex items-center gap-3 pt-3 border-t border-slate-100">
-            <button
-              type="button"
-              onClick={() => promptDecision('rejected')}
-              disabled={submitting}
-              className="flex-1 py-2.5 px-4 rounded-xl border border-rose-300 bg-white hover:bg-rose-50 text-rose-700 text-xs font-bold transition-colors flex items-center justify-center gap-1.5"
-            >
-              <X className="w-4 h-4" />
-              <span>Reject</span>
-            </button>
+          {/* Decision Section: Dynamically updates based on approval state! */}
+          <div className="pt-3 border-t border-slate-100">
+            {isApproved ? (
+              /* Already Approved State: Buttons gone, replaced with next action */
+              <div className="space-y-3">
+                <div className="p-3.5 bg-emerald-50 border border-emerald-200 rounded-xl flex items-center justify-between text-xs">
+                  <div className="flex items-center gap-2">
+                    <CheckCircle2 className="w-5 h-5 text-emerald-600" />
+                    <div>
+                      <div className="font-bold text-emerald-800">✓ Approved for Export</div>
+                      <div className="text-[11px] text-emerald-600">Candidate is eligible and will be exported in final results.</div>
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => promptDecision('rejected')}
+                    className="text-[11px] font-semibold text-slate-500 hover:text-rose-600 hover:underline px-2 py-1 rounded"
+                  >
+                    Revoke
+                  </button>
+                </div>
 
-            <button
-              type="button"
-              onClick={() => promptDecision('approved')}
-              disabled={submitting || isInvalid}
-              title={isInvalid ? "Cannot approve: Technical validation failed" : "Approve candidate"}
-              className="flex-1 py-2.5 px-4 rounded-xl bg-[#0F766E] hover:bg-[#115E59] text-white text-xs font-bold shadow-sm transition-all flex items-center justify-center gap-1.5 disabled:opacity-40"
-            >
-              <Check className="w-4 h-4" />
-              <span>Approve</span>
-            </button>
+                {nextPendingCandidate ? (
+                  <button
+                    type="button"
+                    onClick={() => navigateToCandidate(allPromos.findIndex(p => p.id === nextPendingCandidate.id))}
+                    className="w-full py-2.5 px-4 rounded-xl bg-[#0F766E] hover:bg-[#115E59] text-white text-xs font-bold shadow-sm transition-all flex items-center justify-center gap-2"
+                  >
+                    <span>Next: Review {nextPendingCandidate.promo_identifier}</span>
+                    <ArrowRight className="w-4 h-4" />
+                  </button>
+                ) : (
+                  <Link
+                    to="/export"
+                    className="w-full py-2.5 px-4 rounded-xl bg-[#172B4D] hover:bg-slate-800 text-white text-xs font-bold shadow-sm transition-all flex items-center justify-center gap-2"
+                  >
+                    <span>All Candidates Reviewed! Go to Export</span>
+                    <ArrowRight className="w-4 h-4" />
+                  </Link>
+                )}
+              </div>
+            ) : isRejected ? (
+              /* Already Rejected State: Buttons gone, replaced with next action */
+              <div className="space-y-3">
+                <div className="p-3.5 bg-rose-50 border border-rose-200 rounded-xl flex items-center justify-between text-xs">
+                  <div className="flex items-center gap-2">
+                    <X className="w-5 h-5 text-rose-600" />
+                    <div>
+                      <div className="font-bold text-rose-800">✗ Candidate Rejected</div>
+                      <div className="text-[11px] text-rose-600">Excluded from marketing exports.</div>
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => promptDecision('approved')}
+                    disabled={isInvalid}
+                    className="text-[11px] font-semibold text-[#0F766E] hover:underline px-2 py-1 rounded"
+                  >
+                    Re-Approve
+                  </button>
+                </div>
+
+                {nextPendingCandidate ? (
+                  <button
+                    type="button"
+                    onClick={() => navigateToCandidate(allPromos.findIndex(p => p.id === nextPendingCandidate.id))}
+                    className="w-full py-2.5 px-4 rounded-xl bg-[#0F766E] hover:bg-[#115E59] text-white text-xs font-bold shadow-sm transition-all flex items-center justify-center gap-2"
+                  >
+                    <span>Next: Review {nextPendingCandidate.promo_identifier}</span>
+                    <ArrowRight className="w-4 h-4" />
+                  </button>
+                ) : (
+                  <Link
+                    to="/export"
+                    className="w-full py-2.5 px-4 rounded-xl bg-[#172B4D] hover:bg-slate-800 text-white text-xs font-bold shadow-sm transition-all flex items-center justify-center gap-2"
+                  >
+                    <span>Go to Export Results</span>
+                    <ArrowRight className="w-4 h-4" />
+                  </Link>
+                )}
+              </div>
+            ) : (
+              /* Pending Review State: Show Reject & Approve Buttons */
+              <div className="flex items-center gap-3">
+                <button
+                  type="button"
+                  onClick={() => promptDecision('rejected')}
+                  disabled={submitting}
+                  className="flex-1 py-2.5 px-4 rounded-xl border border-rose-300 bg-white hover:bg-rose-50 text-rose-700 text-xs font-bold transition-colors flex items-center justify-center gap-1.5"
+                >
+                  <X className="w-4 h-4" />
+                  <span>Reject</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => promptDecision('approved')}
+                  disabled={submitting || isInvalid}
+                  title={isInvalid ? "Cannot approve: Technical validation failed" : "Approve candidate"}
+                  className="flex-1 py-2.5 px-4 rounded-xl bg-[#0F766E] hover:bg-[#115E59] text-white text-xs font-bold shadow-sm transition-all flex items-center justify-center gap-1.5 disabled:opacity-40"
+                >
+                  <Check className="w-4 h-4" />
+                  <span>Approve</span>
+                </button>
+              </div>
+            )}
           </div>
         </div>
       </div>
