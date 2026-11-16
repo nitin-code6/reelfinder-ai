@@ -24,7 +24,7 @@ app = FastAPI(
 # CORS configuration
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=settings.CORS_ORIGINS,
+    allow_origins=settings.get_cors_origins(),
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -38,8 +38,9 @@ app.include_router(episodes_router, prefix=api_prefix)
 app.include_router(promos_router, prefix=api_prefix)
 app.include_router(export_router, prefix=api_prefix)
 
-# Also mount at root for convenience and testing
+# Also mount at /api for frontend proxy convenience
 app.include_router(health_router)
+app.include_router(health_router, prefix="/api")
 app.include_router(shows_router, prefix="/api")
 app.include_router(episodes_router, prefix="/api")
 app.include_router(promos_router, prefix="/api")
