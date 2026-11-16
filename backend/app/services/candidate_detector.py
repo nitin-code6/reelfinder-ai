@@ -14,7 +14,9 @@ from app.services.scene_segmenter import scene_segmenter
 from app.services.timestamp_validator import timestamp_validator
 from app.services.ranking_service import ranking_service
 from app.llm.base_provider import BaseLLMProvider
+from app.llm.hybrid_provider import HybridLLMProvider
 from app.llm.gemini_provider import GeminiProvider
+from app.llm.groq_provider import GroqProvider
 from app.llm.mock_provider import MockLLMProvider
 from app.llm.prompts import SYSTEM_PROMPT_PROMO_DISCOVERY, USER_PROMPT_TEMPLATE
 from app.llm.schema import AIPromoDiscoveryResponse
@@ -24,12 +26,12 @@ class CandidateDetector:
     def __init__(self, llm_provider: Optional[BaseLLMProvider] = None):
         if llm_provider:
             self.llm = llm_provider
-        elif settings.USE_MOCK_LLM or not settings.GEMINI_API_KEY:
-            logger.info("Using MockLLMProvider (no GEMINI_API_KEY configured or USE_MOCK_LLM=True).")
+        elif settings.USE_MOCK_LLM or (not settings.GROQ_API_KEY and not settings.GEMINI_API_KEY):
+            logger.info("Using MockLLMProvider (no API keys configured or USE_MOCK_LLM=True).")
             self.llm = MockLLMProvider()
         else:
-            logger.info(f"Using GeminiProvider with model: {settings.GEMINI_MODEL}")
-            self.llm = GeminiProvider()
+            logger.info("Using HybridLLMProvider with multi-tier failover (Groq primary -> Gemini secondary -> Heuristic fallback)")
+            self.llm = HybridLLMProvider()
 
         self.txt_parser = TxtScreenplayParser()
         self.pdf_parser = PdfScreenplayParser()
