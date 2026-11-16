@@ -70,11 +70,6 @@ export default function Header({ onMenuClick }) {
             {backendStatus === 'healthy' ? 'API Online' : backendStatus === 'degraded' ? 'API Degraded' : 'API Offline'}
           </span>
         </div>
-
-        {/* User Avatar Circle */}
-        <div className="w-8 h-8 rounded-full bg-[#0F766E] text-white font-bold flex items-center justify-center text-xs shadow-xs">
-          N
-        </div>
       </div>
     </header>
   );

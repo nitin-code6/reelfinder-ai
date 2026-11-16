@@ -136,23 +136,6 @@ export default function Sidebar({ mobileOpen, setMobileOpen }) {
           </NavLink>
         </div>
       </div>
-
-      {/* Bottom Promo Card Graphic */}
-      <div className="p-4 border-t border-white/10">
-        <div className="p-3.5 rounded-xl bg-gradient-to-br from-white/10 to-white/5 border border-white/10 flex items-center gap-3">
-          <div className="w-9 h-9 rounded-lg bg-[#0F766E]/50 flex items-center justify-center shrink-0">
-            <Clapperboard className="w-4 h-4 text-teal-300" />
-          </div>
-          <div>
-            <div className="text-xs font-semibold text-white">
-              Viral Microdramas
-            </div>
-            <div className="text-[11px] text-slate-300">
-              Hook & cliffhanger AI
-            </div>
-          </div>
-        </div>
-      </div>
     </div>
   );
 
