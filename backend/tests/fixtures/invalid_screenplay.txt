@@ -1,0 +1,17 @@
+EPISODE NUMBER: NotANumber
+EPISODE LOGLINE: 
+CONTINUITY NOTES: 
+
+--- SCRIPT START ---
+
+SCENE INVALID
+Scene heading: 
+Scene start: malformed_timestamp
+Scene end: invalid_end
+
+**CAMERA:**
+Start: invalid | End: bad
+Glitch in camera
+
+**ACTION:**
+Some action with no timestamps at all.
