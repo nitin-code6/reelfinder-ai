@@ -65,6 +65,7 @@ export default function Shows() {
   const [isBatchRunning, setIsBatchRunning] = useState(false);
   const [currentBatchEp, setCurrentBatchEp] = useState(null);
   const [batchProgress, setBatchProgress] = useState({ current: 0, total: 0, completed: 0, failed: 0 });
+  const [quotaWarning, setQuotaWarning] = useState(null);
   const stopRequestedRef = useRef(false);
 
   useEffect(() => {
@@ -276,6 +277,14 @@ export default function Shows() {
           error_message: errMsg
         } : e));
         setBatchProgress(prev => ({ ...prev, failed }));
+        if (
+          errMsg.includes('tokens') ||
+          errMsg.includes('rate-limit') ||
+          errMsg.includes('not available') ||
+          errMsg.includes('quota')
+        ) {
+          setQuotaWarning(errMsg);
+        }
       }
 
       if (i < targetEpisodes.length - 1 && !stopRequestedRef.current) {
@@ -378,6 +387,23 @@ export default function Shows() {
 
         {/* Right Column (Width ~8/12): Show Header, 4 Stat Boxes & Episodes Table */}
         <div className="lg:col-span-8 space-y-4">
+          {quotaWarning && (
+            <div className="p-3.5 bg-amber-50 border border-amber-200 rounded-2xl text-xs text-amber-900 flex items-center justify-between shadow-xs">
+              <div className="flex items-center gap-2.5">
+                <AlertTriangle className="w-4 h-4 text-amber-600 shrink-0" />
+                <span className="font-semibold">{quotaWarning}</span>
+              </div>
+              <button
+                type="button"
+                onClick={() => setQuotaWarning(null)}
+                className="text-amber-700 hover:text-amber-900 font-bold px-2 py-0.5 rounded-md hover:bg-amber-100 transition-colors"
+                title="Dismiss warning"
+              >
+                ✕
+              </button>
+            </div>
+          )}
+
           {selectedShow ? (
             <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-xs space-y-5">
               {/* Show Header Card */}
