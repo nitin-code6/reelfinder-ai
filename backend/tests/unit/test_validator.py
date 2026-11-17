@@ -119,4 +119,37 @@ def test_validator_rejects_malformed_timestamp_strings():
 
     assert res.is_valid is False
     assert res.status == "invalid"
-    assert any("Malformed timestamp format" in l for l in res.limitations)
+    assert any("Malformed" in l for l in res.limitations)
+
+
+def test_validator_normalizes_overflow_seconds():
+    """Verify that timestamps like 00:73.00 are normalized to 01:13.00 and duration recalculated."""
+    from app.services.screenplay_parser import normalize_timestamp
+    
+    assert normalize_timestamp("00:73.00") == "01:13.00"
+    assert normalize_timestamp("00:60.00") == "01:00.00"
+    assert normalize_timestamp("02:85.50") == "03:25.50"
+    assert normalize_timestamp("-00:10.00") is None
+    assert normalize_timestamp("not_a_time") is None
+
+
+def test_validator_evidence_grounding_flag():
+    """Verify that unsupported claims or characters not present in the screenplay trigger an evidence warning."""
+    sample_file = FIXTURES_DIR / "sample_screenplay.txt"
+    parser = TxtScreenplayParser()
+    screenplay = parser.parse_file(sample_file)
+
+    validator = TimestampValidator(min_duration=20.0, max_duration=60.0)
+    
+    # Mention character 'Zaphod' who does not exist in sample_screenplay
+    res = validator.validate_candidate(
+        candidate_start_ts="00:04.20",
+        candidate_end_ts="00:37.80",
+        screenplay=screenplay,
+        hook_text="Zaphod threatens Marcus at the ballroom.",
+        cliffhanger_text="Marcus collapses in fear."
+    )
+
+    assert res.is_valid is True
+    assert any("Evidence Warning" in l for l in res.limitations)
+    assert any("Zaphod" in l for l in res.limitations)

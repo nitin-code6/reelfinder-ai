@@ -1,125 +1,5 @@
 [
   {
-    "promo_id": "PROMO_EP18_01",
-    "episode_numbers": [
-      18
-    ],
-    "segments": [
-      {
-        "episode": 18,
-        "start_timestamp": "00:12.00",
-        "end_timestamp": "00:43.00",
-        "duration_seconds": 31.0
-      }
-    ],
-    "total_duration_seconds": 31.0,
-    "hook": "Mira states, 'Joseph said he had never met Dev,' immediately contradicting the visual evidence of a photo of them meeting.",
-    "cliffhanger": "Arjun drops the bombshell: 'Then one of them is lying,' leaving the viewer in a tense silence, unsure who is the liar and what the consequences will be.",
-    "standalone_context": "The visual of a photo showing two men together, paired with a character stating they never met, creates an immediate, understandable mystery of deception and hidden identities.",
-    "scores": {
-      "hook_strength": 8.5,
-      "cliffhanger_strength": 9.0,
-      "standalone_context": 9.5,
-      "emotional_impact": 8.0,
-      "narrative_continuity": 9.5
-    },
-    "overall_score": 89.0,
-    "reason": "This clip perfectly encapsulates the core mystery of the episode. It uses a classic 'visual vs. verbal' contradiction to hook the viewer, and the cliffhanger directly challenges the protagonist's trust in a key character, driving high engagement.",
-    "validation_status": "valid",
-    "limitations": [],
-    "approval_status": "approved"
-  },
-  {
-    "promo_id": "PROMO_EP10_01",
-    "episode_numbers": [
-      10
-    ],
-    "segments": [
-      {
-        "episode": 10,
-        "start_timestamp": "00:04.00",
-        "end_timestamp": "00:43.00",
-        "duration_seconds": 39.0
-      }
-    ],
-    "total_duration_seconds": 39.0,
-    "hook": "Arjun admits he knew about the second will and hid it to protect Mira.",
-    "cliffhanger": "Arjun's devastating confession: 'I thought the truth would destroy you.'",
-    "standalone_context": "The clip immediately establishes a high-stakes betrayal: a man admits to hiding a critical legal document (a will) from a woman, claiming it was to protect her, but the woman feels abandoned and betrayed.",
-    "scores": {
-      "hook_strength": 8.5,
-      "cliffhanger_strength": 9.0,
-      "standalone_context": 9.0,
-      "emotional_impact": 8.5,
-      "narrative_continuity": 9.5
-    },
-    "overall_score": 88.8,
-    "reason": "This is a classic 'betrayal/secret' hook. The viewer immediately understands the stakes (a hidden will) and the emotional conflict (trust broken). The ending on the line 'I thought the truth would destroy you' creates a massive cliffhanger: Was he right? What is the truth? Why would it destroy her?",
-    "validation_status": "valid",
-    "limitations": [],
-    "approval_status": "approved"
-  },
-  {
-    "promo_id": "PROMO_EP23_01",
-    "episode_numbers": [
-      23
-    ],
-    "segments": [
-      {
-        "episode": 23,
-        "start_timestamp": "00:04.00",
-        "end_timestamp": "00:54.00",
-        "duration_seconds": 50.0
-      }
-    ],
-    "total_duration_seconds": 50.0,
-    "hook": "A scarred man, clutching his father's watch, declares he survived the deadly fire.",
-    "cliffhanger": "A tense silence falls as an old clock begins to tick, leaving Mira\u2014and the audience\u2014hanging on whether he'll prove his claim.",
-    "standalone_context": "Even without prior knowledge, viewers see a mysterious survivor being challenged to prove his identity, creating instant intrigue.",
-    "scores": {
-      "hook_strength": 9.0,
-      "cliffhanger_strength": 9.0,
-      "standalone_context": 9.0,
-      "emotional_impact": 8.0,
-      "narrative_continuity": 9.0
-    },
-    "overall_score": 88.5,
-    "reason": "The opening shock of a man claiming to have cheated death grabs attention instantly. The ticking clock and unanswered proof create a classic \"will\u2011they\u2011or\u2011won't\u2011they\" tension that compels viewers to click to see the revelation.",
-    "validation_status": "valid",
-    "limitations": [],
-    "approval_status": "approved"
-  },
-  {
-    "promo_id": "PROMO_EP28_01",
-    "episode_numbers": [
-      28
-    ],
-    "segments": [
-      {
-        "episode": 28,
-        "start_timestamp": "00:12.00",
-        "end_timestamp": "00:54.00",
-        "duration_seconds": 42.0
-      }
-    ],
-    "total_duration_seconds": 42.0,
-    "hook": "Anika's voice cuts through the tension: 'That is not Dev in the footage.'",
-    "cliffhanger": "Mira asks, 'Then who opened the door?' as a tense silence settles and a clock begins to tick.",
-    "standalone_context": "The dialogue clearly establishes a mystery: a fire occurred, and the person responsible is not who everyone assumed. The question 'Who opened the door?' creates an immediate, understandable mystery for any viewer.",
-    "scores": {
-      "hook_strength": 8.5,
-      "cliffhanger_strength": 9.0,
-      "standalone_context": 9.0,
-      "emotional_impact": 8.0,
-      "narrative_continuity": 9.5
-    },
-    "overall_score": 88.0,
-    "reason": "This clip leverages a classic 'twist' hook. By immediately subverting the audience's expectation (it's not the obvious suspect), it creates an instant cognitive gap that demands resolution. The ticking clock at the end adds a layer of suspense and urgency, making it a highly effective standalone ad.",
-    "validation_status": "valid",
-    "limitations": [],
-    "approval_status": "approved"
-  },
-  {
     "promo_id": "PROMO_EP12_01",
     "episode_numbers": [
       12
@@ -127,117 +7,27 @@
     "segments": [
       {
         "episode": 12,
-        "start_timestamp": "00:04.00",
-        "end_timestamp": "00:43.00",
-        "duration_seconds": 39.0
-      }
-    ],
-    "total_duration_seconds": 39.0,
-    "hook": "A six\u2011minute gap appears in security footage, and the system logs the dead father\u2019s fingerprint.",
-    "cliffhanger": "Mira whispers, \u201cMy father is dead,\u201d and the scene cuts before any explanation of the mysterious fingerprint or the ticking clock.",
-    "standalone_context": "Even without prior knowledge, viewers see a security glitch tied to a dead relative\u2019s fingerprint, a grieving protagonist, and an ominous silence\u2014enough to spark curiosity.",
-    "scores": {
-      "hook_strength": 9.0,
-      "cliffhanger_strength": 9.0,
-      "standalone_context": 8.0,
-      "emotional_impact": 9.0,
-      "narrative_continuity": 9.0
-    },
-    "overall_score": 88.0,
-    "reason": "The opening shock of a dead man\u2019s fingerprint on a fresh security gap instantly grabs attention; the emotional reveal of a lost father raises stakes, and cutting right before the mystery deepens forces viewers to watch the full episode to uncover who\u2019s behind the footage.",
-    "validation_status": "valid",
-    "limitations": [],
-    "approval_status": "approved"
-  },
-  {
-    "promo_id": "PROMO_EP19_01",
-    "episode_numbers": [
-      19
-    ],
-    "segments": [
-      {
-        "episode": 19,
-        "start_timestamp": "00:04.00",
-        "end_timestamp": "00:31.00",
-        "duration_seconds": 27.0
-      }
-    ],
-    "total_duration_seconds": 27.0,
-    "hook": "A distorted voice issues a chilling ultimatum: 'Come alone, or your mother disappears again.'",
-    "cliffhanger": "Mira is left in a tense silence, searching for a detail everyone else has ignored, as a clock begins to tick.",
-    "standalone_context": "The threat of a missing mother and a midnight meeting at a pier creates immediate, high-stakes tension that is understandable without prior context.",
-    "scores": {
-      "hook_strength": 9.0,
-      "cliffhanger_strength": 8.0,
-      "standalone_context": 9.0,
-      "emotional_impact": 9.0,
-      "narrative_continuity": 9.0
-    },
-    "overall_score": 87.5,
-    "reason": "This clip leverages a direct, personal threat to hook the viewer. The combination of a supernatural or distorted voice and a physical threat to a loved one is a classic, high-converting microdrama trope that drives immediate engagement.",
-    "validation_status": "valid",
-    "limitations": [],
-    "approval_status": "approved"
-  },
-  {
-    "promo_id": "PROMO_EP28_02",
-    "episode_numbers": [
-      28
-    ],
-    "segments": [
-      {
-        "episode": 28,
-        "start_timestamp": "00:73.00",
-        "end_timestamp": "01:58.00",
-        "duration_seconds": 45.0
-      }
-    ],
-    "total_duration_seconds": 45.0,
-    "hook": "Mira's urgent discovery: 'This was not here yesterday. Someone has been hiding something.'",
-    "cliffhanger": "Mira's chilling final line: 'If that is true, everything we know is about to change.'",
-    "standalone_context": "The scene is a self-contained discovery. A character finds physical evidence of a cover-up and makes a dramatic declaration that the entire premise of the story is about to be upended. No prior context is needed to understand the stakes.",
-    "scores": {
-      "hook_strength": 8.0,
-      "cliffhanger_strength": 9.5,
-      "standalone_context": 8.5,
-      "emotional_impact": 9.0,
-      "narrative_continuity": 8.5
-    },
-    "overall_score": 87.0,
-    "reason": "This promo is built on the power of a major revelation. The line 'everything we know is about to change' is a powerful, universal hook for microdrama audiences who crave plot twists and high-stakes drama. The visual of a 'familiar family ring' adds a personal, emotional layer to the mystery.",
-    "validation_status": "valid",
-    "limitations": [],
-    "approval_status": "approved"
-  },
-  {
-    "promo_id": "PROMO_EP02_01",
-    "episode_numbers": [
-      2
-    ],
-    "segments": [
-      {
-        "episode": 2,
         "start_timestamp": "00:12.00",
-        "end_timestamp": "00:43.00",
-        "duration_seconds": 31.0
+        "end_timestamp": "00:54.00",
+        "duration_seconds": 42.0
       }
     ],
-    "total_duration_seconds": 31.0,
-    "hook": "Mira\u2019s urgent question \u201cWho is A. Sen?\u201d",
-    "cliffhanger": "Arjun\u2019s cryptic reply \u201cSomeone your father never stopped paying.\u201d followed by a tense silence",
-    "standalone_context": "A daughter confronts a mysterious payment linked to an unknown senator, hinting at a family secret that any viewer can grasp instantly.",
+    "total_duration_seconds": 42.0,
+    "hook": "TECHNICIAN: \"The system used your father's fingerprint.\"",
+    "cliffhanger": "MIRA: \"My father is dead.\" [Tense silence settles.]",
+    "standalone_context": "A technician reveals a security system used a dead man's fingerprint, prompting the protagonist to state the impossible fact that her father is dead, creating an immediate mystery.",
     "scores": {
-      "hook_strength": 9.0,
+      "hook_strength": 9.5,
       "cliffhanger_strength": 9.0,
-      "standalone_context": 8.0,
-      "emotional_impact": 8.0,
+      "standalone_context": 8.5,
+      "emotional_impact": 8.5,
       "narrative_continuity": 9.0
     },
-    "overall_score": 86.5,
-    "reason": "The opening question spikes curiosity, the cryptic answer raises a personal mystery, and the 31\u2011second slice ends on unresolved tension, making viewers desperate to learn who A.\u202fSen is and what the father\u2019s connection means.",
+    "overall_score": 89.5,
+    "reason": "The 3-second hook is a direct, shocking revelation. The cliffhanger is the protagonist's cold, factual denial of the system's data, leaving the viewer desperate to know how a dead man's fingerprint was used.",
     "validation_status": "valid",
     "limitations": [],
-    "approval_status": "approved"
+    "approval_status": "pending"
   },
   {
     "promo_id": "PROMO_EP03_01",
@@ -248,176 +38,26 @@
       {
         "episode": 3,
         "start_timestamp": "00:04.00",
-        "end_timestamp": "00:31.00",
-        "duration_seconds": 27.0
-      }
-    ],
-    "total_duration_seconds": 27.0,
-    "hook": "A drenched stranger bursts in, shouting \"Mira!\" using her secret childhood nickname.",
-    "cliffhanger": "Mira scans the hall, tension mounting, just as Dev threatens, \"Her mother is dead\u2026\"\u2014the scene cuts before his revelation lands.",
-    "standalone_context": "Even without prior knowledge, viewers see a mysterious, soaked intruder demanding a girl, a hostile authority figure, and a hinted family secret, creating instant intrigue.",
-    "scores": {
-      "hook_strength": 9.0,
-      "cliffhanger_strength": 9.0,
-      "standalone_context": 8.0,
-      "emotional_impact": 8.0,
-      "narrative_continuity": 9.0
-    },
-    "overall_score": 86.5,
-    "reason": "The opening shock of a wet stranger calling Mira by a nickname grabs attention, while the cut before Dev\u2019s bombshell about Mira\u2019s mother leaves a vital secret hanging, compelling viewers to watch the full episode.",
-    "validation_status": "valid",
-    "limitations": [],
-    "approval_status": "approved"
-  },
-  {
-    "promo_id": "PROMO_EP15_01",
-    "episode_numbers": [
-      15
-    ],
-    "segments": [
-      {
-        "episode": 15,
-        "start_timestamp": "00:04.00",
-        "end_timestamp": "00:31.00",
-        "duration_seconds": 27.0
-      }
-    ],
-    "total_duration_seconds": 27.0,
-    "hook": "Mira lunges into a desperate embrace as Anika whispers, \u201cThe danger is still inside the hotel.\u201d",
-    "cliffhanger": "Mira\u2019s eyes lock on a hidden detail just as an ominous clock begins to tick, leaving the threat unseen.",
-    "standalone_context": "Viewers instantly see two strangers in a tense hotel hallway, a looming danger, and a mysterious ticking clock, all understandable without prior episodes.",
-    "scores": {
-      "hook_strength": 9.0,
-      "cliffhanger_strength": 9.0,
-      "standalone_context": 8.0,
-      "emotional_impact": 8.0,
-      "narrative_continuity": 9.0
-    },
-    "overall_score": 86.5,
-    "reason": "The physical embrace and whispered warning grab attention, while the ticking clock creates an unanswered mystery that compels viewers to click to discover the source of danger.",
-    "validation_status": "valid",
-    "limitations": [],
-    "approval_status": "approved"
-  },
-  {
-    "promo_id": "PROMO_EP25_01",
-    "episode_numbers": [
-      25
-    ],
-    "segments": [
-      {
-        "episode": 25,
-        "start_timestamp": "00:04.00",
         "end_timestamp": "00:54.00",
         "duration_seconds": 50.0
       }
     ],
     "total_duration_seconds": 50.0,
-    "hook": "The man shouts, \"The original will is hidden in the lighthouse clock!\" and names Mira and Anika as heirs.",
-    "cliffhanger": "A tense silence falls as the old hotel\u2019s clock begins to tick ominously, hinting at a hidden secret about to surface.",
-    "standalone_context": "A stranger reveals a buried family will and names two unexpected heirs, then a mysterious clock starts ticking, instantly signalling danger and intrigue to any viewer.",
+    "hook": "A soaked stranger asks for Mira by her childhood nickname.",
+    "cliffhanger": "A tense silence settles as a clock begins to tick, leaving the fate of Mira and Dev unknown.",
+    "standalone_context": "The clip instantly shows a mysterious, drenched stranger demanding Mira, the security chief ordering her removal, and a shocking revelation that Mira's mother is dead, creating a clear conflict for viewers who have never seen the series.",
     "scores": {
       "hook_strength": 9.0,
       "cliffhanger_strength": 9.0,
       "standalone_context": 8.0,
-      "emotional_impact": 8.0,
+      "emotional_impact": 9.0,
       "narrative_continuity": 9.0
     },
-    "overall_score": 86.5,
-    "reason": "The opening line drops a high\u2011stakes secret that forces viewers to wonder what the will contains and why the clock matters. Ending on the ticking clock creates an urgent question\u2014what will be uncovered? This bite\u2011sized mystery compels scroll\u2011stoppers to watch the full episode.",
+    "overall_score": 88.0,
+    "reason": "The opening three seconds thrust viewers into a high\u2011stakes mystery (stranger, nickname, security), while the ending cuts at the moment tension peaks with silence and a ticking clock, compelling the audience to click to discover what happens next.",
     "validation_status": "valid",
     "limitations": [],
-    "approval_status": "approved"
-  },
-  {
-    "promo_id": "PROMO_EP21_01",
-    "episode_numbers": [
-      21
-    ],
-    "segments": [
-      {
-        "episode": 21,
-        "start_timestamp": "00:04.00",
-        "end_timestamp": "00:31.00",
-        "duration_seconds": 27.0
-      }
-    ],
-    "total_duration_seconds": 27.0,
-    "hook": "Joseph blurts out, \"I helped hide Anika\u2026 Dev ordered the fire.\"",
-    "cliffhanger": "Mira demands, \"Who else was inside?\" \u2013 the answer is left hanging.",
-    "standalone_context": "The confession reveals a hidden victim and a deadly fire, then a desperate question about other participants, instantly setting up a high\u2011stakes mystery for any viewer.",
-    "scores": {
-      "hook_strength": 9.0,
-      "cliffhanger_strength": 9.0,
-      "standalone_context": 8.0,
-      "emotional_impact": 8.0,
-      "narrative_continuity": 9.0
-    },
-    "overall_score": 86.5,
-    "reason": "A shocking confession grabs attention within seconds, and cutting right after Mira's urgent question creates unbearable curiosity, compelling viewers to click to learn who else was there and why.",
-    "validation_status": "valid",
-    "limitations": [],
-    "approval_status": "approved"
-  },
-  {
-    "promo_id": "PROMO_EP20_01",
-    "episode_numbers": [
-      20
-    ],
-    "segments": [
-      {
-        "episode": 20,
-        "start_timestamp": "00:04.00",
-        "end_timestamp": "00:43.00",
-        "duration_seconds": 39.0
-      }
-    ],
-    "total_duration_seconds": 39.0,
-    "hook": "A shadowy figure snatches a report and flashes a signet ring that matches the protagonist\u2019s father\u2019s.",
-    "cliffhanger": "The figure whispers, \u201cSomeone your father trusted more than his own children,\u201d and the room falls into a tense, ticking silence.",
-    "standalone_context": "Even without prior knowledge, viewers see a mysterious stranger, a family heirloom, and a cryptic warning that hints at deep family secrets.",
-    "scores": {
-      "hook_strength": 9.0,
-      "cliffhanger_strength": 9.0,
-      "standalone_context": 8.0,
-      "emotional_impact": 8.0,
-      "narrative_continuity": 9.0
-    },
-    "overall_score": 86.5,
-    "reason": "The visual of the ring instantly signals a personal stake, the cryptic line raises questions about loyalty and betrayal, and the abrupt silence leaves the audience desperate to learn who the figure is and what they know.",
-    "validation_status": "valid",
-    "limitations": [],
-    "approval_status": "approved"
-  },
-  {
-    "promo_id": "PROMO_EP26_01",
-    "episode_numbers": [
-      26
-    ],
-    "segments": [
-      {
-        "episode": 26,
-        "start_timestamp": "00:12.00",
-        "end_timestamp": "00:43.00",
-        "duration_seconds": 31.0
-      }
-    ],
-    "total_duration_seconds": 31.0,
-    "hook": "Mira points at the document and commands, 'If this is my confession, read every word.'",
-    "cliffhanger": "Dev responds with a cold, challenging retort: 'You know exactly what it says,' leaving the audience to wonder if she is lying or if he is about to expose her.",
-    "standalone_context": "The conflict is immediately clear: a woman is being accused of a crime via a written confession, and she is publicly challenging the man holding it to prove it.",
-    "scores": {
-      "hook_strength": 8.5,
-      "cliffhanger_strength": 8.0,
-      "standalone_context": 9.0,
-      "emotional_impact": 8.5,
-      "narrative_continuity": 9.5
-    },
-    "overall_score": 86.2,
-    "reason": "This clip captures the core confrontation of the episode. It establishes a high-stakes public humiliation scenario (in front of staff) and a direct verbal duel. The cut right after Dev's line creates a 'gaslighting' tension that demands the viewer see the resolution.",
-    "validation_status": "valid",
-    "limitations": [],
-    "approval_status": "approved"
+    "approval_status": "pending"
   },
   {
     "promo_id": "PROMO_EP09_01",
@@ -427,27 +67,87 @@
     "segments": [
       {
         "episode": 9,
-        "start_timestamp": "00:31.00",
-        "end_timestamp": "00:86.00",
-        "duration_seconds": 55.0
+        "start_timestamp": "00:04.00",
+        "end_timestamp": "00:54.00",
+        "duration_seconds": 50.0
       }
     ],
-    "total_duration_seconds": 55.0,
-    "hook": "Mira demands, \"Then tell me who paid you.\"",
-    "cliffhanger": "A door slams shut and Mira strides toward it, leaving the audience in suspense.",
-    "standalone_context": "A handwriting expert confirms a forged signature, Mira confronts the mystery, and a sudden door closure hints at a hidden truth.",
+    "total_duration_seconds": 50.0,
+    "hook": "A handwriting expert confirms the signature is forged but refuses to name the client.",
+    "cliffhanger": "Mira demands, \"Then tell me who paid you,\" and a tense silence settles with a ticking clock.",
+    "standalone_context": "The promo instantly shows a high\u2011stakes mystery: a forged signature, a secret client, and a protagonist demanding answers, all understandable without prior knowledge.",
     "scores": {
-      "hook_strength": 8.0,
+      "hook_strength": 9.0,
       "cliffhanger_strength": 9.0,
-      "standalone_context": 9.0,
+      "standalone_context": 8.0,
       "emotional_impact": 8.0,
       "narrative_continuity": 9.0
     },
-    "overall_score": 86.0,
-    "reason": "The opening demand instantly signals conflict, while the abrupt door closure creates a visceral cliffhanger that compels viewers to seek resolution. The scene is self\u2011contained, requiring no prior knowledge, and the tension peaks right before the cut.",
+    "overall_score": 86.5,
+    "reason": "The opening three seconds present a clear conflict that stops scrolling. The cut ends on Mira\u2019s demand and the ominous silence, leaving viewers desperate to learn who paid and what the forged signature means, driving clicks to the full episode.",
     "validation_status": "valid",
     "limitations": [],
-    "approval_status": "approved"
+    "approval_status": "pending"
+  },
+  {
+    "promo_id": "PROMO_EP13_01",
+    "episode_numbers": [
+      13
+    ],
+    "segments": [
+      {
+        "episode": 13,
+        "start_timestamp": "00:12.00",
+        "end_timestamp": "00:54.00",
+        "duration_seconds": 42.0
+      }
+    ],
+    "total_duration_seconds": 42.0,
+    "hook": "Joseph reveals the hotel fire was not an accident and produces a hidden report, stating: 'The fire began in the west wing. Your mother was trapped there.'",
+    "cliffhanger": "Mira challenges the previous narrative with 'You said she escaped,' leading to a tense silence where the truth is left hanging.",
+    "standalone_context": "The dialogue clearly establishes a conflict about a past hotel fire and the fate of Mira's mother, making the stakes immediately clear to a new viewer.",
+    "scores": {
+      "hook_strength": 8.5,
+      "cliffhanger_strength": 8.0,
+      "standalone_context": 9.0,
+      "emotional_impact": 8.5,
+      "narrative_continuity": 9.5
+    },
+    "overall_score": 86.2,
+    "reason": "The promo leverages a classic mystery/thriller hook: a trusted figure (Joseph) revealing a dark secret that contradicts what the protagonist (Mira) was told. The cut at the 'tense silence' creates an immediate need to know the resolution.",
+    "validation_status": "valid",
+    "limitations": [],
+    "approval_status": "pending"
+  },
+  {
+    "promo_id": "PROMO_EP07_01",
+    "episode_numbers": [
+      7
+    ],
+    "segments": [
+      {
+        "episode": 7,
+        "start_timestamp": "00:12.00",
+        "end_timestamp": "00:54.00",
+        "duration_seconds": 42.0
+      }
+    ],
+    "total_duration_seconds": 42.0,
+    "hook": "Dev states, \"The engagement is tomorrow. The papers are ready.\"",
+    "cliffhanger": "Mira confronts Dev with, \"You planned my future without asking me?\" followed by a tense silence and a clock beginning to tick.",
+    "standalone_context": "The scene clearly establishes a forced engagement to save a hotel, with Mira objecting to having her future decided without her consent.",
+    "scores": {
+      "hook_strength": 8.5,
+      "cliffhanger_strength": 8.0,
+      "standalone_context": 9.0,
+      "emotional_impact": 8.5,
+      "narrative_continuity": 9.5
+    },
+    "overall_score": 86.2,
+    "reason": "The promo leverages the high-stakes conflict of a forced marriage and the immediate, confrontational pushback from the female lead. The ticking clock at the end adds a layer of suspense and urgency, making the viewer want to know the outcome of this confrontation.",
+    "validation_status": "valid",
+    "limitations": [],
+    "approval_status": "pending"
   },
   {
     "promo_id": "PROMO_EP08_01",
@@ -463,111 +163,231 @@
       }
     ],
     "total_duration_seconds": 31.0,
-    "hook": "Mira confronts the conspirators: \"This isn't a rescue. You're stealing the hotel.\"",
-    "cliffhanger": "\"Your father signed it himself.\"",
-    "standalone_context": "Mira discovers her father's signature on a transfer that could strip the hotel from her family, setting up a family betrayal.",
+    "hook": "MIRA: \"This isn't a rescue. You're stealing the hotel.\"",
+    "cliffhanger": "DEV: \"Your father signed it himself.\"",
+    "standalone_context": "The dialogue clearly establishes a conflict over the ownership of a hotel, with one character accusing the other of theft and the other defending it with a shocking claim about a deceased father's signature.",
     "scores": {
-      "hook_strength": 8.0,
+      "hook_strength": 8.5,
       "cliffhanger_strength": 9.0,
-      "standalone_context": 9.0,
-      "emotional_impact": 8.0,
+      "standalone_context": 8.0,
+      "emotional_impact": 8.5,
       "narrative_continuity": 9.0
     },
     "overall_score": 86.0,
-    "reason": "The clip shows a direct confrontation and a shocking revelation that instantly hooks viewers, leaving them craving the resolution.",
+    "reason": "The promo opens with a direct, high-stakes accusation of theft, immediately grabbing the viewer's attention. The cliffhanger introduces a major plot twist involving a dead person's signature, creating an urgent need to see the resolution.",
     "validation_status": "valid",
     "limitations": [],
-    "approval_status": "approved"
+    "approval_status": "pending"
   },
   {
-    "promo_id": "PROMO_EP17_01",
+    "promo_id": "PROMO_EP19_01",
     "episode_numbers": [
-      17
+      19
     ],
     "segments": [
       {
-        "episode": 17,
+        "episode": 19,
+        "start_timestamp": "00:04.00",
+        "end_timestamp": "00:31.00",
+        "duration_seconds": 27.0
+      }
+    ],
+    "total_duration_seconds": 27.0,
+    "hook": "A distorted voice asks Mira to bring the fire report to the pier at midnight, immediately followed by the threat: 'Come alone, or your mother disappears again.'",
+    "cliffhanger": "Mira is left in a tense silence, searching for a detail everyone else has ignored, with the threat of her mother's disappearance hanging over her.",
+    "standalone_context": "The threat is explicit and personal ('your mother disappears again'), and the demand for a 'fire report' creates immediate mystery about what is being hidden.",
+    "scores": {
+      "hook_strength": 9.0,
+      "cliffhanger_strength": 8.0,
+      "standalone_context": 8.0,
+      "emotional_impact": 9.0,
+      "narrative_continuity": 9.0
+    },
+    "overall_score": 85.5,
+    "reason": "The combination of a supernatural/distorted voice, a direct threat to a loved one, and a mysterious object (fire report) creates a high-stakes, unresolvable tension that demands the viewer continue to see how Mira responds.",
+    "validation_status": "valid",
+    "limitations": [],
+    "approval_status": "pending"
+  },
+  {
+    "promo_id": "PROMO_EP21_01",
+    "episode_numbers": [
+      21
+    ],
+    "segments": [
+      {
+        "episode": 21,
+        "start_timestamp": "00:04.00",
+        "end_timestamp": "00:31.00",
+        "duration_seconds": 27.0
+      }
+    ],
+    "total_duration_seconds": 27.0,
+    "hook": "Joseph admits he helped hide Anika but says Dev ordered the fire.",
+    "cliffhanger": "MIRA: \"Who else was inside?\"",
+    "standalone_context": "The promo opens with a shocking confession that a trusted character helped conceal a victim and blames a higher\u2011up for a deadly fire, then cuts to another character demanding answers, instantly establishing betrayal, mystery, and high stakes for any viewer.",
+    "scores": {
+      "hook_strength": 9.0,
+      "cliffhanger_strength": 9.0,
+      "standalone_context": 8.0,
+      "emotional_impact": 8.0,
+      "narrative_continuity": 8.0
+    },
+    "overall_score": 85.0,
+    "reason": "The first three seconds deliver a scandalous revelation that forces viewers to wonder why Joseph hid Anika and what Dev\u2019s role was. Ending on Mira\u2019s urgent question leaves the mystery unresolved, compelling the audience to watch the episode for answers.",
+    "validation_status": "valid",
+    "limitations": [],
+    "approval_status": "pending"
+  },
+  {
+    "promo_id": "PROMO_EP18_01",
+    "episode_numbers": [
+      18
+    ],
+    "segments": [
+      {
+        "episode": 18,
+        "start_timestamp": "00:12.00",
+        "end_timestamp": "00:54.00",
+        "duration_seconds": 42.0
+      }
+    ],
+    "total_duration_seconds": 42.0,
+    "hook": "Mira states, 'Joseph said he had never met Dev,' immediately after the door opens to reveal a photo of them meeting, creating an instant contradiction.",
+    "cliffhanger": "Arjun declares, 'Then one of them is lying,' followed by a tense silence and a clock ticking, leaving the audience to wonder who is the liar and what the consequences will be.",
+    "standalone_context": "The visual of a photo proving a meeting, combined with the dialogue claiming they never met, clearly establishes a mystery involving deception and a hidden connection between two characters.",
+    "scores": {
+      "hook_strength": 8.5,
+      "cliffhanger_strength": 8.0,
+      "standalone_context": 9.0,
+      "emotional_impact": 7.5,
+      "narrative_continuity": 9.5
+    },
+    "overall_score": 84.8,
+    "reason": "This segment captures the core mystery of the episode. The immediate contradiction between the visual evidence (the photo) and the spoken word (the denial) is a classic, highly engaging hook for a thriller/mystery microdrama. The cliffhanger on the accusation of a lie creates a strong urge to see the next step in the investigation.",
+    "validation_status": "valid",
+    "limitations": [],
+    "approval_status": "pending"
+  },
+  {
+    "promo_id": "PROMO_EP06_01",
+    "episode_numbers": [
+      6
+    ],
+    "segments": [
+      {
+        "episode": 6,
+        "start_timestamp": "00:12.00",
+        "end_timestamp": "00:54.00",
+        "duration_seconds": 42.0
+      }
+    ],
+    "total_duration_seconds": 42.0,
+    "hook": "A damaged recorder plays a woman's voice: 'If Dev finds the second copy, none of you will be safe.'",
+    "cliffhanger": "Mira realizes the voice is her mother's, followed by a tense silence and a clock beginning to tick, leaving the threat unresolved.",
+    "standalone_context": "The clip introduces a mysterious recording warning about a 'second copy' and a character named Dev, immediately establishing a high-stakes mystery and a personal connection to the protagonist.",
+    "scores": {
+      "hook_strength": 8.5,
+      "cliffhanger_strength": 7.5,
+      "standalone_context": 8.0,
+      "emotional_impact": 7.0,
+      "narrative_continuity": 9.0
+    },
+    "overall_score": 80.0,
+    "reason": "The audio hook of a threatening voice-over is highly effective for short-form video. The revelation that the voice belongs to the protagonist's mother creates an immediate emotional and narrative hook that demands resolution.",
+    "validation_status": "valid",
+    "limitations": [],
+    "approval_status": "pending"
+  },
+  {
+    "promo_id": "PROMO_EP05_01",
+    "episode_numbers": [
+      5
+    ],
+    "segments": [
+      {
+        "episode": 5,
+        "start_timestamp": "00:12.00",
+        "end_timestamp": "00:54.00",
+        "duration_seconds": 42.0
+      }
+    ],
+    "total_duration_seconds": 42.0,
+    "hook": "Joseph's intense, accusatory dialogue: \"Your father came here every Thursday. Never alone.\"",
+    "cliffhanger": "Mira asks, \"Who came with him?\" followed by a tense silence and the sound of a clock ticking, leaving the identity of the accomplice unknown.",
+    "standalone_context": "The dialogue immediately establishes a mystery involving a missing or deceased father, a specific location (the hotel), and a hidden accomplice, creating a clear investigative premise.",
+    "scores": {
+      "hook_strength": 7.5,
+      "cliffhanger_strength": 8.0,
+      "standalone_context": 8.5,
+      "emotional_impact": 7.0,
+      "narrative_continuity": 9.0
+    },
+    "overall_score": 79.8,
+    "reason": "It leverages the classic 'missing person' trope with a specific, time-bound detail (every Thursday) that creates immediate intrigue. The cut at the moment of silence forces the viewer to seek the answer to 'who'.",
+    "validation_status": "valid",
+    "limitations": [],
+    "approval_status": "pending"
+  },
+  {
+    "promo_id": "PROMO_EP22_01",
+    "episode_numbers": [
+      22
+    ],
+    "segments": [
+      {
+        "episode": 22,
+        "start_timestamp": "00:12.00",
+        "end_timestamp": "00:54.00",
+        "duration_seconds": 42.0
+      }
+    ],
+    "total_duration_seconds": 42.0,
+    "hook": "Arjun states, 'Someone was here after we left,' immediately establishing a breach of security and the presence of an intruder.",
+    "cliffhanger": "Mira concludes, 'Then the messages were real,' followed by a tense silence and a clock ticking, leaving the viewer in suspense about what the messages are and who is responsible.",
+    "standalone_context": "The dialogue clearly establishes that the characters are in a hidden room and have discovered evidence of a recent, unauthorized visit, creating a mystery that is understandable without prior context.",
+    "scores": {
+      "hook_strength": 7.5,
+      "cliffhanger_strength": 8.0,
+      "standalone_context": 8.5,
+      "emotional_impact": 7.0,
+      "narrative_continuity": 9.0
+    },
+    "overall_score": 79.8,
+    "reason": "The promo leverages the classic mystery/thriller trope of discovering an intruder. The progression from physical evidence (fresh tea, disturbed dust) to a major plot revelation ('the messages were real') creates a strong narrative arc that ends on a high-tension, unresolved note.",
+    "validation_status": "valid",
+    "limitations": [],
+    "approval_status": "pending"
+  },
+  {
+    "promo_id": "PROMO_EP20_01",
+    "episode_numbers": [
+      20
+    ],
+    "segments": [
+      {
+        "episode": 20,
         "start_timestamp": "00:04.00",
         "end_timestamp": "00:54.00",
         "duration_seconds": 50.0
       }
     ],
     "total_duration_seconds": 50.0,
-    "hook": "Arjun admits he has received messages from their father's old phone number.",
+    "hook": "A figure takes the report and reveals a signet ring identical to her father's.",
     "cliffhanger": "A tense silence settles. Somewhere in the old building, a clock begins to tick.",
-    "standalone_context": "The scene establishes a high-stakes mystery immediately: a dead father's phone is active, and the messages claim someone is alive in the hotel, creating an immediate sense of danger and intrigue.",
+    "standalone_context": "The visual of a signet ring identical to a father's immediately establishes a mystery of identity and legacy. The dialogue 'Someone your father trusted more than his own children' clearly defines the stakes and the antagonist's connection to the protagonist's past.",
     "scores": {
-      "hook_strength": 9.0,
-      "cliffhanger_strength": 8.0,
-      "standalone_context": 9.0,
-      "emotional_impact": 8.0,
-      "narrative_continuity": 9.0
-    },
-    "overall_score": 86.0,
-    "reason": "This clip leverages the 'impossible' element (a dead person's phone) to hook viewers. The progression from the revelation to the tense silence creates a perfect micro-arc that ends on a suspenseful note, compelling the viewer to click to find out who is alive in the hotel.",
-    "validation_status": "valid",
-    "limitations": [],
-    "approval_status": "approved"
-  },
-  {
-    "promo_id": "PROMO_EP24_02",
-    "episode_numbers": [
-      24
-    ],
-    "segments": [
-      {
-        "episode": 24,
-        "start_timestamp": "00:73.00",
-        "end_timestamp": "00:98.00",
-        "duration_seconds": 25.0
-      }
-    ],
-    "total_duration_seconds": 25.0,
-    "hook": "\"This was not here yesterday. Someone has been hiding something.\" \u2013 an immediate accusation that hints at a hidden conspiracy.",
-    "cliffhanger": "The scene ends as a door slams shut down the corridor, leaving the audience to wonder what lies behind it and who is watching.",
-    "standalone_context": "The dialogue instantly establishes a mystery of a newly\u2011appeared clue, and the closing door creates a visual barrier that signals danger, understandable without any backstory.",
-    "scores": {
-      "hook_strength": 8.0,
-      "cliffhanger_strength": 9.0,
-      "standalone_context": 9.0,
-      "emotional_impact": 8.0,
-      "narrative_continuity": 9.0
-    },
-    "overall_score": 86.0,
-    "reason": "The accusation grabs attention with the promise of a secret uncovered. The sudden door slam is a visual shock that cuts off just before the reveal, driving viewers to click to see what\u2019s hidden behind the door.",
-    "validation_status": "valid",
-    "limitations": [],
-    "approval_status": "approved"
-  },
-  {
-    "promo_id": "PROMO_EP14_01",
-    "episode_numbers": [
-      14
-    ],
-    "segments": [
-      {
-        "episode": 14,
-        "start_timestamp": "00:12.00",
-        "end_timestamp": "00:43.00",
-        "duration_seconds": 31.0
-      }
-    ],
-    "total_duration_seconds": 31.0,
-    "hook": "Anika gasps, \"I did not abandon you. I was made to disappear,\" shocking Mira and the viewer.",
-    "cliffhanger": "Mira whispers, \"Are you my mother?\" and the screen cuts just as a tense silence settles and a clock begins to tick.",
-    "standalone_context": "A daughter confronts a mysterious woman who may be her mother, revealing a hidden past and a life\u2011changing secret, understandable without any prior episodes.",
-    "scores": {
-      "hook_strength": 8.0,
-      "cliffhanger_strength": 9.0,
+      "hook_strength": 8.5,
+      "cliffhanger_strength": 7.0,
       "standalone_context": 8.0,
-      "emotional_impact": 9.0,
+      "emotional_impact": 7.5,
       "narrative_continuity": 9.0
     },
-    "overall_score": 85.5,
-    "reason": "The opening line is an instant revelation that grabs attention, while the unanswered question of motherhood creates a powerful cliffhanger that forces viewers to click to discover the truth.",
+    "overall_score": 79.5,
+    "reason": "This segment contains the core mystery of the episode. The reveal of the ring is a strong visual hook, and the dialogue provides the necessary context to understand the conflict. The ending on a 'tense silence' and a 'ticking clock' creates an auditory and visual cliffhanger that demands to know what happens next.",
     "validation_status": "valid",
     "limitations": [],
-    "approval_status": "approved"
+    "approval_status": "pending"
   },
   {
     "promo_id": "PROMO_EP04_01",
@@ -583,348 +403,234 @@
       }
     ],
     "total_duration_seconds": 39.0,
-    "hook": "Mira gasps as she pulls a family photo\u2014every face is cut out, a chilling void in the picture.",
-    "cliffhanger": "Arjun whispers, \"Or made sure we forgot her,\" leaving the audience wondering who erased the person and why.",
-    "standalone_context": "The clip instantly shows a mysterious disappearance in family photos and a cryptic warning, enough for a newcomer to grasp the central mystery without prior knowledge.",
-    "scores": {
-      "hook_strength": 9.0,
-      "cliffhanger_strength": 9.0,
-      "standalone_context": 8.0,
-      "emotional_impact": 8.0,
-      "narrative_continuity": 8.0
-    },
-    "overall_score": 85.0,
-    "reason": "The shocking visual of missing faces grabs attention within seconds, the dialogue builds intrigue, and the abrupt cut on Arjun's ominous line forces viewers to click to discover the truth.",
-    "validation_status": "valid",
-    "limitations": [],
-    "approval_status": "approved"
-  },
-  {
-    "promo_id": "PROMO_EP15_02",
-    "episode_numbers": [
-      15
-    ],
-    "segments": [
-      {
-        "episode": 15,
-        "start_timestamp": "00:73.00",
-        "end_timestamp": "00:98.00",
-        "duration_seconds": 25.0
-      }
-    ],
-    "total_duration_seconds": 25.0,
-    "hook": "Mira spots a fresh, ominous mark on the dusty floor and shouts, \u201cSomeone has been hiding something!\u201d",
-    "cliffhanger": "A heavy door slams shut at the far end just as she steps forward, leaving the unknown behind it.",
-    "standalone_context": "Even without backstory, the audience sees a detective\u2011like discovery and a sudden locked door, promising a hidden menace.",
-    "scores": {
-      "hook_strength": 8.0,
-      "cliffhanger_strength": 9.0,
-      "standalone_context": 9.0,
-      "emotional_impact": 7.0,
-      "narrative_continuity": 9.0
-    },
-    "overall_score": 84.5,
-    "reason": "The shocking discovery and sudden door slam create immediate tension; the cut leaves the audience wondering what\u2019s behind the door, driving clicks.",
-    "validation_status": "valid",
-    "limitations": [],
-    "approval_status": "approved"
-  },
-  {
-    "promo_id": "PROMO_EP30_01",
-    "episode_numbers": [
-      30
-    ],
-    "segments": [
-      {
-        "episode": 30,
-        "start_timestamp": "00:73.00",
-        "end_timestamp": "00:98.00",
-        "duration_seconds": 25.0
-      }
-    ],
-    "total_duration_seconds": 25.0,
-    "hook": "Mira whispers, \"This was not here yesterday. Someone has been hiding something.\"",
-    "cliffhanger": "A distant door slams shut, leaving Mira staring at the darkness with no answer.",
-    "standalone_context": "The line instantly tells a new viewer that Mira has uncovered a secret and something unseen is about to be revealed, while the closing door creates immediate suspense.",
-    "scores": {
-      "hook_strength": 8.0,
-      "cliffhanger_strength": 9.0,
-      "standalone_context": 9.0,
-      "emotional_impact": 7.0,
-      "narrative_continuity": 9.0
-    },
-    "overall_score": 84.5,
-    "reason": "The hook plants a mystery in the first three seconds, and the abrupt door slam cuts off just before we learn what\u2019s behind it, forcing viewers to click to discover the hidden truth.",
-    "validation_status": "valid",
-    "limitations": [],
-    "approval_status": "approved"
-  },
-  {
-    "promo_id": "PROMO_EP11_01",
-    "episode_numbers": [
-      11
-    ],
-    "segments": [
-      {
-        "episode": 11,
-        "start_timestamp": "00:04.00",
-        "end_timestamp": "00:54.00",
-        "duration_seconds": 50.0
-      }
-    ],
-    "total_duration_seconds": 50.0,
-    "hook": "The safe is open and the second will is missing. Blue thread is caught in the lock.",
-    "cliffhanger": "A tense silence settles. Somewhere in the old building, a clock begins to tick.",
-    "standalone_context": "The scene immediately establishes a high-stakes mystery: a valuable document (the second will) has been stolen from a secure safe, and the protagonist (Mira) is investigating the crime scene. The accusation from Dev creates immediate interpersonal conflict.",
-    "scores": {
-      "hook_strength": 8.5,
-      "cliffhanger_strength": 7.5,
-      "standalone_context": 9.0,
-      "emotional_impact": 8.0,
-      "narrative_continuity": 9.5
-    },
-    "overall_score": 84.2,
-    "reason": "This clip captures the core mystery and the primary conflict of the episode. It starts with a visual hook (the open safe and the clue) and ends with a tense, unresolved standoff, making the viewer want to know who the culprit is and what Mira will do next.",
-    "validation_status": "valid",
-    "limitations": [],
-    "approval_status": "approved"
-  },
-  {
-    "promo_id": "PROMO_EP13_01",
-    "episode_numbers": [
-      13
-    ],
-    "segments": [
-      {
-        "episode": 13,
-        "start_timestamp": "00:04.00",
-        "end_timestamp": "00:31.00",
-        "duration_seconds": 27.0
-      }
-    ],
-    "total_duration_seconds": 27.0,
-    "hook": "Joseph slams a hidden report on the table and shouts, \u201cThe fire wasn\u2019t an accident!\u201d",
-    "cliffhanger": "Mira gasps, \u201cYou said she escaped?\u201d \u2013 the camera freezes on her shocked face before any answer.",
-    "standalone_context": "In just a few seconds viewers learn that a tragic hotel fire was deliberate and a loved one may still be trapped, creating instant intrigue without prior knowledge.",
+    "hook": "MIRA: \"Someone erased a person from our family.\"",
+    "cliffhanger": "ARJUN: \"Or made sure we forgot her.\"",
+    "standalone_context": "Mira discovers that every family photograph from one summer has a face cut out, prompting a chilling question about who erased the person and why someone might be forcing the family to forget.",
     "scores": {
       "hook_strength": 9.0,
       "cliffhanger_strength": 8.0,
-      "standalone_context": 8.0,
-      "emotional_impact": 8.0,
-      "narrative_continuity": 9.0
+      "standalone_context": 7.0,
+      "emotional_impact": 7.0,
+      "narrative_continuity": 8.0
     },
-    "overall_score": 84.0,
-    "reason": "The opening revelation is a high\u2011stakes bombshell that forces viewers to ask who set the fire and why. Cutting right after Mira\u2019s accusation leaves the mystery hanging, compelling the audience to watch the full episode for answers.",
+    "overall_score": 79.0,
+    "reason": "The opening line instantly raises a mystery that feels personal and unsettling, while the cut ends on a provocative counter\u2011question that leaves viewers desperate to know the truth, driving clicks.",
     "validation_status": "valid",
     "limitations": [],
-    "approval_status": "approved"
+    "approval_status": "pending"
   },
   {
-    "promo_id": "PROMO_EP22_02",
+    "promo_id": "PROMO_EP14_01",
     "episode_numbers": [
-      22
+      14
     ],
     "segments": [
       {
-        "episode": 22,
-        "start_timestamp": "00:73.00",
-        "end_timestamp": "00:98.00",
-        "duration_seconds": 25.0
-      }
-    ],
-    "total_duration_seconds": 25.0,
-    "hook": "\"This was not here yesterday. Someone has been hiding something.\" \u2013 Mira confronts a fresh mark in dust, hinting at a secret.",
-    "cliffhanger": "A door slams shut at the far end of the corridor just as Mira moves toward it, leaving the audience to wonder what lies behind the closed door.",
-    "standalone_context": "The scene shows Mira following a mysterious sound, discovering a new clue, and ending with a sudden door closure \u2013 a self\u2011contained mystery that needs resolution.",
-    "scores": {
-      "hook_strength": 8.0,
-      "cliffhanger_strength": 9.0,
-      "standalone_context": 8.0,
-      "emotional_impact": 8.0,
-      "narrative_continuity": 9.0
-    },
-    "overall_score": 84.0,
-    "reason": "The urgent discovery line grabs attention, and the abrupt door slam creates a visual and auditory shock that compels viewers to watch the episode to uncover what\u2019s hidden behind the door.",
-    "validation_status": "valid",
-    "limitations": [],
-    "approval_status": "approved"
-  },
-  {
-    "promo_id": "PROMO_EP06_01",
-    "episode_numbers": [
-      6
-    ],
-    "segments": [
-      {
-        "episode": 6,
+        "episode": 14,
         "start_timestamp": "00:12.00",
         "end_timestamp": "00:43.00",
         "duration_seconds": 31.0
       }
     ],
     "total_duration_seconds": 31.0,
-    "hook": "A woman's urgent voice whispers, \"If Dev finds the second copy, none of you will be safe,\" startling the listener.",
-    "cliffhanger": "Mira gasps, \"That's my mother's voice,\" leaving the audience wondering what secret the recording holds and who will be in danger.",
-    "standalone_context": "The clip instantly establishes a mysterious warning, a personal connection, and an imminent threat without needing prior knowledge of the series.",
-    "scores": {
-      "hook_strength": 9.0,
-      "cliffhanger_strength": 8.0,
-      "standalone_context": 8.0,
-      "emotional_impact": 8.0,
-      "narrative_continuity": 9.0
-    },
-    "overall_score": 84.0,
-    "reason": "The opening scream\u2011like warning grabs attention, while Mira\u2019s revelation creates a personal hook. Cutting right after her gasp forces viewers to click to discover the origin of the voice and the stakes of the \"second copy.\"",
-    "validation_status": "valid",
-    "limitations": [],
-    "approval_status": "approved"
-  },
-  {
-    "promo_id": "PROMO_EP06_02",
-    "episode_numbers": [
-      6
-    ],
-    "segments": [
-      {
-        "episode": 6,
-        "start_timestamp": "00:61.00",
-        "end_timestamp": "00:86.00",
-        "duration_seconds": 25.0
-      }
-    ],
-    "total_duration_seconds": 25.0,
-    "hook": "Mira spots a fresh, unmistakable mark on a dusty surface and whispers, \"This was not here yesterday. Someone has been hiding something.\"",
-    "cliffhanger": "A door slams shut at the far end of the corridor, leaving Mira\u2014and the viewer\u2014staring at an unknown, possibly dangerous room.",
-    "standalone_context": "The scene conveys intrigue: a hidden clue, a sudden discovery, and an ominous door, all understandable without earlier episodes.",
+    "hook": "Anika: \"I did not abandon you. I was made to disappear.\"",
+    "cliffhanger": "A tense silence settles after Mira asks, \"Are you my mother?\"",
+    "standalone_context": "The clip instantly reveals a shocking family secret and leaves the audience hanging on Mira's desperate question, requiring no prior knowledge of the series.",
     "scores": {
       "hook_strength": 8.0,
-      "cliffhanger_strength": 9.0,
-      "standalone_context": 9.0,
-      "emotional_impact": 7.0,
-      "narrative_continuity": 8.0
-    },
-    "overall_score": 83.0,
-    "reason": "The visual of a fresh mark paired with the sudden door slam creates a tense, mystery\u2011driven moment that compels viewers to watch the episode to see what lies behind the door.",
-    "validation_status": "valid",
-    "limitations": [],
-    "approval_status": "approved"
-  },
-  {
-    "promo_id": "PROMO_EP02_02",
-    "episode_numbers": [
-      2
-    ],
-    "segments": [
-      {
-        "episode": 2,
-        "start_timestamp": "00:73.00",
-        "end_timestamp": "00:98.00",
-        "duration_seconds": 25.0
-      }
-    ],
-    "total_duration_seconds": 25.0,
-    "hook": "Mira\u2019s line \u201cThis was not here yesterday. Someone has been hiding something.\u201d",
-    "cliffhanger": "A corridor door slams shut as Mira moves toward it, leaving the audience wondering what lies behind.",
-    "standalone_context": "A lone investigator discovers a fresh, out\u2011of\u2011place mark in a dusty hallway, a classic suspense set\u2011up that needs no prior story knowledge.",
-    "scores": {
-      "hook_strength": 8.0,
-      "cliffhanger_strength": 9.0,
-      "standalone_context": 9.0,
-      "emotional_impact": 7.0,
-      "narrative_continuity": 8.0
-    },
-    "overall_score": 83.0,
-    "reason": "The bold accusation grabs attention instantly; the sudden door closure creates visual tension, and the 25\u2011second runtime ends on a mystery that compels viewers to click for the reveal.",
-    "validation_status": "valid",
-    "limitations": [],
-    "approval_status": "approved"
-  },
-  {
-    "promo_id": "PROMO_EP30_02",
-    "episode_numbers": [
-      30
-    ],
-    "segments": [
-      {
-        "episode": 30,
-        "start_timestamp": "00:31.00",
-        "end_timestamp": "00:54.00",
-        "duration_seconds": 23.0
-      }
-    ],
-    "total_duration_seconds": 23.0,
-    "hook": "Anika gasps, \"Your father installed it. Dev used it.\"",
-    "cliffhanger": "A ticking clock begins to echo in the background as the scene freezes, hinting at an imminent danger.",
-    "standalone_context": "Even without prior knowledge, viewers grasp a family secret and a looming threat, making the stakes instantly clear.",
-    "scores": {
-      "hook_strength": 8.0,
-      "cliffhanger_strength": 8.0,
-      "standalone_context": 8.0,
-      "emotional_impact": 8.0,
-      "narrative_continuity": 9.0
-    },
-    "overall_score": 81.5,
-    "reason": "A shocking family revelation grabs attention, and the sudden cut on the ticking clock leaves the audience hanging, compelling them to watch the episode for answers.",
-    "validation_status": "valid",
-    "limitations": [],
-    "approval_status": "approved"
-  },
-  {
-    "promo_id": "PROMO_EP27_01",
-    "episode_numbers": [
-      27
-    ],
-    "segments": [
-      {
-        "episode": 27,
-        "start_timestamp": "00:04.00",
-        "end_timestamp": "00:54.00",
-        "duration_seconds": 50.0
-      }
-    ],
-    "total_duration_seconds": 50.0,
-    "hook": "A staff member streams the confrontation. Arjun blocks Dev's exit with evidence.",
-    "cliffhanger": "A tense silence settles. Somewhere in the old building, a clock begins to tick.",
-    "standalone_context": "The clip clearly establishes a public confrontation where a character (Arjun) is exposing another (Dev) to a live audience, creating immediate stakes and conflict.",
-    "scores": {
-      "hook_strength": 8.5,
       "cliffhanger_strength": 7.0,
       "standalone_context": 8.0,
-      "emotional_impact": 8.5,
+      "emotional_impact": 8.0,
       "narrative_continuity": 9.0
     },
-    "overall_score": 81.0,
-    "reason": "This promo leverages the 'public shaming' and 'live stream' tropes which are highly engaging on social media. The physical blocking of the exit creates a claustrophobic tension, and the cut to silence right before a potential resolution forces the viewer to click to see the outcome.",
+    "overall_score": 79.0,
+    "reason": "The opening line is a dramatic confession that grabs attention, and the cut ends on a heart\u2011wrenching unanswered question, compelling viewers to watch the episode for the truth.",
     "validation_status": "valid",
     "limitations": [],
     "approval_status": "pending"
   },
   {
-    "promo_id": "PROMO_EP17_02",
+    "promo_id": "PROMO_EP07_02",
+    "episode_numbers": [
+      7
+    ],
+    "segments": [
+      {
+        "episode": 7,
+        "start_timestamp": "01:01.00",
+        "end_timestamp": "01:38.00",
+        "duration_seconds": 37.0
+      }
+    ],
+    "total_duration_seconds": 37.0,
+    "hook": "Mira notices a fresh mark on a surface covered in dust.",
+    "cliffhanger": "Mira declares, \"This was not here yesterday. Someone has been hiding something,\" just as a door closes at the far end of the corridor and she moves toward it.",
+    "standalone_context": "The scene is a clear mystery/thriller beat where the protagonist discovers evidence of a secret, immediately followed by a physical threat or escape (the closing door).",
+    "scores": {
+      "hook_strength": 7.5,
+      "cliffhanger_strength": 9.0,
+      "standalone_context": 8.5,
+      "emotional_impact": 7.5,
+      "narrative_continuity": 9.0
+    },
+    "overall_score": 78.0,
+    "reason": "This segment is a classic mystery hook. The discovery of a hidden secret combined with the immediate, unresolved action of a door closing creates a strong urge to see what is behind that door and what the secret is.",
+    "validation_status": "warning",
+    "limitations": [
+      "Normalized start timestamp from '00:61.00' to standard '01:01.00'.",
+      "Normalized end timestamp from '00:98.00' to standard '01:38.00'."
+    ],
+    "approval_status": "pending"
+  },
+  {
+    "promo_id": "PROMO_EP13_02",
+    "episode_numbers": [
+      13
+    ],
+    "segments": [
+      {
+        "episode": 13,
+        "start_timestamp": "01:13.00",
+        "end_timestamp": "01:38.00",
+        "duration_seconds": 25.0
+      }
+    ],
+    "total_duration_seconds": 25.0,
+    "hook": "Mira discovers a fresh mark on a dusty surface and declares, 'This was not here yesterday. Someone has been hiding something.'",
+    "cliffhanger": "A door closes at the far end of the corridor, and Mira moves toward it, leaving the viewer in suspense about who is hiding and what they will find.",
+    "standalone_context": "The scene is a self-contained mystery beat where a character discovers evidence of a cover-up, which is universally understood as a high-stakes moment.",
+    "scores": {
+      "hook_strength": 7.5,
+      "cliffhanger_strength": 8.5,
+      "standalone_context": 8.5,
+      "emotional_impact": 7.5,
+      "narrative_continuity": 9.0
+    },
+    "overall_score": 76.8,
+    "reason": "This segment focuses on the 'discovery' aspect of the thriller genre. The visual of a fresh mark on dust is a strong visual hook, and the closing door adds a layer of immediate physical danger or confrontation.",
+    "validation_status": "warning",
+    "limitations": [
+      "Normalized start timestamp from '00:73.00' to standard '01:13.00'.",
+      "Normalized end timestamp from '00:98.00' to standard '01:38.00'."
+    ],
+    "approval_status": "pending"
+  },
+  {
+    "promo_id": "PROMO_EP17_01",
     "episode_numbers": [
       17
     ],
     "segments": [
       {
         "episode": 17,
-        "start_timestamp": "00:61.00",
-        "end_timestamp": "00:98.00",
-        "duration_seconds": 37.0
+        "start_timestamp": "00:04.00",
+        "end_timestamp": "00:43.00",
+        "duration_seconds": 39.0
       }
     ],
-    "total_duration_seconds": 37.0,
-    "hook": "Mira follows the sound and notices a fresh mark on a surface covered in dust.",
-    "cliffhanger": "A door closes at the far end of the corridor. Mira moves toward it.",
-    "standalone_context": "The visual of a fresh mark on a dusty surface in a hotel corridor immediately signals a recent, hidden presence. Mira's dialogue confirms that someone is hiding something, creating a clear mystery.",
+    "total_duration_seconds": 39.0,
+    "hook": "Arjun admits he has received messages from their father's old phone number.",
+    "cliffhanger": "Mira: \"Show me the latest one.\" (the scene cuts right as a tense silence settles and a clock begins to tick)",
+    "standalone_context": "The promo instantly reveals a mysterious communication from a dead father's phone, prompting Mira to demand the newest message, leaving viewers wondering what the message says and who might be behind it.",
     "scores": {
       "hook_strength": 8.0,
-      "cliffhanger_strength": 9.0,
+      "cliffhanger_strength": 8.0,
+      "standalone_context": 7.0,
+      "emotional_impact": 7.0,
+      "narrative_continuity": 8.0
+    },
+    "overall_score": 76.5,
+    "reason": "The opening confession is a shocking revelation that grabs attention within seconds. The cut before the message is shown creates a high\u2011stakes mystery that compels viewers to watch the full episode to discover the secret behind the father's number.",
+    "validation_status": "valid",
+    "limitations": [],
+    "approval_status": "pending"
+  },
+  {
+    "promo_id": "PROMO_EP23_01",
+    "episode_numbers": [
+      23
+    ],
+    "segments": [
+      {
+        "episode": 23,
+        "start_timestamp": "00:04.00",
+        "end_timestamp": "00:31.00",
+        "duration_seconds": 27.0
+      }
+    ],
+    "total_duration_seconds": 27.0,
+    "hook": "A scarred man wearing her father's watch claims he survived the fire.",
+    "cliffhanger": "Prove it. Tell me my childhood nickname.",
+    "standalone_context": "A mysterious, scarred stranger boldly declares he lived through a deadly fire, and a determined woman (Mira) challenges him to prove his identity by recalling a secret childhood nickname\u2014an exchange that makes sense without any prior back\u2011story.",
+    "scores": {
+      "hook_strength": 8.0,
+      "cliffhanger_strength": 8.0,
+      "standalone_context": 7.0,
+      "emotional_impact": 7.0,
+      "narrative_continuity": 8.0
+    },
+    "overall_score": 76.5,
+    "reason": "The opening line is a shocking revelation that instantly grabs attention. The demand for a childhood nickname creates a personal, high\u2011stakes mystery that viewers will want resolved, prompting them to watch the full episode to see if the stranger can answer.",
+    "validation_status": "valid",
+    "limitations": [],
+    "approval_status": "pending"
+  },
+  {
+    "promo_id": "PROMO_EP16_01",
+    "episode_numbers": [
+      16
+    ],
+    "segments": [
+      {
+        "episode": 16,
+        "start_timestamp": "00:04.00",
+        "end_timestamp": "00:43.00",
+        "duration_seconds": 39.0
+      }
+    ],
+    "total_duration_seconds": 39.0,
+    "hook": "Anika leads Mira behind a pantry wall to a sealed iron door.",
+    "cliffhanger": "Mira: \"What truth needs a locked door?\"",
+    "standalone_context": "Two characters discover a hidden iron door in a seaside hotel; Mira's question hints at a family secret, instantly understandable without prior knowledge.",
+    "scores": {
+      "hook_strength": 8.0,
+      "cliffhanger_strength": 8.0,
+      "standalone_context": 7.0,
+      "emotional_impact": 6.0,
+      "narrative_continuity": 8.0
+    },
+    "overall_score": 75.0,
+    "reason": "The opening visual mystery (a sealed iron door) grabs attention, and the cut ends on a direct, unanswered question, creating a strong urge to watch the episode for the secret.",
+    "validation_status": "valid",
+    "limitations": [],
+    "approval_status": "pending"
+  },
+  {
+    "promo_id": "PROMO_EP02_01",
+    "episode_numbers": [
+      2
+    ],
+    "segments": [
+      {
+        "episode": 2,
+        "start_timestamp": "00:31.00",
+        "end_timestamp": "00:54.00",
+        "duration_seconds": 23.0
+      }
+    ],
+    "total_duration_seconds": 23.0,
+    "hook": "Someone your father never stopped paying.",
+    "cliffhanger": "A tense silence settles. Somewhere in the old building, a clock begins to tick.",
+    "standalone_context": "The promo opens with Arjun delivering a cryptic revelation about a hidden payment, instantly raising the stakes. It ends on a lingering silence and a ticking clock, signalling imminent danger without revealing what will happen, so viewers can grasp the mystery without prior knowledge of the series.",
+    "scores": {
+      "hook_strength": 7.5,
+      "cliffhanger_strength": 7.0,
       "standalone_context": 8.0,
       "emotional_impact": 7.0,
       "narrative_continuity": 8.0
     },
-    "overall_score": 81.0,
-    "reason": "This promo focuses on the detective/mystery aspect. The visual cue of the fresh mark is a strong hook, and the closing door at the end of the corridor creates a classic 'who is there?' cliffhanger that drives curiosity.",
+    "overall_score": 74.8,
+    "reason": "The three\u2011second hook is a shocking line that hints at family secrets and illegal dealings, grabbing scroll\u2011stoppers. Cutting right before the ticking clock leaves the audience hanging, compelling them to watch the full episode to learn who A. Sen is and what the clock signifies. The clip is self\u2011contained, dramatic, and fits the 20\u201160\u202fs sweet spot for Shorts platforms.",
     "validation_status": "valid",
     "limitations": [],
     "approval_status": "pending"
@@ -937,474 +643,24 @@
     "segments": [
       {
         "episode": 11,
-        "start_timestamp": "00:61.00",
-        "end_timestamp": "00:98.00",
-        "duration_seconds": 37.0
-      }
-    ],
-    "total_duration_seconds": 37.0,
-    "hook": "Mira follows the sound and notices a fresh mark on a surface covered in dust.",
-    "cliffhanger": "A door closes at the far end of the corridor. Mira moves toward it.",
-    "standalone_context": "Mira is actively investigating a crime, finding new evidence that someone has been hiding something. The sudden closing of a door introduces an immediate threat or a suspect fleeing the scene.",
-    "scores": {
-      "hook_strength": 7.5,
-      "cliffhanger_strength": 8.5,
-      "standalone_context": 8.5,
-      "emotional_impact": 7.0,
-      "narrative_continuity": 9.0
-    },
-    "overall_score": 81.0,
-    "reason": "This segment focuses on the 'detective' aspect of the drama. The discovery of the fresh mark is a strong visual hook, and the ending with the closing door creates a classic 'chase' or 'confrontation' cliffhanger that drives curiosity.",
-    "validation_status": "valid",
-    "limitations": [],
-    "approval_status": "pending"
-  },
-  {
-    "promo_id": "PROMO_EP04_02",
-    "episode_numbers": [
-      4
-    ],
-    "segments": [
-      {
-        "episode": 4,
-        "start_timestamp": "00:61.00",
-        "end_timestamp": "00:98.00",
-        "duration_seconds": 37.0
-      }
-    ],
-    "total_duration_seconds": 37.0,
-    "hook": "Mira spots a fresh, wet mark on dusty floor\u2014something was just hidden there.",
-    "cliffhanger": "A door slams shut at the far end of the corridor as Mira moves toward it, leaving the audience wondering what lies behind.",
-    "standalone_context": "The audience sees a lone character uncovering a new clue and a sudden, ominous door closure, a self\u2011contained mystery hook that needs resolution.",
-    "scores": {
-      "hook_strength": 8.0,
-      "cliffhanger_strength": 9.0,
-      "standalone_context": 8.0,
-      "emotional_impact": 7.0,
-      "narrative_continuity": 8.0
-    },
-    "overall_score": 81.0,
-    "reason": "The tactile clue and the sudden door slam create immediate tension; ending on the closed door teases a hidden secret, compelling viewers to watch the episode for the reveal.",
-    "validation_status": "valid",
-    "limitations": [],
-    "approval_status": "pending"
-  },
-  {
-    "promo_id": "PROMO_EP21_02",
-    "episode_numbers": [
-      21
-    ],
-    "segments": [
-      {
-        "episode": 21,
-        "start_timestamp": "00:73.00",
-        "end_timestamp": "00:98.00",
-        "duration_seconds": 25.0
-      }
-    ],
-    "total_duration_seconds": 25.0,
-    "hook": "Mira spots a fresh mark and says, \"This was not here yesterday. Someone has been hiding something.\"",
-    "cliffhanger": "A door slams shut at the far end of the corridor just as Mira moves toward it, leaving the mystery behind the door unseen.",
-    "standalone_context": "The scene instantly signals a hidden clue and a locked secret, promising a tense investigation that any newcomer can grasp without prior backstory.",
-    "scores": {
-      "hook_strength": 8.0,
-      "cliffhanger_strength": 9.0,
-      "standalone_context": 8.0,
-      "emotional_impact": 7.0,
-      "narrative_continuity": 8.0
-    },
-    "overall_score": 81.0,
-    "reason": "The discovery line sparks intrigue, and the sudden door slam creates a visual and auditory shock. Ending on the closed door forces viewers to wonder what lies beyond, driving clicks.",
-    "validation_status": "valid",
-    "limitations": [],
-    "approval_status": "pending"
-  },
-  {
-    "promo_id": "PROMO_EP23_02",
-    "episode_numbers": [
-      23
-    ],
-    "segments": [
-      {
-        "episode": 23,
-        "start_timestamp": "00:73.00",
-        "end_timestamp": "00:98.00",
-        "duration_seconds": 25.0
-      }
-    ],
-    "total_duration_seconds": 25.0,
-    "hook": "Mira discovers a fresh mark on dusty floor and accuses someone of hiding a secret.",
-    "cliffhanger": "A door slams shut down the corridor, hinting at a hidden presence just out of reach.",
-    "standalone_context": "Viewers instantly grasp a detective\u2011like hunt for hidden evidence, with a sudden door slam promising danger.",
-    "scores": {
-      "hook_strength": 8.0,
-      "cliffhanger_strength": 8.0,
-      "standalone_context": 8.0,
-      "emotional_impact": 7.0,
-      "narrative_continuity": 9.0
-    },
-    "overall_score": 80.0,
-    "reason": "The quick reveal of a new clue paired with a sudden, ominous door slam creates a burst of curiosity and dread, perfect for short\u2011form platforms where every second counts. The unanswered question of what's behind the door drives clicks.",
-    "validation_status": "valid",
-    "limitations": [],
-    "approval_status": "pending"
-  },
-  {
-    "promo_id": "PROMO_EP10_02",
-    "episode_numbers": [
-      10
-    ],
-    "segments": [
-      {
-        "episode": 10,
-        "start_timestamp": "00:61.00",
-        "end_timestamp": "00:98.00",
-        "duration_seconds": 37.0
-      }
-    ],
-    "total_duration_seconds": 37.0,
-    "hook": "Mira follows a sound and notices a fresh mark on a surface covered in dust.",
-    "cliffhanger": "A door closes at the far end of the corridor. Mira moves toward it.",
-    "standalone_context": "A woman is investigating a suspicious mark in a dusty corridor, realizing someone has been hiding something. The scene ends with her moving toward a closing door, implying a confrontation or discovery.",
-    "scores": {
-      "hook_strength": 7.5,
-      "cliffhanger_strength": 8.5,
-      "standalone_context": 8.0,
-      "emotional_impact": 7.0,
-      "narrative_continuity": 8.5
-    },
-    "overall_score": 79.2,
-    "reason": "This is a 'mystery/thriller' hook. The visual of a fresh mark in dust is a strong visual cue for 'someone is here.' The closing door creates immediate tension and a 'who is there?' question. It's a strong standalone mystery beat.",
-    "validation_status": "valid",
-    "limitations": [],
-    "approval_status": "pending"
-  },
-  {
-    "promo_id": "PROMO_EP18_02",
-    "episode_numbers": [
-      18
-    ],
-    "segments": [
-      {
-        "episode": 18,
-        "start_timestamp": "00:73.00",
-        "end_timestamp": "00:98.00",
-        "duration_seconds": 25.0
-      }
-    ],
-    "total_duration_seconds": 25.0,
-    "hook": "Mira discovers a fresh mark on a dusty surface, immediately signaling a recent, hidden intrusion.",
-    "cliffhanger": "A door closes at the far end of the corridor, and Mira moves toward it, cutting off right before she confronts whoever is hiding.",
-    "standalone_context": "The discovery of a fresh mark in a dusty, abandoned space is a universally understood trope for a hidden threat or secret, making the stakes clear without prior context.",
-    "scores": {
-      "hook_strength": 7.5,
-      "cliffhanger_strength": 8.5,
-      "standalone_context": 8.0,
-      "emotional_impact": 7.0,
-      "narrative_continuity": 8.5
-    },
-    "overall_score": 79.2,
-    "reason": "This promo leverages the 'mystery/thriller' genre's most effective hook: the discovery of a secret. The cliffhanger of a closing door creates a strong 'fear of the unknown' that compels the viewer to click to see what happens next.",
-    "validation_status": "valid",
-    "limitations": [],
-    "approval_status": "pending"
-  },
-  {
-    "promo_id": "PROMO_EP03_02",
-    "episode_numbers": [
-      3
-    ],
-    "segments": [
-      {
-        "episode": 3,
-        "start_timestamp": "00:61.00",
-        "end_timestamp": "00:98.00",
-        "duration_seconds": 37.0
-      }
-    ],
-    "total_duration_seconds": 37.0,
-    "hook": "Mira follows a faint ticking sound and spots a fresh, ominous mark on a dusty surface.",
-    "cliffhanger": "A door slams shut at the far end of the corridor, and Mira steps toward it, the camera lingering on the dark doorway as the scene cuts.",
-    "standalone_context": "The clip shows Mira uncovering a hidden clue and confronting an unknown door, instantly establishing mystery and danger without needing backstory.",
-    "scores": {
-      "hook_strength": 8.0,
-      "cliffhanger_strength": 8.0,
-      "standalone_context": 8.0,
-      "emotional_impact": 7.0,
-      "narrative_continuity": 8.0
-    },
-    "overall_score": 78.5,
-    "reason": "The quick visual of a fresh mark sparks curiosity, and the sudden door slam creates a suspenseful pause that forces the audience to wonder what lies beyond, perfect for short\u2011form ad formats.",
-    "validation_status": "valid",
-    "limitations": [],
-    "approval_status": "pending"
-  },
-  {
-    "promo_id": "PROMO_EP12_02",
-    "episode_numbers": [
-      12
-    ],
-    "segments": [
-      {
-        "episode": 12,
-        "start_timestamp": "00:73.00",
-        "end_timestamp": "00:98.00",
-        "duration_seconds": 25.0
-      }
-    ],
-    "total_duration_seconds": 25.0,
-    "hook": "Mira gasps, \u201cThis was not here yesterday. Someone has been hiding something.\u201d",
-    "cliffhanger": "A door slams shut at the corridor\u2019s end just as Mira moves toward it, leaving the hidden secret unrevealed.",
-    "standalone_context": "The audience instantly understands Mira has discovered a fresh clue and a mysterious door, prompting questions about what\u2019s being concealed.",
-    "scores": {
-      "hook_strength": 8.0,
-      "cliffhanger_strength": 8.0,
-      "standalone_context": 8.0,
-      "emotional_impact": 7.0,
-      "narrative_continuity": 8.0
-    },
-    "overall_score": 78.5,
-    "reason": "The line hints at a fresh, unseen element, creating intrigue; the sudden door slam provides a visual shock, and ending on the closed door leaves the secret unresolved, compelling viewers to click.",
-    "validation_status": "valid",
-    "limitations": [],
-    "approval_status": "pending"
-  },
-  {
-    "promo_id": "PROMO_EP01_01",
-    "episode_numbers": [
-      1
-    ],
-    "segments": [
-      {
-        "episode": 1,
-        "start_timestamp": "00:73.00",
-        "end_timestamp": "00:98.00",
-        "duration_seconds": 25.0
-      }
-    ],
-    "total_duration_seconds": 25.0,
-    "hook": "Mira gasps, \"This was not here yesterday. Someone has been hiding something,\" as the camera zooms on a fresh, ominous mark on the dusty wall.",
-    "cliffhanger": "A heavy door slams shut at the far end of the corridor just as Mira lunges toward it, leaving the audience wondering what\u2014or who\u2014lies behind.",
-    "standalone_context": "Even without prior knowledge, viewers instantly see a protagonist discovering a new clue and a sudden, unexplained door closure that promises danger or a secret.",
-    "scores": {
-      "hook_strength": 7.0,
-      "cliffhanger_strength": 8.0,
-      "standalone_context": 8.0,
-      "emotional_impact": 7.0,
-      "narrative_continuity": 9.0
-    },
-    "overall_score": 77.5,
-    "reason": "The line sparks curiosity, the sudden door slam creates an audible shock, and the cut stops at the moment of unknown threat, compelling viewers to click to find out what\u2019s hidden behind the door.",
-    "validation_status": "valid",
-    "limitations": [],
-    "approval_status": "pending"
-  },
-  {
-    "promo_id": "PROMO_EP24_01",
-    "episode_numbers": [
-      24
-    ],
-    "segments": [
-      {
-        "episode": 24,
-        "start_timestamp": "00:31.00",
-        "end_timestamp": "00:54.00",
-        "duration_seconds": 23.0
-      }
-    ],
-    "total_duration_seconds": 23.0,
-    "hook": "\"Ask me about the red kite.\" \u2013 a cryptic challenge that instantly spikes curiosity.",
-    "cliffhanger": "A tense silence falls and an old clock begins to tick, leaving the audience wondering what secret the phrase unlocks.",
-    "standalone_context": "Even without prior knowledge, viewers see a mysterious exchange and an ominous ticking clock, signalling imminent danger or revelation.",
-    "scores": {
-      "hook_strength": 7.0,
-      "cliffhanger_strength": 8.0,
-      "standalone_context": 8.0,
-      "emotional_impact": 7.0,
-      "narrative_continuity": 9.0
-    },
-    "overall_score": 77.5,
-    "reason": "The hook is a puzzling line that forces viewers to ask \u201cWhat\u2019s the red kite?\u201d The ticking clock creates an audible, visual cue of urgency, stopping the scroll and compelling the audience to watch the full episode to uncover the secret.",
-    "validation_status": "valid",
-    "limitations": [],
-    "approval_status": "pending"
-  },
-  {
-    "promo_id": "PROMO_EP27_02",
-    "episode_numbers": [
-      27
-    ],
-    "segments": [
-      {
-        "episode": 27,
-        "start_timestamp": "00:61.00",
-        "end_timestamp": "00:98.00",
-        "duration_seconds": 37.0
-      }
-    ],
-    "total_duration_seconds": 37.0,
-    "hook": "Mira follows the sound and notices a fresh mark on a surface covered in dust.",
-    "cliffhanger": "A door closes at the far end of the corridor. Mira moves toward it.",
-    "standalone_context": "The visual of a 'fresh mark on dust' immediately signals a mystery or hidden evidence, which is a universal hook for thriller audiences.",
-    "scores": {
-      "hook_strength": 7.5,
-      "cliffhanger_strength": 8.5,
-      "standalone_context": 7.5,
-      "emotional_impact": 7.0,
-      "narrative_continuity": 8.0
-    },
-    "overall_score": 77.5,
-    "reason": "This clip focuses on the detective/mystery angle. The discovery of physical evidence followed by a sudden, ominous sound (door closing) creates a classic 'jump scare' or 'suspense' beat that is highly effective for short-form video retention.",
-    "validation_status": "valid",
-    "limitations": [],
-    "approval_status": "pending"
-  },
-  {
-    "promo_id": "PROMO_EP07_01",
-    "episode_numbers": [
-      7
-    ],
-    "segments": [
-      {
-        "episode": 7,
         "start_timestamp": "00:04.00",
         "end_timestamp": "00:54.00",
         "duration_seconds": 50.0
       }
     ],
     "total_duration_seconds": 50.0,
-    "hook": "Dev announces Mira's engagement to save the hotel. Arjun warns her not to sign.",
-    "cliffhanger": "A tense silence settles. Somewhere in the old building, a clock begins to tick.",
-    "standalone_context": "Mira is being forced into an engagement she never asked for, threatening her autonomy and the hotel\u2019s future.",
-    "scores": {
-      "hook_strength": 8.0,
-      "cliffhanger_strength": 7.0,
-      "standalone_context": 8.0,
-      "emotional_impact": 7.0,
-      "narrative_continuity": 9.0
-    },
-    "overall_score": 77.5,
-    "reason": "The clip instantly presents a high\u2011stakes conflict and a looming mystery, compelling viewers to click for the resolution.",
-    "validation_status": "valid",
-    "limitations": [],
-    "approval_status": "pending"
-  },
-  {
-    "promo_id": "PROMO_EP05_01",
-    "episode_numbers": [
-      5
-    ],
-    "segments": [
-      {
-        "episode": 5,
-        "start_timestamp": "00:04.00",
-        "end_timestamp": "00:31.00",
-        "duration_seconds": 27.0
-      }
-    ],
-    "total_duration_seconds": 27.0,
-    "hook": "Joseph freezes, eyes locked on Mira, while Dev's car idles outside\u2014he refuses to speak.",
-    "cliffhanger": "Mira\u2019s urgent question, \u201cWho came with him?\u201d hangs in the silence, leaving the answer unknown.",
-    "standalone_context": "The clip instantly establishes a tense standoff, a mysterious past visit, and an ominous car outside, all understandable without prior knowledge.",
-    "scores": {
-      "hook_strength": 8.0,
-      "cliffhanger_strength": 8.0,
-      "standalone_context": 7.0,
-      "emotional_impact": 7.0,
-      "narrative_continuity": 8.0
-    },
-    "overall_score": 76.5,
-    "reason": "The silent stare and ticking clock create instant intrigue; the unanswered question forces viewers to click to discover the secret behind Mira\u2019s father and the waiting car.",
-    "validation_status": "valid",
-    "limitations": [],
-    "approval_status": "pending"
-  },
-  {
-    "promo_id": "PROMO_EP22_01",
-    "episode_numbers": [
-      22
-    ],
-    "segments": [
-      {
-        "episode": 22,
-        "start_timestamp": "00:12.00",
-        "end_timestamp": "00:43.00",
-        "duration_seconds": 31.0
-      }
-    ],
-    "total_duration_seconds": 31.0,
-    "hook": "\"Someone was here after we left.\" \u2013 a chilling revelation that someone entered the hidden room without Mira\u2019s knowledge.",
-    "cliffhanger": "A tense silence falls as an old clock begins to tick ominously, leaving the audience wondering what will happen next.",
-    "standalone_context": "The clip instantly shows Mira discovering a secret room, hearing a disturbing line about an unseen intruder, and ending on a ticking clock that signals imminent danger \u2013 all understandable without prior episodes.",
-    "scores": {
-      "hook_strength": 8.0,
-      "cliffhanger_strength": 8.0,
-      "standalone_context": 7.0,
-      "emotional_impact": 7.0,
-      "narrative_continuity": 8.0
-    },
-    "overall_score": 76.5,
-    "reason": "The opening line is a gasp\u2011worthy hook that sparks curiosity. The ticking clock creates a classic suspense beat that forces viewers to click to find out the source of the danger, making it perfect for short\u2011form platforms.",
-    "validation_status": "valid",
-    "limitations": [],
-    "approval_status": "pending"
-  },
-  {
-    "promo_id": "PROMO_EP14_02",
-    "episode_numbers": [
-      14
-    ],
-    "segments": [
-      {
-        "episode": 14,
-        "start_timestamp": "00:73.00",
-        "end_timestamp": "00:98.00",
-        "duration_seconds": 25.0
-      }
-    ],
-    "total_duration_seconds": 25.0,
-    "hook": "Mira whispers, \"This was not here yesterday. Someone has been hiding something,\" hinting at a secret uncovered.",
-    "cliffhanger": "A door slams shut at the far end of the corridor as Mira moves toward it, leaving the audience wondering what lies behind.",
-    "standalone_context": "A lone investigator discovers a fresh clue in a dusty hallway, then faces a mysterious closed door\u2014an instantly graspable mystery that needs resolution.",
+    "hook": "ACTION: The safe is open and the second will is missing. Blue thread is caught in the lock.",
+    "cliffhanger": "ACTION: A tense silence settles. Somewhere in the old building, a clock begins to tick.",
+    "standalone_context": "The promo begins with the startling discovery of an opened safe and a missing will, instantly signaling a high\u2011stakes mystery. It cuts just as a tense silence and a ticking clock hint at imminent danger, leaving the outcome unknown.",
     "scores": {
       "hook_strength": 7.0,
       "cliffhanger_strength": 8.0,
-      "standalone_context": 8.0,
+      "standalone_context": 7.0,
       "emotional_impact": 7.0,
-      "narrative_continuity": 8.0
+      "narrative_continuity": 7.0
     },
-    "overall_score": 76.0,
-    "reason": "The urgent discovery line instantly raises stakes, and the sudden door slam creates a visual and narrative hook that compels viewers to watch the episode for the reveal.",
-    "validation_status": "valid",
-    "limitations": [],
-    "approval_status": "pending"
-  },
-  {
-    "promo_id": "PROMO_EP19_02",
-    "episode_numbers": [
-      19
-    ],
-    "segments": [
-      {
-        "episode": 19,
-        "start_timestamp": "00:61.00",
-        "end_timestamp": "00:98.00",
-        "duration_seconds": 37.0
-      }
-    ],
-    "total_duration_seconds": 37.0,
-    "hook": "Mira follows a sound and spots a fresh mark on a dusty surface, indicating a recent intrusion.",
-    "cliffhanger": "A door closes at the far end of the corridor, and Mira moves toward it, leaving the viewer wondering who or what is on the other side.",
-    "standalone_context": "The visual of a fresh mark in a dusty area and the sound of a closing door create a clear mystery that is easy to follow for a new viewer.",
-    "scores": {
-      "hook_strength": 7.0,
-      "cliffhanger_strength": 8.0,
-      "standalone_context": 8.0,
-      "emotional_impact": 7.0,
-      "narrative_continuity": 8.0
-    },
-    "overall_score": 76.0,
-    "reason": "This promo focuses on the mystery and investigation aspect of the show. The visual storytelling of a 'fresh mark' and the suspense of a closing door are highly effective for retaining viewers who enjoy thriller and mystery genres.",
+    "overall_score": 72.5,
+    "reason": "Opening with a visual crime scene hooks viewers, and ending on the ticking clock creates an urgent, unanswered question that drives clicks. The scene conveys the core mystery without needing prior knowledge.",
     "validation_status": "valid",
     "limitations": [],
     "approval_status": "pending"
@@ -1417,206 +673,95 @@
     "segments": [
       {
         "episode": 8,
-        "start_timestamp": "00:73.00",
-        "end_timestamp": "00:98.00",
+        "start_timestamp": "01:13.00",
+        "end_timestamp": "01:38.00",
         "duration_seconds": 25.0
       }
     ],
     "total_duration_seconds": 25.0,
-    "hook": "Mira spots a fresh mark and accuses someone of hiding something.",
-    "cliffhanger": "A door closes at the far end of the corridor.",
-    "standalone_context": "Mira uncovers hidden evidence in a hotel corridor, hinting at a secret plot.",
+    "hook": "MIRA: \"This was not here yesterday. Someone has been hiding something.\"",
+    "cliffhanger": "ACTION: A door closes at the far end of the corridor. Mira moves toward it.",
+    "standalone_context": "A character discovers a hidden clue in a dusty corridor, indicating a secret is being kept, and immediately chases a closing door, creating a sense of mystery and pursuit.",
     "scores": {
-      "hook_strength": 7.0,
+      "hook_strength": 7.5,
       "cliffhanger_strength": 8.0,
-      "standalone_context": 8.0,
+      "standalone_context": 7.5,
       "emotional_impact": 7.0,
-      "narrative_continuity": 8.0
+      "narrative_continuity": 8.5
     },
-    "overall_score": 76.0,
-    "reason": "The clip builds tension with a mysterious discovery and a sudden door slam, compelling viewers to watch.",
-    "validation_status": "valid",
-    "limitations": [],
+    "overall_score": 72.0,
+    "reason": "The hook is a direct statement of discovery and suspicion, which is highly engaging. The cliffhanger of a closing door and a character moving toward it builds suspense and curiosity about what is behind the door.",
+    "validation_status": "warning",
+    "limitations": [
+      "Normalized start timestamp from '00:73.00' to standard '01:13.00'.",
+      "Normalized end timestamp from '00:98.00' to standard '01:38.00'."
+    ],
     "approval_status": "pending"
   },
   {
-    "promo_id": "PROMO_EP25_02",
+    "promo_id": "PROMO_EP04_02",
     "episode_numbers": [
-      25
+      4
     ],
     "segments": [
       {
-        "episode": 25,
-        "start_timestamp": "00:73.00",
-        "end_timestamp": "00:98.00",
-        "duration_seconds": 25.0
+        "episode": 4,
+        "start_timestamp": "01:01.00",
+        "end_timestamp": "01:38.00",
+        "duration_seconds": 37.0
       }
     ],
-    "total_duration_seconds": 25.0,
-    "hook": "Mira whispers, \"This was not here yesterday. Someone has been hiding something,\" as she points to a fresh dust mark.",
-    "cliffhanger": "The corridor door slams shut behind her, leaving Mira\u2014and the audience\u2014in the dark about what lies beyond.",
-    "standalone_context": "A detective\u2011type heroine discovers a newly\u2011appeared clue, hints at a concealed truth, and is abruptly cut off by a closing door, creating instant suspense for anyone unfamiliar with the story.",
+    "total_duration_seconds": 37.0,
+    "hook": "MIRA: \"This was not here yesterday. Someone has been hiding something.\"",
+    "cliffhanger": "ACTION: A door closes at the far end of the corridor.",
+    "standalone_context": "Mira follows a mysterious sound down a dusty corridor, spots a fresh mark that wasn\u2019t there before, and declares that someone is actively concealing a secret just as a door ominously shuts behind her.",
     "scores": {
-      "hook_strength": 7.0,
-      "cliffhanger_strength": 8.0,
-      "standalone_context": 7.0,
-      "emotional_impact": 7.0,
-      "narrative_continuity": 8.0
-    },
-    "overall_score": 74.0,
-    "reason": "The quick reveal of a hidden clue sparks curiosity, while the sudden door slam freezes the tension, forcing viewers to click to see what Mira will find. The clip tells a complete mini\u2011mystery that feels urgent and self\u2011contained.",
-    "validation_status": "valid",
-    "limitations": [],
-    "approval_status": "pending"
-  },
-  {
-    "promo_id": "PROMO_EP20_02",
-    "episode_numbers": [
-      20
-    ],
-    "segments": [
-      {
-        "episode": 20,
-        "start_timestamp": "00:73.00",
-        "end_timestamp": "00:98.00",
-        "duration_seconds": 25.0
-      }
-    ],
-    "total_duration_seconds": 25.0,
-    "hook": "Mira gasps, \u201cThis was not here yesterday. Someone has been hiding something,\u201d as she spots a fresh mark on dusty plaster.",
-    "cliffhanger": "A door slams shut at the far end of the corridor just as Mira lunges toward it, leaving her fate uncertain.",
-    "standalone_context": "The audience instantly understands that Mira has uncovered a hidden clue and that something\u2014or someone\u2014won\u2019t let her investigate further.",
-    "scores": {
-      "hook_strength": 7.0,
+      "hook_strength": 8.0,
       "cliffhanger_strength": 8.0,
       "standalone_context": 7.0,
       "emotional_impact": 7.0,
       "narrative_continuity": 8.0
     },
-    "overall_score": 74.0,
-    "reason": "The line about a hidden mark creates intrigue, the sudden door slam adds a physical threat, and cutting at the moment she moves toward it forces viewers to click to see what happens next.",
-    "validation_status": "valid",
-    "limitations": [],
+    "overall_score": 71.5,
+    "reason": "The line about a hidden secret creates immediate intrigue, and the sudden door slam freezes the action at a moment of suspense, compelling viewers to watch the episode to see what lies beyond the door.",
+    "validation_status": "warning",
+    "limitations": [
+      "Normalized start timestamp from '00:61.00' to standard '01:01.00'.",
+      "Normalized end timestamp from '00:98.00' to standard '01:38.00'."
+    ],
     "approval_status": "pending"
   },
   {
-    "promo_id": "PROMO_EP01_02",
+    "promo_id": "PROMO_EP19_02",
     "episode_numbers": [
-      1
+      19
     ],
     "segments": [
       {
-        "episode": 1,
-        "start_timestamp": "00:31.00",
-        "end_timestamp": "00:54.00",
-        "duration_seconds": 23.0
-      }
-    ],
-    "total_duration_seconds": 23.0,
-    "hook": "DEV whispers, \"Some doors protect the living,\" as Mira\u2019s eyes widen, hinting at a forbidden secret.",
-    "cliffhanger": "The scene cuts to a ticking clock echoing through the empty hall just as tension builds, leaving the audience hanging on what the locked study might conceal.",
-    "standalone_context": "The mysterious line and the ominous ticking clock instantly convey a hidden danger tied to a family secret, understandable without any backstory.",
-    "scores": {
-      "hook_strength": 6.0,
-      "cliffhanger_strength": 7.0,
-      "standalone_context": 8.0,
-      "emotional_impact": 6.0,
-      "narrative_continuity": 9.0
-    },
-    "overall_score": 71.0,
-    "reason": "A cryptic statement paired with an unsettling sound creates intrigue; ending on the ticking clock forces viewers to wonder what will happen when the door finally opens.",
-    "validation_status": "valid",
-    "limitations": [],
-    "approval_status": "pending"
-  },
-  {
-    "promo_id": "PROMO_EP13_02",
-    "episode_numbers": [
-      13
-    ],
-    "segments": [
-      {
-        "episode": 13,
-        "start_timestamp": "00:73.00",
-        "end_timestamp": "00:98.00",
+        "episode": 19,
+        "start_timestamp": "01:13.00",
+        "end_timestamp": "01:38.00",
         "duration_seconds": 25.0
       }
     ],
     "total_duration_seconds": 25.0,
-    "hook": "Mira whispers, \u201cThis was not here yesterday. Someone has been hiding something,\u201d as the camera zooms on a fresh dust mark.",
-    "cliffhanger": "A distant door slams shut and Mira steps toward it, the screen cutting just as she reaches for the handle.",
-    "standalone_context": "The clip instantly signals a secret being uncovered in a creepy hotel corridor, a classic mystery hook that needs no backstory.",
+    "hook": "Mira states, 'This was not here yesterday. Someone has been hiding something,' after noticing a fresh mark on a dusty surface.",
+    "cliffhanger": "A door closes at the far end of the corridor, and Mira moves toward it, leaving the viewer wondering who is hiding and what they will find.",
+    "standalone_context": "The discovery of a new mark on a dusty surface implies recent, secretive activity, and the closing door suggests an immediate confrontation or discovery is about to happen.",
     "scores": {
       "hook_strength": 7.0,
-      "cliffhanger_strength": 7.0,
-      "standalone_context": 7.0,
-      "emotional_impact": 6.0,
+      "cliffhanger_strength": 8.5,
+      "standalone_context": 7.5,
+      "emotional_impact": 7.0,
       "narrative_continuity": 8.0
     },
-    "overall_score": 70.0,
-    "reason": "The combination of a whispered accusation and a sudden door slam creates tension and curiosity. Ending on the unopened door forces viewers to wonder what lies beyond, driving clicks.",
-    "validation_status": "valid",
-    "limitations": [],
-    "approval_status": "pending"
-  },
-  {
-    "promo_id": "PROMO_EP30_03",
-    "episode_numbers": [
-      30
+    "overall_score": 71.2,
+    "reason": "This segment captures the 'detective' aspect of the drama, showing Mira actively uncovering a secret. The cut right as she approaches the closing door creates a classic 'what's behind the door?' cliffhanger.",
+    "validation_status": "warning",
+    "limitations": [
+      "Normalized start timestamp from '00:73.00' to standard '01:13.00'.",
+      "Normalized end timestamp from '00:98.00' to standard '01:38.00'."
     ],
-    "segments": [
-      {
-        "episode": 30,
-        "start_timestamp": "00:12.00",
-        "end_timestamp": "00:43.00",
-        "duration_seconds": 31.0
-      }
-    ],
-    "total_duration_seconds": 31.0,
-    "hook": "Mira declares, \"This switch disabled the alarms.\"",
-    "cliffhanger": "Anika reveals, \"Your father installed it. Dev used it,\" and the scene cuts just as a distant clock starts ticking.",
-    "standalone_context": "The audience instantly understands that the characters have found a way to bypass security, and a hidden family agenda is hinted at, setting up high tension.",
-    "scores": {
-      "hook_strength": 7.0,
-      "cliffhanger_strength": 7.0,
-      "standalone_context": 7.0,
-      "emotional_impact": 6.0,
-      "narrative_continuity": 8.0
-    },
-    "overall_score": 70.0,
-    "reason": "The opening line promises a game\u2011changing discovery, and the cut on the ominous clock after a family secret keeps viewers eager to see the consequences.",
-    "validation_status": "valid",
-    "limitations": [],
-    "approval_status": "pending"
-  },
-  {
-    "promo_id": "PROMO_EP09_02",
-    "episode_numbers": [
-      9
-    ],
-    "segments": [
-      {
-        "episode": 9,
-        "start_timestamp": "00:12.00",
-        "end_timestamp": "00:54.00",
-        "duration_seconds": 42.0
-      }
-    ],
-    "total_duration_seconds": 42.0,
-    "hook": "The expert declares, \"The ink is new. I cannot tell you who held the pen.\"",
-    "cliffhanger": "A tense silence settles as a distant clock begins to tick, hinting at looming danger.",
-    "standalone_context": "The expert\u2019s revelation of a forged signature sets up a mystery, and the ticking clock signals impending stakes.",
-    "scores": {
-      "hook_strength": 6.0,
-      "cliffhanger_strength": 7.0,
-      "standalone_context": 8.0,
-      "emotional_impact": 6.0,
-      "narrative_continuity": 8.0
-    },
-    "overall_score": 69.5,
-    "reason": "The hook presents a clear conflict\u2014an expert\u2019s refusal to identify the forger\u2014while the ticking clock builds suspense. The clip is concise, self\u2011sufficient, and ends at a moment of rising tension.",
-    "validation_status": "valid",
-    "limitations": [],
     "approval_status": "pending"
   },
   {
@@ -1627,15 +772,402 @@
     "segments": [
       {
         "episode": 5,
-        "start_timestamp": "00:61.00",
-        "end_timestamp": "00:98.00",
+        "start_timestamp": "01:01.00",
+        "end_timestamp": "01:38.00",
         "duration_seconds": 37.0
       }
     ],
     "total_duration_seconds": 37.0,
-    "hook": "Mira spots a fresh mark on the dusty wall\u2014something was just placed there.",
-    "cliffhanger": "A corridor door slams shut as she moves toward it, leaving the audience wondering what lies behind.",
-    "standalone_context": "Viewers see a lone character uncovering a hidden clue, then a sudden door closure that suggests danger, all clear without backstory.",
+    "hook": "Mira's discovery of a fresh mark on a dusty surface, indicating recent, hidden activity.",
+    "cliffhanger": "Mira states, \"Someone has been hiding something,\" and a door closes at the far end of the corridor as she moves toward it, cutting before she reaches it.",
+    "standalone_context": "The visual of a dusty room with fresh evidence and the closing door creates a clear 'cat and mouse' or 'breaking and entering' scenario that is universally understood.",
+    "scores": {
+      "hook_strength": 6.5,
+      "cliffhanger_strength": 8.5,
+      "standalone_context": 8.0,
+      "emotional_impact": 6.5,
+      "narrative_continuity": 8.5
+    },
+    "overall_score": 71.0,
+    "reason": "The physical action of following a sound and the suspense of a closing door provide a strong visual hook. The line about 'hiding something' raises the stakes from a simple mystery to a cover-up.",
+    "validation_status": "warning",
+    "limitations": [
+      "Normalized start timestamp from '00:61.00' to standard '01:01.00'.",
+      "Normalized end timestamp from '00:98.00' to standard '01:38.00'."
+    ],
+    "approval_status": "pending"
+  },
+  {
+    "promo_id": "PROMO_EP15_01",
+    "episode_numbers": [
+      15
+    ],
+    "segments": [
+      {
+        "episode": 15,
+        "start_timestamp": "00:04.00",
+        "end_timestamp": "00:31.00",
+        "duration_seconds": 27.0
+      }
+    ],
+    "total_duration_seconds": 27.0,
+    "hook": "ACTION opens the scene with: \"Mira embraces Anika, who says the danger is still inside the hotel.\"",
+    "cliffhanger": "Action pauses on suspenseful beat as ACTION states: \"Mira studies the room, searching for a detail everyone else has ignored.\"",
+    "standalone_context": "The immediate confrontation between ACTION and surrounding characters creates clear emotional stakes without requiring prior lore.",
+    "scores": {
+      "hook_strength": 7.5,
+      "cliffhanger_strength": 7.5,
+      "standalone_context": 7.5,
+      "emotional_impact": 7.0,
+      "narrative_continuity": 8.0
+    },
+    "overall_score": 70.0,
+    "reason": "Opening with direct dialogue delivers an immediate 3-second hook, while terminating on ACTION's unanswered line creates an irresistible cliffhanger.",
+    "validation_status": "warning",
+    "limitations": [
+      "Evidence Warning: Cliffhanger mentions character 'Action' not found in screenplay cues."
+    ],
+    "approval_status": "pending"
+  },
+  {
+    "promo_id": "PROMO_EP10_01",
+    "episode_numbers": [
+      10
+    ],
+    "segments": [
+      {
+        "episode": 10,
+        "start_timestamp": "00:04.00",
+        "end_timestamp": "00:31.00",
+        "duration_seconds": 27.0
+      }
+    ],
+    "total_duration_seconds": 27.0,
+    "hook": "ACTION opens the scene with: \"Arjun admits he knew about the second will and hid it to protect Mira.\"",
+    "cliffhanger": "Action pauses on suspenseful beat as ACTION states: \"Mira studies the room, searching for a detail everyone else has ignored.\"",
+    "standalone_context": "The immediate confrontation between ACTION and surrounding characters creates clear emotional stakes without requiring prior lore.",
+    "scores": {
+      "hook_strength": 7.5,
+      "cliffhanger_strength": 7.5,
+      "standalone_context": 7.5,
+      "emotional_impact": 7.0,
+      "narrative_continuity": 8.0
+    },
+    "overall_score": 70.0,
+    "reason": "Opening with direct dialogue delivers an immediate 3-second hook, while terminating on ACTION's unanswered line creates an irresistible cliffhanger.",
+    "validation_status": "warning",
+    "limitations": [
+      "Evidence Warning: Cliffhanger mentions character 'Action' not found in screenplay cues."
+    ],
+    "approval_status": "pending"
+  },
+  {
+    "promo_id": "PROMO_EP24_01",
+    "episode_numbers": [
+      24
+    ],
+    "segments": [
+      {
+        "episode": 24,
+        "start_timestamp": "00:04.00",
+        "end_timestamp": "00:31.00",
+        "duration_seconds": 27.0
+      }
+    ],
+    "total_duration_seconds": 27.0,
+    "hook": "ACTION opens the scene with: \"Mira tests the man with a private memory. Anika says the files could reveal it.\"",
+    "cliffhanger": "Action pauses on suspenseful beat as ACTION states: \"Mira studies the room, searching for a detail everyone else has ignored.\"",
+    "standalone_context": "The immediate confrontation between ACTION and surrounding characters creates clear emotional stakes without requiring prior lore.",
+    "scores": {
+      "hook_strength": 7.5,
+      "cliffhanger_strength": 7.5,
+      "standalone_context": 7.5,
+      "emotional_impact": 7.0,
+      "narrative_continuity": 8.0
+    },
+    "overall_score": 70.0,
+    "reason": "Opening with direct dialogue delivers an immediate 3-second hook, while terminating on ACTION's unanswered line creates an irresistible cliffhanger.",
+    "validation_status": "warning",
+    "limitations": [
+      "Evidence Warning: Cliffhanger mentions character 'Action' not found in screenplay cues."
+    ],
+    "approval_status": "pending"
+  },
+  {
+    "promo_id": "PROMO_EP25_01",
+    "episode_numbers": [
+      25
+    ],
+    "segments": [
+      {
+        "episode": 25,
+        "start_timestamp": "00:04.00",
+        "end_timestamp": "00:31.00",
+        "duration_seconds": 27.0
+      }
+    ],
+    "total_duration_seconds": 27.0,
+    "hook": "ACTION opens the scene with: \"The man says the original will is hidden in the lighthouse clock and names Mira and Anika as heirs.\"",
+    "cliffhanger": "Action pauses on suspenseful beat as ACTION states: \"Mira studies the room, searching for a detail everyone else has ignored.\"",
+    "standalone_context": "The immediate confrontation between ACTION and surrounding characters creates clear emotional stakes without requiring prior lore.",
+    "scores": {
+      "hook_strength": 7.5,
+      "cliffhanger_strength": 7.5,
+      "standalone_context": 7.5,
+      "emotional_impact": 7.0,
+      "narrative_continuity": 8.0
+    },
+    "overall_score": 70.0,
+    "reason": "Opening with direct dialogue delivers an immediate 3-second hook, while terminating on ACTION's unanswered line creates an irresistible cliffhanger.",
+    "validation_status": "warning",
+    "limitations": [
+      "Evidence Warning: Cliffhanger mentions character 'Action' not found in screenplay cues."
+    ],
+    "approval_status": "pending"
+  },
+  {
+    "promo_id": "PROMO_EP26_01",
+    "episode_numbers": [
+      26
+    ],
+    "segments": [
+      {
+        "episode": 26,
+        "start_timestamp": "00:04.00",
+        "end_timestamp": "00:31.00",
+        "duration_seconds": 27.0
+      }
+    ],
+    "total_duration_seconds": 27.0,
+    "hook": "ACTION opens the scene with: \"Mira recognises a forged confession and asks Dev to read it in front of the staff.\"",
+    "cliffhanger": "Action pauses on suspenseful beat as ACTION states: \"Mira studies the room, searching for a detail everyone else has ignored.\"",
+    "standalone_context": "The immediate confrontation between ACTION and surrounding characters creates clear emotional stakes without requiring prior lore.",
+    "scores": {
+      "hook_strength": 7.5,
+      "cliffhanger_strength": 7.5,
+      "standalone_context": 7.5,
+      "emotional_impact": 7.0,
+      "narrative_continuity": 8.0
+    },
+    "overall_score": 70.0,
+    "reason": "Opening with direct dialogue delivers an immediate 3-second hook, while terminating on ACTION's unanswered line creates an irresistible cliffhanger.",
+    "validation_status": "warning",
+    "limitations": [
+      "Evidence Warning: Cliffhanger mentions character 'Action' not found in screenplay cues."
+    ],
+    "approval_status": "pending"
+  },
+  {
+    "promo_id": "PROMO_EP27_01",
+    "episode_numbers": [
+      27
+    ],
+    "segments": [
+      {
+        "episode": 27,
+        "start_timestamp": "00:04.00",
+        "end_timestamp": "00:31.00",
+        "duration_seconds": 27.0
+      }
+    ],
+    "total_duration_seconds": 27.0,
+    "hook": "ACTION opens the scene with: \"A staff member streams the confrontation. Arjun blocks Dev's exit with evidence.\"",
+    "cliffhanger": "Action pauses on suspenseful beat as ACTION states: \"Mira studies the room, searching for a detail everyone else has ignored.\"",
+    "standalone_context": "The immediate confrontation between ACTION and surrounding characters creates clear emotional stakes without requiring prior lore.",
+    "scores": {
+      "hook_strength": 7.5,
+      "cliffhanger_strength": 7.5,
+      "standalone_context": 7.5,
+      "emotional_impact": 7.0,
+      "narrative_continuity": 8.0
+    },
+    "overall_score": 70.0,
+    "reason": "Opening with direct dialogue delivers an immediate 3-second hook, while terminating on ACTION's unanswered line creates an irresistible cliffhanger.",
+    "validation_status": "warning",
+    "limitations": [
+      "Evidence Warning: Cliffhanger mentions character 'Action' not found in screenplay cues."
+    ],
+    "approval_status": "pending"
+  },
+  {
+    "promo_id": "PROMO_EP28_01",
+    "episode_numbers": [
+      28
+    ],
+    "segments": [
+      {
+        "episode": 28,
+        "start_timestamp": "00:04.00",
+        "end_timestamp": "00:31.00",
+        "duration_seconds": 27.0
+      }
+    ],
+    "total_duration_seconds": 27.0,
+    "hook": "ACTION opens the scene with: \"Anika receives footage of the fire. Someone unlocks the west wing from outside.\"",
+    "cliffhanger": "Action pauses on suspenseful beat as ACTION states: \"Mira studies the room, searching for a detail everyone else has ignored.\"",
+    "standalone_context": "The immediate confrontation between ACTION and surrounding characters creates clear emotional stakes without requiring prior lore.",
+    "scores": {
+      "hook_strength": 7.5,
+      "cliffhanger_strength": 7.5,
+      "standalone_context": 7.5,
+      "emotional_impact": 7.0,
+      "narrative_continuity": 8.0
+    },
+    "overall_score": 70.0,
+    "reason": "Opening with direct dialogue delivers an immediate 3-second hook, while terminating on ACTION's unanswered line creates an irresistible cliffhanger.",
+    "validation_status": "warning",
+    "limitations": [
+      "Evidence Warning: Cliffhanger mentions character 'Action' not found in screenplay cues."
+    ],
+    "approval_status": "pending"
+  },
+  {
+    "promo_id": "PROMO_EP29_01",
+    "episode_numbers": [
+      29
+    ],
+    "segments": [
+      {
+        "episode": 29,
+        "start_timestamp": "00:04.00",
+        "end_timestamp": "00:31.00",
+        "duration_seconds": 27.0
+      }
+    ],
+    "total_duration_seconds": 27.0,
+    "hook": "ACTION opens the scene with: \"The ring belongs to Arjun. He says he delivered a key as a child, believing he was helping his father.\"",
+    "cliffhanger": "Action pauses on suspenseful beat as ACTION states: \"Mira studies the room, searching for a detail everyone else has ignored.\"",
+    "standalone_context": "The immediate confrontation between ACTION and surrounding characters creates clear emotional stakes without requiring prior lore.",
+    "scores": {
+      "hook_strength": 7.5,
+      "cliffhanger_strength": 7.5,
+      "standalone_context": 7.5,
+      "emotional_impact": 7.0,
+      "narrative_continuity": 8.0
+    },
+    "overall_score": 70.0,
+    "reason": "Opening with direct dialogue delivers an immediate 3-second hook, while terminating on ACTION's unanswered line creates an irresistible cliffhanger.",
+    "validation_status": "warning",
+    "limitations": [
+      "Evidence Warning: Cliffhanger mentions character 'Action' not found in screenplay cues."
+    ],
+    "approval_status": "pending"
+  },
+  {
+    "promo_id": "PROMO_EP30_01",
+    "episode_numbers": [
+      30
+    ],
+    "segments": [
+      {
+        "episode": 30,
+        "start_timestamp": "00:04.00",
+        "end_timestamp": "00:31.00",
+        "duration_seconds": 27.0
+      }
+    ],
+    "total_duration_seconds": 27.0,
+    "hook": "ACTION opens the scene with: \"Mira, Anika and Arjun find the original alarm panel behind the west wing door.\"",
+    "cliffhanger": "Action pauses on suspenseful beat as ACTION states: \"Mira studies the room, searching for a detail everyone else has ignored.\"",
+    "standalone_context": "The immediate confrontation between ACTION and surrounding characters creates clear emotional stakes without requiring prior lore.",
+    "scores": {
+      "hook_strength": 7.5,
+      "cliffhanger_strength": 7.5,
+      "standalone_context": 7.5,
+      "emotional_impact": 7.0,
+      "narrative_continuity": 8.0
+    },
+    "overall_score": 70.0,
+    "reason": "Opening with direct dialogue delivers an immediate 3-second hook, while terminating on ACTION's unanswered line creates an irresistible cliffhanger.",
+    "validation_status": "warning",
+    "limitations": [
+      "Evidence Warning: Cliffhanger mentions character 'Action' not found in screenplay cues."
+    ],
+    "approval_status": "pending"
+  },
+  {
+    "promo_id": "PROMO_EP06_02",
+    "episode_numbers": [
+      6
+    ],
+    "segments": [
+      {
+        "episode": 6,
+        "start_timestamp": "01:13.00",
+        "end_timestamp": "01:38.00",
+        "duration_seconds": 25.0
+      }
+    ],
+    "total_duration_seconds": 25.0,
+    "hook": "Mira states, 'This was not here yesterday. Someone has been hiding something.'",
+    "cliffhanger": "A door closes at the far end of the corridor, and Mira moves toward it, cutting off before she reaches it or reveals what is inside.",
+    "standalone_context": "The protagonist discovers evidence of a recent intrusion or secret in a dusty corridor, creating a classic 'whodunit' or thriller setup that is easy to follow.",
+    "scores": {
+      "hook_strength": 6.5,
+      "cliffhanger_strength": 8.0,
+      "standalone_context": 7.5,
+      "emotional_impact": 6.0,
+      "narrative_continuity": 8.5
+    },
+    "overall_score": 68.0,
+    "reason": "The discovery of a 'fresh mark' and the subsequent closing door creates a sense of immediate pursuit and mystery. The cut before the door opens is a strong cliffhanger for a thriller audience.",
+    "validation_status": "warning",
+    "limitations": [
+      "Normalized start timestamp from '00:73.00' to standard '01:13.00'.",
+      "Normalized end timestamp from '00:98.00' to standard '01:38.00'."
+    ],
+    "approval_status": "pending"
+  },
+  {
+    "promo_id": "PROMO_EP17_02",
+    "episode_numbers": [
+      17
+    ],
+    "segments": [
+      {
+        "episode": 17,
+        "start_timestamp": "01:13.00",
+        "end_timestamp": "01:38.00",
+        "duration_seconds": 25.0
+      }
+    ],
+    "total_duration_seconds": 25.0,
+    "hook": "Mira: \"This was not here yesterday. Someone has been hiding something.\"",
+    "cliffhanger": "A door closes at the far end of the corridor, leaving Mira\u2014and the audience\u2014unsure what lies beyond.",
+    "standalone_context": "Mira discovers a fresh mark in dust and suspects concealment, then a mysterious door slams shut, hinting at a hidden presence in the hotel.",
+    "scores": {
+      "hook_strength": 7.0,
+      "cliffhanger_strength": 8.0,
+      "standalone_context": 7.0,
+      "emotional_impact": 6.0,
+      "narrative_continuity": 7.0
+    },
+    "overall_score": 66.0,
+    "reason": "The line about a hidden thing instantly raises intrigue, and the sudden door slam provides a visual shock. Cutting right before Mira investigates the door forces viewers to click to see what\u2019s behind it.",
+    "validation_status": "warning",
+    "limitations": [
+      "Normalized start timestamp from '00:73.00' to standard '01:13.00'.",
+      "Normalized end timestamp from '00:98.00' to standard '01:38.00'."
+    ],
+    "approval_status": "pending"
+  },
+  {
+    "promo_id": "PROMO_EP03_02",
+    "episode_numbers": [
+      3
+    ],
+    "segments": [
+      {
+        "episode": 3,
+        "start_timestamp": "01:13.00",
+        "end_timestamp": "01:38.00",
+        "duration_seconds": 25.0
+      }
+    ],
+    "total_duration_seconds": 25.0,
+    "hook": "Mira: \"This was not here yesterday. Someone has been hiding something.\"",
+    "cliffhanger": "A door slams shut at the far end of the corridor as Mira moves toward it, leaving the audience wondering what lies behind.",
+    "standalone_context": "Mira discovers a fresh mark, voices suspicion, and then a mysterious door closes, presenting a self\u2011contained puzzle that any viewer can grasp without prior knowledge.",
     "scores": {
       "hook_strength": 7.0,
       "cliffhanger_strength": 7.0,
@@ -1643,10 +1175,145 @@
       "emotional_impact": 6.0,
       "narrative_continuity": 7.0
     },
-    "overall_score": 68.5,
-    "reason": "The visual shock of the fresh mark grabs attention; the abrupt door slam creates a suspenseful pause that compels viewers to watch the episode for the reveal.",
-    "validation_status": "valid",
-    "limitations": [],
+    "overall_score": 63.5,
+    "reason": "The hook is a direct, intrigue\u2011filled line that promises a secret, and the cut ends on the ominous door closing, a classic suspense beat that drives viewers to watch the episode for the reveal.",
+    "validation_status": "warning",
+    "limitations": [
+      "Normalized start timestamp from '00:73.00' to standard '01:13.00'.",
+      "Normalized end timestamp from '00:98.00' to standard '01:38.00'."
+    ],
+    "approval_status": "pending"
+  },
+  {
+    "promo_id": "PROMO_EP16_02",
+    "episode_numbers": [
+      16
+    ],
+    "segments": [
+      {
+        "episode": 16,
+        "start_timestamp": "01:01.00",
+        "end_timestamp": "01:26.00",
+        "duration_seconds": 25.0
+      }
+    ],
+    "total_duration_seconds": 25.0,
+    "hook": "Mira follows the sound and notices a fresh mark on a surface covered in dust.",
+    "cliffhanger": "A door closes at the far end of the corridor.",
+    "standalone_context": "Mira investigates a newly\u2011appeared mark in a dusty corridor, implying someone is hiding something; the sudden door slam leaves the mystery unresolved.",
+    "scores": {
+      "hook_strength": 7.0,
+      "cliffhanger_strength": 7.0,
+      "standalone_context": 7.0,
+      "emotional_impact": 6.0,
+      "narrative_continuity": 7.0
+    },
+    "overall_score": 63.5,
+    "reason": "The fresh mark is an immediate visual clue that sparks curiosity, and the closing door cuts off before we see what lies beyond, compelling viewers to click for the reveal.",
+    "validation_status": "warning",
+    "limitations": [
+      "Normalized start timestamp from '00:61.00' to standard '01:01.00'.",
+      "Normalized end timestamp from '00:86.00' to standard '01:26.00'."
+    ],
+    "approval_status": "pending"
+  },
+  {
+    "promo_id": "PROMO_EP21_02",
+    "episode_numbers": [
+      21
+    ],
+    "segments": [
+      {
+        "episode": 21,
+        "start_timestamp": "01:13.00",
+        "end_timestamp": "01:38.00",
+        "duration_seconds": 25.0
+      }
+    ],
+    "total_duration_seconds": 25.0,
+    "hook": "MIRA: \"This was not here yesterday. Someone has been hiding something.\"",
+    "cliffhanger": "ACTION: A door closes at the far end of the corridor.",
+    "standalone_context": "Mira discovers a fresh mark that wasn\u2019t there before, implying recent tampering, and the scene ends with a mysterious door slamming shut, suggesting a hidden threat that any viewer can instantly sense.",
+    "scores": {
+      "hook_strength": 7.0,
+      "cliffhanger_strength": 7.0,
+      "standalone_context": 7.0,
+      "emotional_impact": 6.0,
+      "narrative_continuity": 7.0
+    },
+    "overall_score": 63.5,
+    "reason": "The hook presents a clear visual clue of a secret being concealed, while the abrupt door\u2011closing leaves the audience hanging on what lies behind, driving curiosity to see what Mira will uncover.",
+    "validation_status": "warning",
+    "limitations": [
+      "Normalized start timestamp from '00:73.00' to standard '01:13.00'.",
+      "Normalized end timestamp from '00:98.00' to standard '01:38.00'."
+    ],
+    "approval_status": "pending"
+  },
+  {
+    "promo_id": "PROMO_EP09_03",
+    "episode_numbers": [
+      9
+    ],
+    "segments": [
+      {
+        "episode": 9,
+        "start_timestamp": "01:13.00",
+        "end_timestamp": "01:38.00",
+        "duration_seconds": 25.0
+      }
+    ],
+    "total_duration_seconds": 25.0,
+    "hook": "Mira: \"This was not here yesterday. Someone has been hiding something.\"",
+    "cliffhanger": "A door slams shut at the far end of the corridor, leaving Mira\u2014and the audience\u2014wondering what lies beyond.",
+    "standalone_context": "The promo presents a classic discovery moment: a fresh mark, a hidden clue, and an ominous closing door, all clear without prior context.",
+    "scores": {
+      "hook_strength": 7.0,
+      "cliffhanger_strength": 7.0,
+      "standalone_context": 6.0,
+      "emotional_impact": 6.0,
+      "narrative_continuity": 7.0
+    },
+    "overall_score": 61.5,
+    "reason": "The urgent line and the sudden door closing create immediate tension. Cutting right as the door shuts leaves the mystery unresolved, prompting viewers to click to see what Mira finds behind the door.",
+    "validation_status": "warning",
+    "limitations": [
+      "Normalized start timestamp from '00:73.00' to standard '01:13.00'.",
+      "Normalized end timestamp from '00:98.00' to standard '01:38.00'."
+    ],
+    "approval_status": "pending"
+  },
+  {
+    "promo_id": "PROMO_EP11_03",
+    "episode_numbers": [
+      11
+    ],
+    "segments": [
+      {
+        "episode": 11,
+        "start_timestamp": "01:01.00",
+        "end_timestamp": "01:38.00",
+        "duration_seconds": 37.0
+      }
+    ],
+    "total_duration_seconds": 37.0,
+    "hook": "MIRA: \"This was not here yesterday. Someone has been hiding something.\"",
+    "cliffhanger": "ACTION: A door closes at the far end of the corridor. Mira moves toward it.",
+    "standalone_context": "Mira discovers a fresh mark on dusty floor, implying recent tampering, and the scene ends as a door slams shut, suggesting someone (or something) is about to be revealed.",
+    "scores": {
+      "hook_strength": 6.0,
+      "cliffhanger_strength": 7.0,
+      "standalone_context": 6.0,
+      "emotional_impact": 6.0,
+      "narrative_continuity": 6.0
+    },
+    "overall_score": 57.5,
+    "reason": "The discovery line creates intrigue, and the sudden door closure leaves the audience wondering what lies beyond, prompting them to watch the episode for the reveal.",
+    "validation_status": "warning",
+    "limitations": [
+      "Normalized start timestamp from '00:61.00' to standard '01:01.00'.",
+      "Normalized end timestamp from '00:98.00' to standard '01:38.00'."
+    ],
     "approval_status": "pending"
   }
 ]

@@ -2,8 +2,8 @@ import re
 from typing import Type, TypeVar, Optional, List, Tuple
 from pydantic import BaseModel
 from app.llm.base_provider import BaseLLMProvider
-from app.llm.schema import AIPromoDiscoveryResponse, AIPromoCandidate
-from app.services.screenplay_parser import parse_timestamp_to_seconds
+from app.llm.schema import AIPromoDiscoveryResponse, AIPromoCandidate, AIPromoSegmentCandidate
+from app.services.screenplay_parser import parse_timestamp_to_seconds, normalize_timestamp
 from app.core.logging import logger
 
 T = TypeVar("T", bound=BaseModel)
@@ -189,11 +189,14 @@ class MockLLMProvider(BaseLLMProvider):
         standalone_desc = f"The immediate confrontation between {start_cue['speaker']} and surrounding characters creates clear emotional stakes without requiring prior lore."
         why_works = f"Opening with direct dialogue delivers an immediate 3-second hook, while terminating on {end_cue['speaker']}'s unanswered line creates an irresistible cliffhanger."
 
-        candidate = AIPromoCandidate(
+        norm_start = normalize_timestamp(start_cue["start_ts"]) or start_cue["start_ts"]
+        norm_end = normalize_timestamp(end_cue["end_ts"]) or end_cue["end_ts"]
+
+        candidate1 = AIPromoCandidate(
             candidate_id=f"PROMO_EP{ep_num:02d}_01",
             episode_number=ep_num,
-            start_timestamp=start_cue["start_ts"],
-            end_timestamp=end_cue["end_ts"],
+            start_timestamp=norm_start,
+            end_timestamp=norm_end,
             hook=hook_desc,
             cliffhanger=cliffhanger_desc,
             standalone_context=standalone_desc,
@@ -205,4 +208,44 @@ class MockLLMProvider(BaseLLMProvider):
             narrative_continuity=continuity_score
         )
 
-        return AIPromoDiscoveryResponse(candidates=[candidate])
+        candidates = [candidate1]
+
+        # Multi-segment candidate: If script has >= 4 cues and total duration > 35s with conflict
+        if has_conflict and len(parsed_cues) >= 4 and not is_resolved and not is_calm:
+            seg1_start_cue = parsed_cues[0]
+            seg1_end_cue = parsed_cues[1]
+            seg2_start_cue = parsed_cues[-2]
+            seg2_end_cue = parsed_cues[-1]
+
+            dur1 = seg1_end_cue["end_sec"] - seg1_start_cue["start_sec"]
+            dur2 = seg2_end_cue["end_sec"] - seg2_start_cue["start_sec"]
+            total_dur = dur1 + dur2
+
+            if 20.0 <= total_dur <= 60.0 and seg1_end_cue["end_sec"] < seg2_start_cue["start_sec"]:
+                s1_s = normalize_timestamp(seg1_start_cue["start_ts"]) or seg1_start_cue["start_ts"]
+                s1_e = normalize_timestamp(seg1_end_cue["end_ts"]) or seg1_end_cue["end_ts"]
+                s2_s = normalize_timestamp(seg2_start_cue["start_ts"]) or seg2_start_cue["start_ts"]
+                s2_e = normalize_timestamp(seg2_end_cue["end_ts"]) or seg2_end_cue["end_ts"]
+
+                candidate2 = AIPromoCandidate(
+                    candidate_id=f"PROMO_EP{ep_num:02d}_02",
+                    episode_number=ep_num,
+                    start_timestamp=s1_s,
+                    end_timestamp=s2_e,
+                    segments=[
+                        AIPromoSegmentCandidate(episode_number=ep_num, start_timestamp=s1_s, end_timestamp=s1_e),
+                        AIPromoSegmentCandidate(episode_number=ep_num, start_timestamp=s2_s, end_timestamp=s2_e),
+                    ],
+                    hook=f"Opening confrontation: {seg1_start_cue['speaker']} states: \"{seg1_start_cue['text']}\"",
+                    cliffhanger=f"Climactic cut: {seg2_end_cue['speaker']} exclaims: \"{seg2_end_cue['text']}\"",
+                    standalone_context=f"Cross-cutting the initial suspicion with the final revelation establishes high stakes without requiring backstory.",
+                    why_it_works="Two-part dramatic arc: hooks immediately on the opening accusation, then jumps directly to the peak confrontation before the reveal.",
+                    hook_strength=hook_score,
+                    cliffhanger_strength=cliffhanger_score,
+                    standalone_context_score=standalone_score,
+                    emotional_impact=emotional_impact,
+                    narrative_continuity=max(1.0, continuity_score - 0.5)
+                )
+                candidates.append(candidate2)
+
+        return AIPromoDiscoveryResponse(candidates=candidates)

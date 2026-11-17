@@ -2,11 +2,18 @@ from typing import List, Optional
 from pydantic import BaseModel, Field
 
 
+class AIPromoSegmentCandidate(BaseModel):
+    episode_number: int = Field(default=1, description="Episode number for this segment")
+    start_timestamp: str = Field(description="Start timestamp in MM:SS.ss format")
+    end_timestamp: str = Field(description="End timestamp in MM:SS.ss format")
+
+
 class AIPromoCandidate(BaseModel):
     candidate_id: str = Field(description="Unique candidate identifier, e.g. PROMO_01")
     episode_number: int = Field(description="The primary episode number")
     start_timestamp: str = Field(description="Verbatim start timestamp from the screenplay, e.g. 00:11.30")
     end_timestamp: str = Field(description="Verbatim end timestamp from the screenplay, e.g. 00:49.80")
+    segments: Optional[List[AIPromoSegmentCandidate]] = Field(default=None, description="Optional multi-segment windows")
     hook: str = Field(description="Action/dialogue occurring in the first 3 seconds that hooks the viewer")
     cliffhanger: str = Field(description="The unresolved tension or unanswered question at the end cutoff")
     standalone_context: str = Field(description="Why this makes complete sense without prior lore or context")

@@ -7,22 +7,53 @@ from app.core.exceptions import ScreenplayParseException
 from app.core.logging import logger
 
 
-def is_valid_timestamp_string(ts_str: str) -> bool:
-    """Validates whether a string is a properly formed timestamp (e.g. 00:11.30, (01:15.50), 00:01:15.50)."""
+def normalize_timestamp(ts_str: str) -> Optional[str]:
+    """
+    Normalizes any timestamp string into canonical MM:SS.ss format.
+    Correctly normalizes seconds >= 60 (e.g. '00:73.00' -> '01:13.00').
+    Rejects malformed, negative, non-numeric, or ambiguous strings.
+    """
     if not ts_str:
-        return False
-    clean_ts = ts_str.strip().strip("()").strip("[]")
-    parts = clean_ts.split(":")
+        return None
+    clean = str(ts_str).strip().strip("()[]\"' ")
+    if not clean:
+        return None
+
+    # Reject strings with invalid characters
+    if not re.match(r"^[0-9]+(?::[0-9]+)*(?:\.[0-9]+)?$", clean):
+        return None
+
+    parts = clean.split(":")
     if len(parts) not in (1, 2, 3):
-        return False
+        return None
+
     try:
-        for p in parts:
-            val = float(p)
-            if val < 0:
-                return False
-        return True
+        if len(parts) == 3:  # HH:MM:SS.ss
+            h, m, s = float(parts[0]), float(parts[1]), float(parts[2])
+            if h < 0 or m < 0 or s < 0:
+                return None
+            total_sec = h * 3600 + m * 60 + s
+        elif len(parts) == 2:  # MM:SS.ss (e.g. 00:73.00)
+            m, s = float(parts[0]), float(parts[1])
+            if m < 0 or s < 0:
+                return None
+            total_sec = m * 60 + s
+        else:  # SS.ss
+            s = float(parts[0])
+            if s < 0:
+                return None
+            total_sec = s
+
+        mins = int(total_sec // 60)
+        secs = total_sec % 60
+        return f"{mins:02d}:{secs:05.2f}"
     except (ValueError, TypeError):
-        return False
+        return None
+
+
+def is_valid_timestamp_string(ts_str: str) -> bool:
+    """Validates whether a string is a properly formed timestamp."""
+    return normalize_timestamp(ts_str) is not None
 
 
 def parse_timestamp_to_seconds(ts_str: str) -> float:
@@ -30,21 +61,22 @@ def parse_timestamp_to_seconds(ts_str: str) -> float:
     Converts timestamps in formats like:
       - (00:11.30) or 00:11.30 -> 11.30
       - (01:15.50) or 01:15.50 -> 75.50
+      - 00:73.00 -> 73.00
       - 00:01:15.50 -> 75.50
       - 01:15 -> 75.0
     Returns 0.0 if malformed or invalid.
     """
     if not ts_str:
         return 0.0
-    clean_ts = ts_str.strip().strip("()").strip("[]")
-    parts = clean_ts.split(":")
+    clean = str(ts_str).strip().strip("()[]\"' ")
+    parts = clean.split(":")
     try:
-        if len(parts) == 3:  # HH:MM:SS.ss
+        if len(parts) == 3:
             h, m, s = float(parts[0]), float(parts[1]), float(parts[2])
             if h < 0 or m < 0 or s < 0:
                 return 0.0
             return h * 3600 + m * 60 + s
-        elif len(parts) == 2:  # MM:SS.ss
+        elif len(parts) == 2:
             m, s = float(parts[0]), float(parts[1])
             if m < 0 or s < 0:
                 return 0.0

@@ -1,11 +1,13 @@
 from typing import List, Optional, Tuple, Dict, Any
+import re
 from pydantic import BaseModel
 from app.services.screenplay_parser import (
     ParsedScreenplay,
     ScreenplayLine,
     parse_timestamp_to_seconds,
     format_seconds_to_timestamp,
-    is_valid_timestamp_string
+    is_valid_timestamp_string,
+    normalize_timestamp
 )
 from app.core.config import settings
 from app.core.logging import logger
@@ -29,9 +31,11 @@ class TimestampValidator:
     """
     Deterministic Python validator guaranteeing:
     - Verifiable timestamps matching the source screenplay.
+    - Timestamp normalization (e.g. 00:73.00 -> 01:13.00).
     - Start timestamp < End timestamp.
     - Duration strictly adheres to assignment requirement (20s to 60s).
     - Detects and records any hallucinations or timestamp drift.
+    - Evidence grounding checks on characters and source cues.
     """
 
     def __init__(
@@ -48,7 +52,9 @@ class TimestampValidator:
         self,
         candidate_start_ts: str,
         candidate_end_ts: str,
-        screenplay: ParsedScreenplay
+        screenplay: ParsedScreenplay,
+        hook_text: Optional[str] = None,
+        cliffhanger_text: Optional[str] = None
     ) -> ValidationResult:
         limitations: List[str] = []
         all_lines = screenplay.get_all_lines()
@@ -65,11 +71,11 @@ class TimestampValidator:
                 limitations=["Source screenplay contains no parsed lines."]
             )
 
-        start_sec = parse_timestamp_to_seconds(candidate_start_ts)
-        end_sec = parse_timestamp_to_seconds(candidate_end_ts)
+        # 1. Format and numerical sanity check with normalization
+        norm_start = normalize_timestamp(candidate_start_ts)
+        norm_end = normalize_timestamp(candidate_end_ts)
 
-        # 1. Format and numerical sanity check
-        if not is_valid_timestamp_string(candidate_start_ts) or not is_valid_timestamp_string(candidate_end_ts):
+        if not norm_start or not norm_end:
             limitations.append(
                 f"Malformed timestamp format: start='{candidate_start_ts}', end='{candidate_end_ts}'."
             )
@@ -84,6 +90,14 @@ class TimestampValidator:
                 limitations=limitations
             )
 
+        if norm_start != candidate_start_ts:
+            limitations.append(f"Normalized start timestamp from '{candidate_start_ts}' to standard '{norm_start}'.")
+        if norm_end != candidate_end_ts:
+            limitations.append(f"Normalized end timestamp from '{candidate_end_ts}' to standard '{norm_end}'.")
+
+        start_sec = parse_timestamp_to_seconds(norm_start)
+        end_sec = parse_timestamp_to_seconds(norm_end)
+
         # 2. Chronological order check
         if start_sec >= end_sec:
             limitations.append(
@@ -92,8 +106,8 @@ class TimestampValidator:
             return ValidationResult(
                 is_valid=False,
                 status="invalid",
-                start_timestamp=candidate_start_ts,
-                end_timestamp=candidate_end_ts,
+                start_timestamp=norm_start,
+                end_timestamp=norm_end,
                 start_seconds=start_sec,
                 end_seconds=end_sec,
                 duration_seconds=0.0,
@@ -132,39 +146,37 @@ class TimestampValidator:
         has_invented_timestamp = False
         if min_start_diff > 1.0:
             limitations.append(
-                f"Start timestamp '{candidate_start_ts}' does not exist in source screenplay cues (closest is {matched_start_line.start_timestamp if matched_start_line else 'none'})."
+                f"Start timestamp '{norm_start}' does not exist in source screenplay cues (closest is {matched_start_line.start_timestamp if matched_start_line else 'none'})."
             )
             has_invented_timestamp = True
 
         if min_end_diff > 1.0:
             limitations.append(
-                f"End timestamp '{candidate_end_ts}' does not exist in source screenplay cues (closest is {matched_end_line.end_timestamp if matched_end_line else 'none'})."
+                f"End timestamp '{norm_end}' does not exist in source screenplay cues (closest is {matched_end_line.end_timestamp if matched_end_line else 'none'})."
             )
             has_invented_timestamp = True
 
-        # Calculate exact duration from raw proposed bounds
-        duration = round(end_sec - start_sec, 2)
-
         # Minor cue alignment (only if within 0.5s tolerance and not invented)
-        final_start_ts = candidate_start_ts
-        final_end_ts = candidate_end_ts
+        final_start_ts = norm_start
+        final_end_ts = norm_end
 
         if not has_invented_timestamp:
             if 0.05 < min_start_diff <= 0.5 and matched_start_line:
                 limitations.append(
-                    f"Proposed start '{candidate_start_ts}' aligned with nearest cue '{matched_start_line.start_timestamp}'."
+                    f"Proposed start '{norm_start}' aligned with nearest cue '{matched_start_line.start_timestamp}'."
                 )
                 final_start_ts = matched_start_line.start_timestamp
                 start_sec = matched_start_line.start_seconds
 
             if 0.05 < min_end_diff <= 0.5 and matched_end_line:
                 limitations.append(
-                    f"Proposed end '{candidate_end_ts}' aligned with nearest cue '{matched_end_line.end_timestamp}'."
+                    f"Proposed end '{norm_end}' aligned with nearest cue '{matched_end_line.end_timestamp}'."
                 )
                 final_end_ts = matched_end_line.end_timestamp
                 end_sec = matched_end_line.end_seconds
 
-            duration = round(end_sec - start_sec, 2)
+        # Recalculate duration after normalization and alignment
+        duration = round(end_sec - start_sec, 2)
 
         # 4. Strict duration boundaries check (20s - 60s)
         is_duration_valid = True
@@ -189,11 +201,25 @@ class TimestampValidator:
         first_line_text = matched_start_line.text if matched_start_line else None
         last_line_text = matched_end_line.text if matched_end_line else None
 
+        # 6. Evidence Grounding Verification
+        # Check if named characters or entities mentioned in hook/cliffhanger actually exist in the screenplay
+        if hook_text or cliffhanger_text:
+            all_speakers = {line.speaker.strip().lower() for line in all_lines if line.speaker}
+            combined_script = " ".join([l.text for l in all_lines]).lower()
+
+            for text_field, label in [(hook_text, "Hook"), (cliffhanger_text, "Cliffhanger")]:
+                if text_field:
+                    names_found = re.findall(r"\b[A-Z][a-z]{2,}\b", text_field)
+                    common_ignore = {"The", "This", "That", "When", "What", "Then", "With", "From", "Into", "After", "Before", "Here", "There", "Will"}
+                    for name in names_found:
+                        if name not in common_ignore and name.lower() not in all_speakers and name.lower() not in combined_script:
+                            limitations.append(f"Evidence Warning: {label} mentions character '{name}' not found in screenplay cues.")
+
         # Determine overall validation status
         if has_invented_timestamp or not is_duration_valid:
             status = "invalid"
             is_valid = False
-        elif limitations:
+        elif any("Evidence Warning" in l for l in limitations) or limitations:
             status = "warning"
             is_valid = True
         else:

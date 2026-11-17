@@ -97,42 +97,60 @@ class CandidateDetector:
 
             # 4. Validate & Score each candidate
             for idx, cand in enumerate(ai_response.candidates, start=1):
-                # Deterministic validation
-                val_res = timestamp_validator.validate_candidate(
-                    candidate_start_ts=cand.start_timestamp,
-                    candidate_end_ts=cand.end_timestamp,
-                    screenplay=screenplay
-                )
+                segments_to_save: List[PromoSegmentCreate] = []
+                total_duration = 0.0
+                cand_limitations = []
+                cand_status = "valid"
 
-                # Calculate composite overall score
-                overall_score = ranking_service.calculate_overall_score(
-                    hook_score=cand.hook_strength,
-                    cliffhanger_score=cand.cliffhanger_strength,
-                    standalone_score=cand.standalone_context_score,
-                    emotional_impact_score=cand.emotional_impact,
-                    continuity_score=cand.narrative_continuity,
-                    validation_status=val_res.status
-                )
+                # Check for multi-segment candidate
+                if cand.segments and len(cand.segments) > 1:
+                    is_multi_valid = True
+                    for seg_idx, seg in enumerate(cand.segments, start=1):
+                        seg_res = timestamp_validator.validate_candidate(
+                            candidate_start_ts=seg.start_timestamp,
+                            candidate_end_ts=seg.end_timestamp,
+                            screenplay=screenplay
+                        )
+                        cand_limitations.extend(seg_res.limitations)
+                        if seg_res.status == "invalid":
+                            is_multi_valid = False
+                            cand_status = "invalid"
+                        elif seg_res.status == "warning" and cand_status != "invalid":
+                            cand_status = "warning"
 
-                promo_in = PromoCreate(
-                    show_id=episode.show_id,
-                    promo_identifier=f"PROMO_EP{episode.episode_number:02d}_{idx:02d}",
-                    primary_episode_number=episode.episode_number,
-                    hook=cand.hook,
-                    cliffhanger=cand.cliffhanger,
-                    standalone_context=cand.standalone_context,
-                    reason=cand.why_it_works,
-                    total_duration_seconds=val_res.duration_seconds,
-                    hook_score=cand.hook_strength,
-                    cliffhanger_score=cand.cliffhanger_strength,
-                    standalone_score=cand.standalone_context_score,
-                    emotional_impact_score=cand.emotional_impact,
-                    continuity_score=cand.narrative_continuity,
-                    overall_score=overall_score,
-                    validation_status=val_res.status,
-                    limitations=val_res.limitations,
-                    approval_status="pending",
-                    segments=[
+                        total_duration += seg_res.duration_seconds
+                        segments_to_save.append(
+                            PromoSegmentCreate(
+                                episode_id=episode.id,
+                                episode_number=seg.episode_number or episode.episode_number,
+                                start_timestamp=seg_res.start_timestamp,
+                                end_timestamp=seg_res.end_timestamp,
+                                duration_seconds=seg_res.duration_seconds,
+                                segment_order=seg_idx,
+                                scene_heading=seg_res.scene_heading,
+                                first_line=seg_res.first_line,
+                                last_line=seg_res.last_line
+                            )
+                        )
+                    total_duration = round(total_duration, 2)
+                    if total_duration < timestamp_validator.min_duration or total_duration > timestamp_validator.max_duration:
+                        cand_status = "invalid"
+                        cand_limitations.append(
+                            f"Combined multi-segment duration {total_duration:.1f}s is outside valid 20-60s limit."
+                        )
+                else:
+                    # Single segment candidate
+                    val_res = timestamp_validator.validate_candidate(
+                        candidate_start_ts=cand.start_timestamp,
+                        candidate_end_ts=cand.end_timestamp,
+                        screenplay=screenplay,
+                        hook_text=cand.hook,
+                        cliffhanger_text=cand.cliffhanger
+                    )
+                    cand_status = val_res.status
+                    cand_limitations = val_res.limitations
+                    total_duration = val_res.duration_seconds
+                    segments_to_save.append(
                         PromoSegmentCreate(
                             episode_id=episode.id,
                             episode_number=episode.episode_number,
@@ -144,7 +162,42 @@ class CandidateDetector:
                             first_line=val_res.first_line,
                             last_line=val_res.last_line
                         )
-                    ]
+                    )
+
+                # Calculate composite overall score
+                overall_score = ranking_service.calculate_overall_score(
+                    hook_score=cand.hook_strength,
+                    cliffhanger_score=cand.cliffhanger_strength,
+                    standalone_score=cand.standalone_context_score,
+                    emotional_impact_score=cand.emotional_impact,
+                    continuity_score=cand.narrative_continuity,
+                    validation_status=cand_status
+                )
+
+                # Quality filter: If candidate is below quality threshold (< 50.0), flag it
+                if overall_score < 50.0 and cand_status == "valid":
+                    cand_status = "warning"
+                    cand_limitations.append("Low dramatic tension: scenes lack sufficient viral hook or cliffhanger conflict.")
+
+                promo_in = PromoCreate(
+                    show_id=episode.show_id,
+                    promo_identifier=f"PROMO_EP{episode.episode_number:02d}_{idx:02d}",
+                    primary_episode_number=episode.episode_number,
+                    hook=cand.hook,
+                    cliffhanger=cand.cliffhanger,
+                    standalone_context=cand.standalone_context,
+                    reason=cand.why_it_works,
+                    total_duration_seconds=total_duration,
+                    hook_score=cand.hook_strength,
+                    cliffhanger_score=cand.cliffhanger_strength,
+                    standalone_score=cand.standalone_context_score,
+                    emotional_impact_score=cand.emotional_impact,
+                    continuity_score=cand.narrative_continuity,
+                    overall_score=overall_score,
+                    validation_status=cand_status,
+                    limitations=cand_limitations,
+                    approval_status="pending",
+                    segments=segments_to_save
                 )
 
                 created_promo = promo_repo.create(promo_in)
