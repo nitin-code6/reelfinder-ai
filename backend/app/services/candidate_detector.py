@@ -9,10 +9,11 @@ from app.models.promo import Promo, PromoSegment
 from app.repositories.episode_repository import EpisodeRepository
 from app.repositories.promo_repository import PromoRepository
 from app.schemas.promo import PromoCreate, PromoSegmentCreate
-from app.services.screenplay_parser import TxtScreenplayParser, PdfScreenplayParser, ParsedScreenplay
+from app.services.screenplay_parser import TxtScreenplayParser, PdfScreenplayParser, ParsedScreenplay, parse_timestamp_to_seconds
 from app.services.scene_segmenter import scene_segmenter
 from app.services.timestamp_validator import timestamp_validator
 from app.services.ranking_service import ranking_service
+from app.services.duplicate_detector import duplicate_detector, CandidateMoment
 from app.llm.base_provider import BaseLLMProvider
 from app.llm.hybrid_provider import HybridLLMProvider
 from app.llm.gemini_provider import GeminiProvider
@@ -94,6 +95,7 @@ class CandidateDetector:
                 logger.info(f"Purged {deleted_prev} existing promo(s) for Show {episode.show_id} Ep {episode.episode_number} to prevent duplicates.")
 
             saved_promos: List[Promo] = []
+            seen_moments: List[CandidateMoment] = []
 
             # 4. Validate & Score each candidate
             for idx, cand in enumerate(ai_response.candidates, start=1):
@@ -105,11 +107,13 @@ class CandidateDetector:
                 # Check for multi-segment candidate
                 if cand.segments and len(cand.segments) > 1:
                     is_multi_valid = True
+                    prev_end_sec = -1.0
                     for seg_idx, seg in enumerate(cand.segments, start=1):
                         seg_res = timestamp_validator.validate_candidate(
                             candidate_start_ts=seg.start_timestamp,
                             candidate_end_ts=seg.end_timestamp,
-                            screenplay=screenplay
+                            screenplay=screenplay,
+                            is_segment=True
                         )
                         cand_limitations.extend(seg_res.limitations)
                         if seg_res.status == "invalid":
@@ -117,6 +121,14 @@ class CandidateDetector:
                             cand_status = "invalid"
                         elif seg_res.status == "warning" and cand_status != "invalid":
                             cand_status = "warning"
+
+                        # Ensure segments are chronological and non-overlapping
+                        if prev_end_sec > 0 and seg_res.start_seconds < prev_end_sec:
+                            cand_status = "invalid"
+                            cand_limitations.append(
+                                f"Segment {seg_idx} ({seg_res.start_timestamp}) overlaps with previous segment."
+                            )
+                        prev_end_sec = seg_res.end_seconds
 
                         total_duration += seg_res.duration_seconds
                         segments_to_save.append(
@@ -178,6 +190,24 @@ class CandidateDetector:
                 if overall_score < 50.0 and cand_status == "valid":
                     cand_status = "warning"
                     cand_limitations.append("Low dramatic tension: scenes lack sufficient viral hook or cliffhanger conflict.")
+
+                # Near-duplicate detection against already accepted candidates in this episode
+                cand_moment = CandidateMoment(
+                    id=cand.candidate_id or f"PROMO_EP{episode.episode_number:02d}_{idx:02d}",
+                    episode_number=episode.episode_number,
+                    start_seconds=parse_timestamp_to_seconds(segments_to_save[0].start_timestamp) if segments_to_save else 0.0,
+                    end_seconds=parse_timestamp_to_seconds(segments_to_save[-1].end_timestamp) if segments_to_save else 0.0,
+                    hook=cand.hook,
+                    cliffhanger=cand.cliffhanger,
+                    score=overall_score
+                )
+
+                is_dup, dup_reason = duplicate_detector.is_near_duplicate(cand_moment, seen_moments)
+                if is_dup:
+                    logger.warning(f"Dropping near-duplicate candidate for Ep {episode.episode_number}: {dup_reason}")
+                    continue  # Do not generate duplicate candidates for the same narrative beat
+
+                seen_moments.append(cand_moment)
 
                 promo_in = PromoCreate(
                     show_id=episode.show_id,

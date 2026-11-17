@@ -185,9 +185,24 @@ class MockLLMProvider(BaseLLMProvider):
             continuity_score = 8.0
             cliffhanger_desc = f"Action pauses on suspenseful beat as {end_cue['speaker']} states: \"{end_cue['text']}\""
 
-        hook_desc = f"{start_cue['speaker']} opens the scene with: \"{start_cue['text']}\""
-        standalone_desc = f"The immediate confrontation between {start_cue['speaker']} and surrounding characters creates clear emotional stakes without requiring prior lore."
-        why_works = f"Opening with direct dialogue delivers an immediate 3-second hook, while terminating on {end_cue['speaker']}'s unanswered line creates an irresistible cliffhanger."
+        # Construct evidence-grounded hook and cliffhanger (never treat ACTION as a character)
+        if start_cue["speaker"] == "ACTION":
+            hook_desc = f"Scene opens on critical visual action: \"{start_cue['text']}\""
+            standalone_desc = "The immediate visual tension establishes the scene's stakes without requiring prior exposition."
+            why_works = "Opening with dramatic visual action immediately hooks viewers, propelling them into the confrontation."
+        else:
+            hook_desc = f"{start_cue['speaker']} opens the scene with: \"{start_cue['text']}\""
+            standalone_desc = f"The immediate confrontation involving {start_cue['speaker']} establishes clear emotional stakes."
+            why_works = f"Opening with direct dialogue delivers an immediate hook, while the impending reveal creates strong narrative suspense."
+
+        if end_cue["speaker"] == "ACTION":
+            cliffhanger_desc = f"Scene cuts abruptly on critical action beat: \"{end_cue['text']}\""
+        elif "?" in end_cue["text"]:
+            cliffhanger_desc = f"Cuts to black immediately on {end_cue['speaker']}'s unanswered question: \"{end_cue['text']}\""
+        elif "!" in end_cue["text"]:
+            cliffhanger_desc = f"Cuts sharply on high-stakes outburst as {end_cue['speaker']} demands: \"{end_cue['text']}\""
+        else:
+            cliffhanger_desc = f"Suspends on unresolved confrontation after {end_cue['speaker']} states: \"{end_cue['text']}\""
 
         norm_start = normalize_timestamp(start_cue["start_ts"]) or start_cue["start_ts"]
         norm_end = normalize_timestamp(end_cue["end_ts"]) or end_cue["end_ts"]
@@ -210,22 +225,43 @@ class MockLLMProvider(BaseLLMProvider):
 
         candidates = [candidate1]
 
-        # Multi-segment candidate: If script has >= 4 cues and total duration > 35s with conflict
+        # Multi-segment candidate: Search for two non-contiguous moments whose combined duration is 20.0s to 55.0s
         if has_conflict and len(parsed_cues) >= 4 and not is_resolved and not is_calm:
-            seg1_start_cue = parsed_cues[0]
-            seg1_end_cue = parsed_cues[1]
-            seg2_start_cue = parsed_cues[-2]
-            seg2_end_cue = parsed_cues[-1]
+            best_multi = None
+            for i1 in range(0, min(3, len(parsed_cues) - 2)):
+                for j1 in range(i1, min(i1 + 3, len(parsed_cues) - 2)):
+                    d1 = parsed_cues[j1]["end_sec"] - parsed_cues[i1]["start_sec"]
+                    if 8.0 <= d1 <= 25.0:
+                        for i2 in range(j1 + 2, len(parsed_cues)):
+                            for j2 in range(i2, min(i2 + 3, len(parsed_cues))):
+                                d2 = parsed_cues[j2]["end_sec"] - parsed_cues[i2]["start_sec"]
+                                if 8.0 <= d2 <= 25.0 and 20.0 <= (d1 + d2) <= 55.0:
+                                    best_multi = (parsed_cues[i1], parsed_cues[j1], parsed_cues[i2], parsed_cues[j2], d1 + d2)
+                                    break
+                            if best_multi:
+                                break
+                    if best_multi:
+                        break
+                if best_multi:
+                    break
 
-            dur1 = seg1_end_cue["end_sec"] - seg1_start_cue["start_sec"]
-            dur2 = seg2_end_cue["end_sec"] - seg2_start_cue["start_sec"]
-            total_dur = dur1 + dur2
+            if best_multi:
+                s1_start, s1_end, s2_start, s2_end, multi_dur = best_multi
+                s1_s = normalize_timestamp(s1_start["start_ts"]) or s1_start["start_ts"]
+                s1_e = normalize_timestamp(s1_end["end_ts"]) or s1_end["end_ts"]
+                s2_s = normalize_timestamp(s2_start["start_ts"]) or s2_start["start_ts"]
+                s2_e = normalize_timestamp(s2_end["end_ts"]) or s2_end["end_ts"]
 
-            if 20.0 <= total_dur <= 60.0 and seg1_end_cue["end_sec"] < seg2_start_cue["start_sec"]:
-                s1_s = normalize_timestamp(seg1_start_cue["start_ts"]) or seg1_start_cue["start_ts"]
-                s1_e = normalize_timestamp(seg1_end_cue["end_ts"]) or seg1_end_cue["end_ts"]
-                s2_s = normalize_timestamp(seg2_start_cue["start_ts"]) or seg2_start_cue["start_ts"]
-                s2_e = normalize_timestamp(seg2_end_cue["end_ts"]) or seg2_end_cue["end_ts"]
+                m_hook = (
+                    f"Opening confrontation: {s1_start['speaker']} states: \"{s1_start['text']}\""
+                    if s1_start["speaker"] != "ACTION"
+                    else f"Opening visual confrontation: \"{s1_start['text']}\""
+                )
+                m_cliff = (
+                    f"Climactic cut: {s2_end['speaker']} exclaims: \"{s2_end['text']}\""
+                    if s2_end["speaker"] != "ACTION"
+                    else f"Climactic action cut: \"{s2_end['text']}\""
+                )
 
                 candidate2 = AIPromoCandidate(
                     candidate_id=f"PROMO_EP{ep_num:02d}_02",
@@ -236,10 +272,10 @@ class MockLLMProvider(BaseLLMProvider):
                         AIPromoSegmentCandidate(episode_number=ep_num, start_timestamp=s1_s, end_timestamp=s1_e),
                         AIPromoSegmentCandidate(episode_number=ep_num, start_timestamp=s2_s, end_timestamp=s2_e),
                     ],
-                    hook=f"Opening confrontation: {seg1_start_cue['speaker']} states: \"{seg1_start_cue['text']}\"",
-                    cliffhanger=f"Climactic cut: {seg2_end_cue['speaker']} exclaims: \"{seg2_end_cue['text']}\"",
-                    standalone_context=f"Cross-cutting the initial suspicion with the final revelation establishes high stakes without requiring backstory.",
-                    why_it_works="Two-part dramatic arc: hooks immediately on the opening accusation, then jumps directly to the peak confrontation before the reveal.",
+                    hook=m_hook,
+                    cliffhanger=m_cliff,
+                    standalone_context="Cross-cutting the initial suspicion with the climactic confrontation establishes high stakes without requiring backstory.",
+                    why_it_works="Two-part dramatic arc: hooks immediately on the opening confrontation, then jumps across filler directly to the peak cliffhanger.",
                     hook_strength=hook_score,
                     cliffhanger_strength=cliffhanger_score,
                     standalone_context_score=standalone_score,

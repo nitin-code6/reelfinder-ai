@@ -14,16 +14,20 @@ router = APIRouter(prefix="/export", tags=["Export"])
 def export_promos_csv(
     show_id: Optional[int] = Query(None),
     status: Optional[str] = Query("all", description="Filter by approval status: 'all', 'pending', 'approved', 'rejected'"),
+    include_invalid: bool = Query(True, description="Include all candidates (valid, warning, invalid) with validation status"),
     db: Session = Depends(get_db)
 ):
     """
-    Exports correctly validated promotional candidates to CSV.
-    Strictly excludes invalid candidates (reported separately).
+    Exports promotional candidates to CSV.
+    By default exports all candidates (reconciled with database) with explicit validation status.
     """
     repo = PromoRepository(db)
-    # Filter for valid and warning candidates only
     all_promos = repo.list_promos(show_id=show_id, approval_status=status if status != "all" else None, limit=2000)
-    valid_promos = [p for p in all_promos if p.validation_status in ("valid", "warning")]
+    
+    if not include_invalid:
+        promos_to_export = [p for p in all_promos if p.validation_status in ("valid", "warning")]
+    else:
+        promos_to_export = all_promos
 
     output = io.StringIO()
     writer = csv.writer(output)
@@ -32,6 +36,7 @@ def export_promos_csv(
     writer.writerow([
         "Promo Identifier",
         "Episode Number",
+        "Segment Count",
         "Segment Timestamps (Start - End)",
         "Total Duration (s)",
         "Overall Score",
@@ -44,14 +49,17 @@ def export_promos_csv(
         "Ending Cliffhanger",
         "Why It Works",
         "Approval Status",
-        "Validation Status"
+        "Validation Status",
+        "Limitations / Warnings"
     ])
 
-    for p in valid_promos:
-        segment_strs = "; ".join([f"Ep {s.episode_number}: {s.start_timestamp} - {s.end_timestamp}" for s in p.segments])
+    for p in promos_to_export:
+        segment_strs = "; ".join([f"Ep {s.episode_number}: {s.start_timestamp} - {s.end_timestamp}" for s in p.segments]) if p.segments else "N/A"
+        lims_str = "; ".join(p.limitations) if p.limitations else "None"
         writer.writerow([
             p.promo_identifier,
             p.primary_episode_number,
+            len(p.segments),
             segment_strs,
             f"{p.total_duration_seconds:.2f}",
             f"{p.overall_score:.1f}",
@@ -64,7 +72,8 @@ def export_promos_csv(
             p.cliffhanger,
             p.reason,
             p.approval_status,
-            p.validation_status
+            p.validation_status,
+            lims_str
         ])
 
     return Response(
@@ -78,27 +87,38 @@ def export_promos_csv(
 def export_promos_json(
     show_id: Optional[int] = Query(None),
     status: Optional[str] = Query("all"),
+    include_invalid: bool = Query(True, description="Include all candidates (valid, warning, invalid) with validation status"),
     db: Session = Depends(get_db)
 ):
     """
-    Exports correctly validated promotional candidates in structured JSON.
-    Strictly excludes invalid candidates.
+    Exports promotional candidates in structured JSON.
+    By default exports all candidates (reconciled with database) with explicit validation status.
     """
     repo = PromoRepository(db)
     all_promos = repo.list_promos(show_id=show_id, approval_status=status if status != "all" else None, limit=2000)
-    valid_promos = [p for p in all_promos if p.validation_status in ("valid", "warning")]
+    
+    if not include_invalid:
+        promos_to_export = [p for p in all_promos if p.validation_status in ("valid", "warning")]
+    else:
+        promos_to_export = all_promos
 
     results = []
-    for p in valid_promos:
+    for p in promos_to_export:
         results.append({
             "promo_id": p.promo_identifier,
+            "primary_episode_number": p.primary_episode_number,
+            "segment_count": len(p.segments),
             "episode_numbers": [p.primary_episode_number] if not p.segments else list(set(s.episode_number for s in p.segments)),
             "segments": [
                 {
                     "episode": s.episode_number,
+                    "segment_order": s.segment_order,
                     "start_timestamp": s.start_timestamp,
                     "end_timestamp": s.end_timestamp,
-                    "duration_seconds": s.duration_seconds
+                    "duration_seconds": s.duration_seconds,
+                    "scene_heading": s.scene_heading,
+                    "first_line": s.first_line,
+                    "last_line": s.last_line
                 }
                 for s in p.segments
             ],

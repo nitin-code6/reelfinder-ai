@@ -54,10 +54,16 @@ class TimestampValidator:
         candidate_end_ts: str,
         screenplay: ParsedScreenplay,
         hook_text: Optional[str] = None,
-        cliffhanger_text: Optional[str] = None
+        cliffhanger_text: Optional[str] = None,
+        is_segment: bool = False,
+        min_duration: Optional[float] = None,
+        max_duration: Optional[float] = None
     ) -> ValidationResult:
         limitations: List[str] = []
         all_lines = screenplay.get_all_lines()
+
+        effective_min = min_duration if min_duration is not None else (3.0 if is_segment else self.min_duration)
+        effective_max = max_duration if max_duration is not None else self.max_duration
 
         if not all_lines:
             return ValidationResult(
@@ -178,16 +184,16 @@ class TimestampValidator:
         # Recalculate duration after normalization and alignment
         duration = round(end_sec - start_sec, 2)
 
-        # 4. Strict duration boundaries check (20s - 60s)
+        # 4. Strict duration boundaries check
         is_duration_valid = True
-        if duration < self.min_duration:
+        if duration < effective_min:
             limitations.append(
-                f"Duration {duration:.1f}s is below minimum requirement ({self.min_duration}s)."
+                f"Duration {duration:.1f}s is below minimum requirement ({effective_min}s)."
             )
             is_duration_valid = False
-        elif duration > self.max_duration:
+        elif duration > effective_max:
             limitations.append(
-                f"Duration {duration:.1f}s exceeds maximum promo limit ({self.max_duration}s)."
+                f"Duration {duration:.1f}s exceeds maximum promo limit ({effective_max}s)."
             )
             is_duration_valid = False
 
@@ -204,13 +210,21 @@ class TimestampValidator:
         # 6. Evidence Grounding Verification
         # Check if named characters or entities mentioned in hook/cliffhanger actually exist in the screenplay
         if hook_text or cliffhanger_text:
-            all_speakers = {line.speaker.strip().lower() for line in all_lines if line.speaker}
+            all_speakers = {line.speaker.strip().lower() for line in all_lines if line.speaker and line.speaker.strip().upper() != "ACTION"}
             combined_script = " ".join([l.text for l in all_lines]).lower()
 
             for text_field, label in [(hook_text, "Hook"), (cliffhanger_text, "Cliffhanger")]:
                 if text_field:
+                    # Guard: Never treat ACTION as a character
+                    if re.search(r"\bACTION\s+(?:states|demands|exclaims|opens|pauses|declares|speaks)\b", text_field, re.IGNORECASE):
+                        limitations.append(f"Evidence Warning: {label} treats 'ACTION' as a character speaker.")
+
                     names_found = re.findall(r"\b[A-Z][a-z]{2,}\b", text_field)
-                    common_ignore = {"The", "This", "That", "When", "What", "Then", "With", "From", "Into", "After", "Before", "Here", "There", "Will"}
+                    common_ignore = {
+                        "The", "This", "That", "When", "What", "Then", "With", "From", 
+                        "Into", "After", "Before", "Here", "There", "Will", "Action", 
+                        "Cut", "Cuts", "Scene", "Opens", "Suspends", "Unanswered"
+                    }
                     for name in names_found:
                         if name not in common_ignore and name.lower() not in all_speakers and name.lower() not in combined_script:
                             limitations.append(f"Evidence Warning: {label} mentions character '{name}' not found in screenplay cues.")
