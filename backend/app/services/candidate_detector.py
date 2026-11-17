@@ -50,6 +50,26 @@ class CandidateDetector:
 
         file_path = Path(episode.file_path)
         if not file_path.exists():
+            fname = file_path.name
+            candidates = [
+                Path("uploads") / fname,
+                Path("backend/uploads") / fname,
+                Path(settings.UPLOAD_DIR) / fname,
+                *list(Path("uploads").glob(f"**/{fname}")),
+                *list(Path("backend/uploads").glob(f"**/{fname}")),
+                *list(Path("KukuFmSample").glob(f"**/{fname}")),
+            ]
+            for cand in candidates:
+                if cand.exists():
+                    file_path = cand
+                    episode.file_path = str(cand)
+                    try:
+                        db.commit()
+                    except Exception:
+                        pass
+                    break
+
+        if not file_path.exists():
             ep_repo.update_status(episode_id, ProcessingStatus.FAILED.value, f"File not found: {file_path}")
             return []
 

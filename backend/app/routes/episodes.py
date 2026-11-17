@@ -179,21 +179,41 @@ def inspect_episode(episode_id: int, db: Session = Depends(get_db)):
     if not ep:
         raise HTTPException(status_code=404, detail="Episode not found")
         
-    file_path = Path(ep.file_path)
+    target_path = Path(ep.file_path)
     raw_content = ""
     scenes_data = []
     cues_data = []
     parsing_warnings = []
+
+    if not target_path.exists():
+        fname = target_path.name
+        candidates = [
+            Path("uploads") / fname,
+            Path("backend/uploads") / fname,
+            Path(settings.UPLOAD_DIR) / fname,
+            *list(Path("uploads").glob(f"**/{fname}")),
+            *list(Path("backend/uploads").glob(f"**/{fname}")),
+            *list(Path("KukuFmSample").glob(f"**/{fname}")),
+        ]
+        for cand in candidates:
+            if cand.exists():
+                target_path = cand
+                ep.file_path = str(cand)
+                try:
+                    db.commit()
+                except Exception:
+                    pass
+                break
     
-    if file_path.exists():
+    if target_path.exists():
         try:
-            if file_path.suffix.lower() == ".txt":
-                with open(file_path, "r", encoding="utf-8", errors="replace") as f:
+            if target_path.suffix.lower() == ".txt":
+                with open(target_path, "r", encoding="utf-8", errors="replace") as f:
                     raw_content = f.read()
                 sp = candidate_detector.txt_parser.parse_text(raw_content)
-            elif file_path.suffix.lower() == ".pdf":
-                sp = candidate_detector.pdf_parser.parse_file(file_path)
-                raw_content = f"[PDF Document: {file_path.name}]"
+            elif target_path.suffix.lower() == ".pdf":
+                sp = candidate_detector.pdf_parser.parse_file(target_path)
+                raw_content = f"[PDF Document: {target_path.name}]"
             else:
                 sp = None
                 
@@ -219,11 +239,25 @@ def inspect_episode(episode_id: int, db: Session = Depends(get_db)):
         except Exception as e:
             parsing_warnings.append(f"Parsing notice: {str(e)}")
     else:
-        parsing_warnings.append(f"Original file not found on disk: {file_path}")
+        parsing_warnings.append(f"Original file not found on disk: {target_path.name}")
 
     # Promo summary for this episode
     promo_repo = PromoRepository(db)
     promos = promo_repo.list_promos(show_id=ep.show_id, episode_number=ep.episode_number)
+
+    # Fallback: If raw cues not found on disk, surface cues preserved from discovered promos
+    if not cues_data and promos:
+        for p in promos:
+            for s in p.segments:
+                cues_data.append({
+                    "speaker": "PROMO CUE",
+                    "line_type": "dialogue",
+                    "start_timestamp": s.start_timestamp,
+                    "end_timestamp": s.end_timestamp,
+                    "start_seconds": s.start_timestamp,
+                    "end_seconds": s.end_timestamp,
+                    "text": f"[{s.scene_heading or 'Scene'}] First: \"{s.first_line or ''}\" Cut: \"{s.last_line or ''}\""
+                })
     
     # AI provider configuration
     ai_info = {
