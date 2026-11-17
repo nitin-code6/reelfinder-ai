@@ -1,16 +1,18 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { 
   Download, FileSpreadsheet, FileCode, CheckCircle2, ShieldCheck, 
-  AlertCircle, Sparkles, Check, Info, Code2
+  AlertCircle, Sparkles, Check, Info, Code2, RefreshCw, Filter
 } from 'lucide-react';
-import { getShows, getPromos } from '../api';
+import { getShows, getPromos, downloadExport, getErrorMessage } from '../api';
 
 export default function Export() {
   const [shows, setShows] = useState([]);
   const [selectedShow, setSelectedShow] = useState('');
   const [promos, setPromos] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [downloadingFormat, setDownloadingFormat] = useState(null);
   const [downloadNotice, setDownloadNotice] = useState(null);
+  const [exportScope, setExportScope] = useState('all'); // 'all' (All Evaluated) or 'approved' (Approved Only)
 
   useEffect(() => {
     loadData();
@@ -32,68 +34,134 @@ export default function Export() {
     }
   }
 
-  // Exact metrics matching Panel 6
+  // Exact metrics
   const metrics = useMemo(() => {
     const total = promos.length;
     const approved = promos.filter(p => p.approval_status === 'approved').length;
-    const validApproved = promos.filter(p => p.approval_status === 'approved' && (p.validation_status === 'valid' || p.validation_status === 'warning')).length;
+    const valid = promos.filter(p => p.validation_status === 'valid').length;
+    const warning = promos.filter(p => p.validation_status === 'warning').length;
+    const invalid = promos.filter(p => p.validation_status === 'invalid').length;
     const pending = promos.filter(p => p.approval_status === 'pending').length;
-    const invalidExcluded = promos.filter(p => p.validation_status === 'invalid').length;
-    const willExport = validApproved;
+    const multiSegment = promos.filter(p => p.segments && p.segments.length > 1).length;
+
+    const countToExport = exportScope === 'approved' ? approved : total;
 
     return {
       total,
       approved,
-      validApproved,
+      valid,
+      warning,
+      invalid,
       pending,
-      invalidExcluded,
-      willExport
+      multiSegment,
+      countToExport
     };
-  }, [promos]);
+  }, [promos, exportScope]);
 
-  function getDownloadUrl(format) {
-    const params = new URLSearchParams();
-    if (selectedShow) params.append('show_id', selectedShow);
-    params.append('status', 'approved');
-    return `/api/export/${format}?${params.toString()}`;
-  }
+  async function handleDownload(format) {
+    setDownloadingFormat(format);
+    setDownloadNotice(`Generating and downloading ${format.toUpperCase()} export...`);
 
-  function handleDownloadClick(format) {
-    setDownloadNotice(`Downloading ${format.toUpperCase()} export file...`);
-    setTimeout(() => {
-      setDownloadNotice(`✓ ${format.toUpperCase()} export downloaded successfully.`);
-      setTimeout(() => setDownloadNotice(null), 3000);
-    }, 1200);
+    try {
+      const params = {
+        include_invalid: true
+      };
+      if (selectedShow) params.show_id = selectedShow;
+      if (exportScope !== 'all') params.status = exportScope;
+
+      const res = await downloadExport(format, params);
+      
+      // Determine file blob and trigger browser download
+      const mimeType = format === 'csv' ? 'text/csv;charset=utf-8;' : 'application/json';
+      const blob = new Blob([res.data], { type: mimeType });
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      
+      const fileName = `reelfinder_promos_${exportScope}_${new Date().toISOString().slice(0, 10)}.${format}`;
+      link.setAttribute('download', fileName);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
+
+      setDownloadNotice(`✓ ${format.toUpperCase()} file downloaded successfully (${metrics.countToExport} records).`);
+      setTimeout(() => setDownloadNotice(null), 4000);
+    } catch (err) {
+      console.error(`Export failed for ${format}:`, err);
+      const msg = getErrorMessage(err, `Failed to download ${format.toUpperCase()} file.`);
+      alert(`Download Error: ${msg}`);
+      setDownloadNotice(null);
+    } finally {
+      setDownloadingFormat(null);
+    }
   }
 
   return (
-    <div className="max-w-5xl mx-auto space-y-6">
+    <div className="max-w-5xl mx-auto space-y-6 pb-12">
       {/* Toast Notice */}
       {downloadNotice && (
-        <div className="fixed bottom-6 right-6 bg-[#172B4D] text-white text-xs px-4 py-2.5 rounded-xl shadow-lg z-50 flex items-center gap-2 border border-white/20">
-          <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+        <div className="fixed bottom-6 right-6 bg-[#172B4D] text-white text-xs px-4 py-3 rounded-xl shadow-xl z-50 flex items-center gap-2.5 border border-white/20 animate-fade-in">
+          <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
           <span>{downloadNotice}</span>
         </div>
       )}
 
-      {/* Series Filter Selector if user wants to filter by series */}
-      {shows.length > 1 && (
-        <div className="flex items-center justify-end gap-2 text-xs">
-          <span className="text-slate-500 font-medium">Filter by Series:</span>
-          <select
-            value={selectedShow}
-            onChange={(e) => setSelectedShow(e.target.value)}
-            className="px-2.5 py-1.5 bg-white border border-slate-200 rounded-lg text-xs font-semibold text-[#172B4D] focus:outline-none"
-          >
-            <option value="">All Series ({metrics.total} Promos)</option>
-            {shows.map(s => (
-              <option key={s.id} value={s.id}>{s.title}</option>
-            ))}
-          </select>
+      {/* Header and Scope Selector */}
+      <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+          <h2 className="text-lg font-black text-[#172B4D]">Export Center</h2>
+          <p className="text-xs text-[#64748B] mt-0.5">
+            Download full promotional candidate datasets with timecodes, segments, and validation audits.
+          </p>
         </div>
-      )}
 
-      {/* Top 6 Metric Boxes matching Panel 6 */}
+        {/* Filter Controls */}
+        <div className="flex flex-wrap items-center gap-3">
+          {/* Series Filter */}
+          {shows.length > 1 && (
+            <div className="flex items-center gap-2">
+              <span className="text-xs text-slate-500 font-medium">Series:</span>
+              <select
+                value={selectedShow}
+                onChange={(e) => setSelectedShow(e.target.value)}
+                className="px-2.5 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-xs font-semibold text-[#172B4D] focus:outline-none"
+              >
+                <option value="">All Series ({promos.length})</option>
+                {shows.map(s => (
+                  <option key={s.id} value={s.id}>{s.title}</option>
+                ))}
+              </select>
+            </div>
+          )}
+
+          {/* Export Scope Selector (All vs Approved Only) */}
+          <div className="flex items-center bg-slate-100 p-1 rounded-xl text-xs font-bold">
+            <button
+              onClick={() => setExportScope('all')}
+              className={`px-3 py-1.5 rounded-lg transition-all ${
+                exportScope === 'all'
+                  ? 'bg-white text-[#0F766E] shadow-xs'
+                  : 'text-slate-600 hover:text-slate-900'
+              }`}
+            >
+              All Discovered ({metrics.total})
+            </button>
+            <button
+              onClick={() => setExportScope('approved')}
+              className={`px-3 py-1.5 rounded-lg transition-all ${
+                exportScope === 'approved'
+                  ? 'bg-white text-[#0F766E] shadow-xs'
+                  : 'text-slate-600 hover:text-slate-900'
+              }`}
+            >
+              Approved Only ({metrics.approved})
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* Top 6 Metric Boxes */}
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
         <div className="bg-white border border-slate-200 rounded-2xl p-4 shadow-xs text-center space-y-1">
           <div className="text-2xl font-black text-[#172B4D]">{metrics.total}</div>
@@ -101,40 +169,44 @@ export default function Export() {
         </div>
 
         <div className="bg-white border border-slate-200 rounded-2xl p-4 shadow-xs text-center space-y-1">
+          <div className="text-2xl font-black text-emerald-700">{metrics.valid}</div>
+          <div className="text-[11px] font-semibold text-emerald-700">Valid</div>
+        </div>
+
+        <div className="bg-white border border-slate-200 rounded-2xl p-4 shadow-xs text-center space-y-1">
+          <div className="text-2xl font-black text-amber-600">{metrics.warning}</div>
+          <div className="text-[11px] font-semibold text-amber-600">Warnings</div>
+        </div>
+
+        <div className="bg-white border border-slate-200 rounded-2xl p-4 shadow-xs text-center space-y-1">
+          <div className="text-2xl font-black text-rose-700">{metrics.invalid}</div>
+          <div className="text-[11px] font-semibold text-rose-700">Invalid</div>
+        </div>
+
+        <div className="bg-white border border-slate-200 rounded-2xl p-4 shadow-xs text-center space-y-1">
           <div className="text-2xl font-black text-indigo-700">{metrics.approved}</div>
-          <div className="text-[11px] font-semibold text-slate-500">Approved</div>
+          <div className="text-[11px] font-semibold text-indigo-700">Approved</div>
         </div>
 
-        <div className="bg-white border border-slate-200 rounded-2xl p-4 shadow-xs text-center space-y-1">
-          <div className="text-2xl font-black text-emerald-700">{metrics.validApproved}</div>
-          <div className="text-[11px] font-semibold text-slate-500">Valid & Approved</div>
-        </div>
-
-        <div className="bg-white border border-slate-200 rounded-2xl p-4 shadow-xs text-center space-y-1">
-          <div className="text-2xl font-black text-[#D69E36]">{metrics.pending}</div>
-          <div className="text-[11px] font-semibold text-slate-500">Pending</div>
-        </div>
-
-        <div className="bg-white border border-slate-200 rounded-2xl p-4 shadow-xs text-center space-y-1">
-          <div className="text-2xl font-black text-rose-700">{metrics.invalidExcluded}</div>
-          <div className="text-[11px] font-semibold text-slate-500">Invalid (Excluded)</div>
-        </div>
-
-        <div className="bg-white border border-teal-200 bg-teal-50/30 rounded-2xl p-4 shadow-xs text-center space-y-1">
-          <div className="text-2xl font-black text-[#0F766E]">{metrics.willExport}</div>
-          <div className="text-[11px] font-bold text-[#0F766E]">Will Export</div>
+        <div className="bg-white border border-teal-200 bg-teal-50/40 rounded-2xl p-4 shadow-xs text-center space-y-1">
+          <div className="text-2xl font-black text-[#0F766E]">{metrics.countToExport}</div>
+          <div className="text-[11px] font-bold text-[#0F766E]">Ready to Export</div>
         </div>
       </div>
 
-      {/* Information Banner matching Panel 6 */}
-      <div className="p-3.5 bg-slate-100/70 border border-slate-200 rounded-xl flex items-center gap-2.5 text-xs text-slate-600">
+      {/* Information Banner */}
+      <div className="p-3.5 bg-slate-50 border border-slate-200 rounded-xl flex items-center gap-2.5 text-xs text-slate-600">
         <Info className="w-4 h-4 text-[#0F766E] shrink-0" />
         <span>
-          Only approved candidates that passed technical validation (accurate timestamps, 20-60s duration and valid source cues) will be included in the export.
+          {exportScope === 'approved' ? (
+            <span>Exporting <strong>Approved Candidates Only</strong>. Review and approve candidates in the Promos tab to add more to this view.</span>
+          ) : (
+            <span>Exporting <strong>All Evaluated Candidates</strong> ({metrics.total} records) with explicit validation status and limitations audit.</span>
+          )}
         </span>
       </div>
 
-      {/* Two Download Cards matching Panel 6 */}
+      {/* Two Download Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
         {/* Card 1: CSV Marketing Spreadsheet */}
         <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-xs flex flex-col justify-between space-y-5 hover:border-[#0F766E] transition-all">
@@ -145,23 +217,32 @@ export default function Export() {
             <div>
               <h4 className="text-base font-bold text-[#172B4D]">CSV Marketing Spreadsheet</h4>
               <p className="text-xs text-[#64748B] mt-1 leading-relaxed">
-                Timelines, durations, scores and editorial status ({metrics.willExport} records)
+                Contains columns for timestamps, segment breakdown, scores, verbatim hook/cliffhanger, and validation audit.
               </p>
             </div>
           </div>
 
-          <a
-            href={getDownloadUrl('csv')}
-            onClick={() => handleDownloadClick('csv')}
-            className={`w-full py-2.5 px-4 rounded-xl text-xs font-bold flex items-center justify-center gap-2 shadow-sm transition-all ${
-              metrics.willExport === 0
-                ? 'bg-slate-100 text-slate-400 pointer-events-none'
-                : 'bg-[#0F766E] hover:bg-[#115E59] text-white'
+          <button
+            onClick={() => handleDownload('csv')}
+            disabled={downloadingFormat === 'csv' || metrics.countToExport === 0}
+            className={`w-full py-3 px-4 rounded-xl text-xs font-bold flex items-center justify-center gap-2 shadow-sm transition-all cursor-pointer ${
+              metrics.countToExport === 0
+                ? 'bg-slate-100 text-slate-400 cursor-not-allowed'
+                : 'bg-[#0F766E] hover:bg-[#115E59] text-white active:scale-[0.99]'
             }`}
           >
-            <Download className="w-4 h-4" />
-            <span>Download CSV ({metrics.willExport} Records)</span>
-          </a>
+            {downloadingFormat === 'csv' ? (
+              <>
+                <RefreshCw className="w-4 h-4 animate-spin" />
+                <span>Downloading CSV...</span>
+              </>
+            ) : (
+              <>
+                <Download className="w-4 h-4" />
+                <span>Download CSV ({metrics.countToExport} Records)</span>
+              </>
+            )}
+          </button>
         </div>
 
         {/* Card 2: Structured Production JSON */}
@@ -173,23 +254,32 @@ export default function Export() {
             <div>
               <h4 className="text-base font-bold text-[#172B4D]">Structured Production JSON</h4>
               <p className="text-xs text-[#64748B] mt-1 leading-relaxed">
-                Conforms to Kuku assignment schema with segments and source cue metadata ({metrics.willExport} records)
+                Conforms strictly to the assignment schema with full segments array, source cue metadata, score breakdowns, and provider trace.
               </p>
             </div>
           </div>
 
-          <a
-            href={getDownloadUrl('json')}
-            onClick={() => handleDownloadClick('json')}
-            className={`w-full py-2.5 px-4 rounded-xl text-xs font-bold flex items-center justify-center gap-2 shadow-sm transition-all ${
-              metrics.willExport === 0
-                ? 'bg-slate-100 text-slate-400 pointer-events-none'
-                : 'bg-[#0F766E] hover:bg-[#115E59] text-white'
+          <button
+            onClick={() => handleDownload('json')}
+            disabled={downloadingFormat === 'json' || metrics.countToExport === 0}
+            className={`w-full py-3 px-4 rounded-xl text-xs font-bold flex items-center justify-center gap-2 shadow-sm transition-all cursor-pointer ${
+              metrics.countToExport === 0
+                ? 'bg-slate-100 text-slate-400 cursor-not-allowed'
+                : 'bg-[#0F766E] hover:bg-[#115E59] text-white active:scale-[0.99]'
             }`}
           >
-            <Download className="w-4 h-4" />
-            <span>Download JSON ({metrics.willExport} Records)</span>
-          </a>
+            {downloadingFormat === 'json' ? (
+              <>
+                <RefreshCw className="w-4 h-4 animate-spin" />
+                <span>Downloading JSON...</span>
+              </>
+            ) : (
+              <>
+                <Download className="w-4 h-4" />
+                <span>Download JSON ({metrics.countToExport} Records)</span>
+              </>
+            )}
+          </button>
         </div>
       </div>
     </div>
