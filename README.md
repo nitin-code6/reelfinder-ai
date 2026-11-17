@@ -1,102 +1,138 @@
-# ReelFinder AI — Automated Promo Discovery Engine for Microdramas
+# ReelFinder AI
 
-[![FastAPI](https://img.shields.io/badge/Backend-FastAPI-009688.svg)](https://fastapi.tiangolo.com/)
-[![React](https://img.shields.io/badge/Frontend-React%20%2B%20Vite-61DAFB.svg)](https://reactjs.org/)
-[![PostgreSQL](https://img.shields.io/badge/Database-PostgreSQL%20%2F%20SQLite-336791.svg)](https://www.postgresql.org/)
-[![Docker](https://img.shields.io/badge/Docker-Compose%20Ready-2496ED.svg)](https://www.docker.com/)
-[![Tests](https://img.shields.io/badge/Tests-24%20Passing-brightgreen.svg)]()
+**AI-assisted promo discovery for microdrama screenplays.**
 
-> **Kuku AI Generalist Assignment | Problem 1: Find the Promos**  
-> ReelFinder AI automates discovery, validation, and explainable multi-factor ranking of 20–60 second viral promotional clips from serialized microdrama screenplays. It pairs AI narrative comprehension (Gemini) with deterministic Python timestamp validation and a human-in-the-loop React dashboard.
+[![Backend](https://img.shields.io/badge/Backend-FastAPI%20%7C%20Python%203.11-009688.svg)](https://fastapi.tiangolo.com/)
+[![Frontend](https://img.shields.io/badge/Frontend-React%2019%20%7C%20Vite%20%7C%20Tailwind-61DAFB.svg)](https://reactjs.org/)
+[![Database](https://img.shields.io/badge/Database-PostgreSQL%20%7C%20SQLAlchemy-336791.svg)](https://www.postgresql.org/)
+[![Tests](https://img.shields.io/badge/Tests-86%20Passing-brightgreen.svg)]()
+[![Deploy](https://img.shields.io/badge/Deployment-Render%20Live-46E3B7.svg)](https://reelfinder-frontend.onrender.com/)
 
----
-
-## 🎯 The Business Problem
-
-In fast-paced microdrama production (1–2 minute vertical episodes, 50–100 episodes per series), user acquisition on TikTok, Meta Reels, and YouTube Shorts is strictly conversion-driven:
-- **3-Second Hook:** An immediate slap, explosive confrontation, or shocking revelation to stop scrolling drop-off.
-- **Unresolved Cliffhanger:** Cutting the ad at the peak of suspense before resolution or confession.
-- **Standalone Narrative:** Complete clarity for a first-time viewer with zero prior context.
-- **Strict Duration:** 20 to 60 seconds.
-
-Today, editors manually watch every episode to extract these clips. **ReelFinder AI** automates this bottleneck while keeping content editors in control of final approvals.
+> **Kuku AI Generalist Assignment | Problem 1: Find the Promos (Ads)**  
+> ReelFinder AI analyzes microdrama screenplays to discover, validate, and rank high-converting 20–60 second promotional clips. It pairs AI narrative comprehension (Groq LPU and Google Gemini) with deterministic Python timestamp validation and a human-in-the-loop review station.
 
 ---
 
-## 🏗️ Architecture & Dataflow
+## 🌐 Live Prototype
+
+- **Live Web Application (Frontend):** [https://reelfinder-frontend.onrender.com/](https://reelfinder-frontend.onrender.com/)
+- **Live REST Backend (Health Check):** [https://reelfinder-backend.onrender.com/api/health](https://reelfinder-backend.onrender.com/api/health)
+- **Interactive OpenAPI Documentation:** [https://reelfinder-backend.onrender.com/docs](https://reelfinder-backend.onrender.com/docs)
+
+*Hosted on Render's free tier (FastAPI backend + React static site + PostgreSQL database).*
+
+---
+
+## 📸 Application Interface
+
+### Overview Dashboard
+![Overview Dashboard](docs/screenshots/overview.png)
+*High-level workspace metrics: total episodes parsed, discovered candidate count, review progress, and system health status.*
+
+### Ranked Discovery Feed
+![Ranked Candidate Discovery Feed](docs/screenshots/discovery.png)
+*AI-discovered promo candidates sorted by 0–100 composite conversion score, displaying duration, segment breakdown, opening hook, and cutoff cliffhanger.*
+
+### Editorial Review Station
+![Editorial Review Station](docs/screenshots/review.png)
+*Side-by-side verification: content editors inspect exact screenplay cues, 5-factor scoring breakdowns, and deterministic validation checks before 1-click approval.*
+
+### Export Center
+![Export Center](docs/screenshots/export.png)
+*Scope selector ("All Discovered" vs. "Approved Only") allowing instant download of production-ready CSV marketing spreadsheets and assignment-compliant JSON files.*
+
+---
+
+## 🎯 Problem & Objective
+
+In fast-growing microdrama apps (Kuku TV, ReelShort, DramaBox), series are released as vertical 1-to-2 minute episodes, often spanning 50 to 100 episodes per show.
+
+Customer acquisition on social platforms (TikTok, Instagram Reels, YouTube Shorts) relies heavily on short promotional video ads. These promos are exact narrative excerpts taken directly from the episodes.
+
+Editors currently watch every episode manually to find these moments. However, finding a great promo is challenging:
+1. **Dramatic does not mean promotional:** A scene might have great acting, but if it lacks an explosive hook in the first 3 seconds, a scrolling user swipes away immediately.
+2. **The Cliffhanger matters most:** The clip must cut precisely at an unresolved peak of tension before the mystery is revealed or the conflict resolved, compelling the viewer to install the app.
+3. **Standalone clarity:** An ad must make complete sense to a first-time viewer who has zero prior knowledge of the series.
+4. **Strict duration limits:** Clips under 20 seconds fail to build narrative investment; clips over 60 seconds experience severe completion rate drop-offs in ad auctions.
+
+**ReelFinder AI** automates this discovery process. It scans the screenplay text, finds suitable moments, verifies start/end timestamps against source cues, ranks candidates by conversion potential, and presents them to human editors for final sign-off.
+
+---
+
+## ⚙️ How It Works
 
 ```
-Screenplay Upload (TXT / PDF / ZIP)
+1. Upload Screenplay (.txt / .pdf / .zip)
        │
        ▼
-File Validation & Deduplication (SHA-256 + Zip Slip Guard)
+2. Parse Screenplay State Machine ───► Extracts scenes, dialogue, camera directions & normalized timestamps
        │
        ▼
-Screenplay Parser (State Machine for Action, Camera, & Timecodes)
+3. Context Segmentation ────────────► Groups cues into valid 20–60s narrative windows
        │
        ▼
-Context-Aware Narrative Segmentation (Pre-slices 20-60s Windows)
+4. Multi-Tier AI Inference ─────────► Evaluates 3s hook, cliffhanger cutoff, standalone context & emotional stakes
+       │                              (Tier 1: Groq LPU -> Tier 2: Gemini -> Tier 3: Heuristic Fallback)
+       ▼
+5. Deterministic Python Rules ──────► Validates 20–60s bounds, snaps approximate cues (<0.5s), rejects invented timestamps
        │
        ▼
-AI Candidate Discovery (Gemini 1.5 Flash / Pro with Pydantic JSON Mode)
+6. Semantic Duplicate Detector ─────► Filters candidates sharing >=75% temporal overlap or repeated generic tropes
        │
        ▼
-Deterministic Timestamp Validator (Python Enforces Bounds & Snaps Cues)
+7. Composite 5-Factor Ranking ──────► Computes 0–100 composite score (Hook 25%, Cliffhanger 25%, Standalone 20%, Impact 15%, Continuity 15%)
        │
        ▼
-Explainable 5-Factor Weighted Scoring & Ranking (0-100 Scale)
-       │
-       ▼
-Relational Persistence (PostgreSQL / SQLite via SQLAlchemy)
-       │
-       ▼
-Editor Review Dashboard (React + Tailwind + Vite)
-       │
-       ▼
-Editorial Approval & Export (CSV & JSON)
+8. Editorial Review & Export ───────► Human editor reviews evidence side-by-side, approves candidates, and exports CSV / JSON
 ```
 
 ---
 
 ## ⚖️ Division of Responsibility: AI vs. Deterministic Code
 
-| Operational Dimension | Handled by AI (Gemini) | Handled by Deterministic Code (Python) |
-|---|---|---|
-| **Narrative Understanding** | Evaluates emotional intensity, betrayal stakes, and curiosity gaps. | Does not judge subjective dramatic quality. |
-| **Timings & Durations** | Proposes suggested candidate start/end cues. | **Strictly enforces:** $20.0\text{s} \le \text{duration} \le 60.0\text{s}$, $\text{start} < \text{end}$. Vetoes and penalizes out-of-bounds hallucinations. |
-| **Integrity & Snapping** | Identifies dialogue quotes. | Snaps approximate LLM timecodes to verbatim screenplay line offsets; logs warnings. |
-| **Scoring & Sort** | Rates raw dimensions (1–10). | Computes normalized composite scores, applies validation penalties, and sorts playlists. |
+| Task | Handled by AI | Handled by Deterministic Code | Rationale |
+|---|---|---|---|
+| **Narrative Comprehension** | Evaluates emotional stakes, curiosity gaps, and dramatic tension. | Does not judge subjective literary quality. | LLMs excel at contextual language understanding. |
+| **Timecodes & Bounds** | Proposes candidate start/end anchors. | **Strictly enforces:** $20.0\text{s} \le \text{duration} \le 60.0\text{s}$, $\text{start} < \text{end}$, and chronological segment ordering. | LLMs are fundamentally unreliable at boundary arithmetic. Python rules guarantee 100% compliance. |
+| **Source Grounding** | Selects verbatim dialogue quotes. | Snaps approximate timecodes ($\le 0.5\text{s}$) to verified screenplay lines; rejects invented timestamps ($>1.0\text{s}$). | Prevents hallucinated timestamps from entering production editing pipelines. |
+| **Deduplication** | Identifies narrative themes. | Computes Jaccard word similarity and temporal overlap ratios ($\ge 75\%$). | Algorithms reliably filter redundant candidates covering the same story beat. |
+| **Composite Ranking** | Scores raw qualitative factors (1–10). | Computes normalized 0–100 weighted score and applies validation penalties. | Ensures transparent, explainable, and reproducible candidate rankings. |
 
 ---
 
-## 📊 50-Episode Benchmark & Quality Evaluation
+## 🛠️ Technology Stack
 
-Evaluated against all 50 episodes of Kuku's confidential input pack (*I Married a Broken Soldier. He was a Duke*):
-- **Total Episodes Evaluated:** 50
-- **Total Promos Generated:** 50
-- **Valid Timestamp & Duration Compliance:** **100.0%** (all 50 candidates verified within 20.0s – 60.0s).
-- **Average Promo Duration:** 25.8 seconds (optimal for TikTok/Reels retention).
-- **Average Composite Score:** 90.2 / 100.
-- **Duration Breakdown:** 20–30s: 49 ($98\%$), 30–45s: 1 ($2\%$), Out-of-bounds: 0 ($0\%$).
-
-### Where Does the Tool Pick Badly? (Honest Failure Analysis)
-1. **Lore-Dependent Climaxes (False Positives):** In later episodes (e.g. Ep 28–34), shouting confrontations often hinge on prior plot points (such as forged wills from 15 episodes prior). The LLM tends to overscore standalone context because of emotional intensity alone. *Mitigation:* The React dashboard allows editors to reject or flag "Lacks Standalone Context."
-2. **Drawn-Out Confrontations (>60s Arcs) (False Negatives):** High-tension dialogues that take 80–90 seconds to reach the physical confrontation are rejected by the 60s hard ceiling. *Mitigation:* Multi-segment stitching bridges scenes, guided by human editor review.
-3. **Action-Heavy Silent Hooks:** Scripts with visual action slaps before dialogue begins can be under-represented if prompts focus solely on character speech. *Mitigation:* The screenplay parser explicitly preserves `**CAMERA:**` and `**ACTION:**` lines alongside dialogue.
+- **Backend:** Python 3.11, FastAPI, Uvicorn, Pydantic v2
+- **Persistence:** SQLAlchemy 2.0, PostgreSQL (production), SQLite (in-memory test suite)
+- **AI Providers:**
+  - *Primary:* Groq LPU Inference (`openai/gpt-oss-120b`, `qwen/qwen3.8-27b`) with automatic key rotation
+  - *Secondary:* Google Gemini API (`gemini-3.8-flash`)
+  - *Fallback:* Deterministic Heuristic Engine (`MockLLMProvider`)
+- **Frontend:** React 19, Vite, Tailwind CSS, Lucide Icons, Axios
+- **Screenplay Parsing:** Regex State Machine, `pypdf`
+- **Testing & QA:** `pytest`, `pytest-asyncio`, Selenium WebDriver
+- **Deployment:** Render Blueprint (`render.yaml`), Docker, Docker Compose
 
 ---
 
-## 🚀 Quick Start (Local Development)
+## 🚀 Local Setup & Quick Start
 
 ### 1. Prerequisites
 - Python 3.10+
 - Node.js 18+ and npm
-- Docker & Docker Compose (optional)
+- Git
 
-### 2. Backend Setup
+### 2. Clone Repository
+```bash
+git clone https://github.com/nitin-code6/reelfinder-ai.git
+cd reelfinder-ai
+```
+
+### 3. Backend Setup
 ```bash
 cd backend
 python -m venv venv
+
 # Windows:
 .\venv\Scripts\activate
 # Linux/macOS:
@@ -106,84 +142,57 @@ pip install -r requirements.txt
 cp ../.env.example .env
 uvicorn app.main:app --reload --port 8000
 ```
-Backend API will be live at `http://localhost:8000` with interactive Swagger docs at `http://localhost:8000/docs`.
+*Backend API will be live at `http://localhost:8000` with interactive Swagger docs at `http://localhost:8000/docs`.*
 
-### 3. Frontend Setup
+### 4. Frontend Setup
 ```bash
-cd frontend
+cd ../frontend
 npm install
 npm run dev
 ```
-Frontend will be live at `http://localhost:5173`.
+*Frontend will be live at `http://localhost:5173` (or `http://localhost:3000` with Docker).*
 
-### 4. Running with Docker Compose
+### 5. Running with Docker Compose (Optional)
 ```bash
 docker compose up --build
 ```
-- Frontend UI: `http://localhost:3000`
+- Frontend: `http://localhost:3000`
 - Backend API: `http://localhost:8000`
 - PostgreSQL: `localhost:5432`
 
 ---
 
-## 🧪 Testing
+## 🧪 Testing & Verification
 
-Run all 24 automated unit, integration, and evaluation tests:
+Run all 86 automated unit, integration, and evaluation tests:
 ```bash
-pytest backend/tests
+pytest backend/tests -v
 ```
 
-Run batch evaluation over the 50 episodes:
+Run the reconciliation audit between database, JSON, and CSV exports:
+```bash
+python backend/scripts/reconcile_audit.py
+```
+
+Run batch evaluation over all 50 episodes:
 ```bash
 python backend/scripts/run_batch_evaluation.py
 ```
 
-Generate the 2-page Solution Document PDF:
-```bash
-python backend/scripts/generate_solution_pdf.py
-```
+---
+
+## 📚 Technical Documentation Index
+
+| Document | Purpose |
+|---|---|
+| [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) | High-level system architecture, component boundaries, database schemas, and dataflow diagrams. |
+| [docs/APPROACH.md](docs/APPROACH.md) | Problem-solving methodology, viral selection mechanics, 5-factor scoring formula, and multi-segment logic. |
+| [docs/QUALITY_AND_TESTING.md](docs/QUALITY_AND_TESTING.md) | Test suite breakdown (86 tests), failure analysis, real debugging case studies, and synthetic vs. real runs. |
+| [docs/LIMITATIONS.md](docs/LIMITATIONS.md) | Honest assessment of system limitations, screenplay vs. footage constraints, and scalability roadmap. |
+| [docs/AI_USAGE.md](docs/AI_USAGE.md) | Transparent disclosure of AI tools used, operational scope, and two concrete AI failures resolved. |
+| [docs/SUBMISSION_CHECKLIST.md](docs/SUBMISSION_CHECKLIST.md) | Complete checklist mapping assignment requirements to repository evidence, plus a 3-minute video script. |
 
 ---
 
-## 📁 Repository Structure
-
-```
-.
-├── backend/
-│   ├── app/
-│   │   ├── core/            # Config, logging, exceptions
-│   │   ├── db/              # Database session & engine
-│   │   ├── models/          # SQLAlchemy entities (User, Show, Episode, Promo, PromoSegment)
-│   │   ├── schemas/         # Pydantic schemas
-│   │   ├── repositories/    # Clean DB query layer
-│   │   ├── services/        # Parsers, segmenter, validator, ranking
-│   │   ├── llm/             # Gemini & Mock providers, prompts, schema
-│   │   └── routes/          # REST endpoints (health, shows, episodes, promos, export)
-│   ├── scripts/             # 50-episode evaluation & PDF generation
-│   ├── tests/               # 24 unit, integration, and evaluation tests
-│   ├── requirements.txt
-│   └── Dockerfile
-├── frontend/
-│   ├── src/
-│   │   ├── components/      # Navigation, layout
-│   │   ├── pages/           # Dashboard, Shows, Upload, Promos, Review, Export
-│   │   └── api.js           # Backend API client
-│   ├── package.json
-│   ├── Dockerfile
-│   └── nginx.conf
-├── docs/
-│   ├── architecture.md      # Detailed system architecture
-│   ├── methodology.md       # Viral mechanics & 5-factor ranking formula
-│   ├── evaluation.md        # 50-episode benchmark report
-│   ├── limitations.md       # Limitations & future roadmap
-│   ├── KUKU_SOLUTION_DOCUMENT.md # Solution document source
-│   └── KUKU_SOLUTION_DOCUMENT.pdf # Exact 2-page executive summary PDF
-├── docker-compose.yml       # Multi-container production deployment
-├── AI_USAGE.md              # AI tool disclosure & mistake analysis
-└── README.md
-```
-
----
-
-## 🔒 Confidentiality & Security Notice
-Proprietary screenplay datasets from Kuku FM are strictly excluded from version control via `.gitignore`. The repository includes synthetic sample screenplays (`backend/tests/fixtures/`) for automated testing and CI.
+## 🔒 Confidentiality Notice
+The original 50-episode screenplay dataset (*I Married a Broken Soldier. He was a Duke*) provided in the Kuku FM input pack is proprietary and strictly excluded from public version control via `.gitignore`. The repository includes synthetic screenplay fixtures (`backend/tests/fixtures/`) for automated testing and CI.

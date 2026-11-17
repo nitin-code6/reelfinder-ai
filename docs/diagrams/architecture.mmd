@@ -1,0 +1,64 @@
+graph TD
+    subgraph Client ["Client Layer (Browser)"]
+        UI["React 19 + Tailwind SPA<br/>(Vite, Lucide Icons)"]
+        ReviewStation["Editorial Review Station<br/>(Evidence, Cues, 1-Click Approval)"]
+        ExportHub["Export Center<br/>(CSV & Structured JSON)"]
+        UI --> ReviewStation
+        UI --> ExportHub
+    end
+
+    subgraph API ["Application Server (FastAPI on Render)"]
+        FastAPI["FastAPI App (/api)"]
+        CORS["Dynamic / Wildcard CORS"]
+        RouterShows["/api/shows"]
+        RouterEpisodes["/api/episodes"]
+        RouterPromos["/api/promos"]
+        RouterExport["/api/export"]
+        FastAPI --> RouterShows
+        FastAPI --> RouterEpisodes
+        FastAPI --> RouterPromos
+        FastAPI --> RouterExport
+    end
+
+    subgraph Ingestion ["Screenplay Ingestion Engine"]
+        FileService["FileService<br/>(ZIP slip protection, SHA-256)"]
+        TxtParser["TxtScreenplayParser<br/>(Cue state-machine, timestamps)"]
+        PdfParser["PdfScreenplayParser<br/>(pypdf line extraction)"]
+        SceneSegmenter["SceneSegmenter<br/>(20-60s narrative windows)"]
+        RouterEpisodes --> FileService
+        FileService --> TxtParser
+        FileService --> PdfParser
+        TxtParser --> SceneSegmenter
+        PdfParser --> SceneSegmenter
+    end
+
+    subgraph AI ["AI Inference Layer (Multi-Tier Resilience)"]
+        HybridProvider["HybridLLMProvider<br/>(Multi-tier auto-failover)"]
+        Groq["Tier 1: Groq LPU<br/>(gpt-oss-120b / qwen3.8-27b)<br/>Sub-second inference, key rotation"]
+        Gemini["Tier 2: Google Gemini<br/>(gemini-3.8-flash)<br/>Secondary failover"]
+        Heuristic["Tier 3: Heuristic Engine<br/>Deterministic zero-failure fallback"]
+        HybridProvider -->|Primary| Groq
+        HybridProvider -->|On 429/Error| Gemini
+        HybridProvider -->|On Exhaustion| Heuristic
+        SceneSegmenter --> HybridProvider
+    end
+
+    subgraph Validation ["Deterministic Quality & Scoring Engine"]
+        TimeValidator["TimestampValidator<br/>• Normalization (MM:SS.ss)<br/>• Bounds enforcement (20s - 60s)<br/>• Chronological ordering<br/>• Cue snapping (<0.5s tolerance)<br/>• Zero invented timestamps"]
+        DupDetector["DuplicateDetector<br/>• >=75% temporal overlap<br/>• >=75% hook word similarity<br/>• Cue cutoff deduplication<br/>• Generic beat filter"]
+        Ranker["RankingService<br/>Composite Score = 0.25*Hook + 0.25*Cliff<br/>+ 0.20*Standalone + 0.15*Impact + 0.15*Continuity<br/>(-5 warning penalty, 0 on invalid)"]
+        HybridProvider --> TimeValidator
+        TimeValidator --> DupDetector
+        DupDetector --> Ranker
+    end
+
+    subgraph Data ["Relational Persistence Layer"]
+        SQLAlchemy["SQLAlchemy 2.0 ORM"]
+        Postgres[(PostgreSQL Database<br/>Render Free Tier)]
+        SQLite[(SQLite In-Memory / Local<br/>Fast CI & Testing)]
+        Ranker --> SQLAlchemy
+        SQLAlchemy --> Postgres
+        SQLAlchemy --> SQLite
+    end
+
+    Client <-->|HTTPS / JSON REST| API

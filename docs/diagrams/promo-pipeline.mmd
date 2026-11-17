@@ -1,0 +1,33 @@
+flowchart TD
+    Start([Upload Episode Screenplay]) --> Ingest[File Ingestion & Safety Check<br/>Path traversal guard, SHA-256 deduplication]
+    Ingest --> Parse[Screenplay Parser State Machine<br/>Extract scene headers, dialogue lines, action cues, and timestamps]
+    
+    Parse --> Context[Context-Aware Narrative Segmentation<br/>Group cues into 20-60s candidate tension windows]
+    
+    Context --> AIInference[AI Semantic Discovery<br/>Identify 3s opening hook, ending cliffhanger,<br/>standalone context, and emotional stakes]
+    
+    AIInference --> Val1{Normalized Timestamps Valid?}
+    Val1 -->|Malformed or Inverted| MarkInvalid[Status: Invalid<br/>Record syntax or ordering limitation]
+    Val1 -->|Valid format| Val2{Timestamps exist in source cues?}
+    
+    Val2 -->|Diff > 1.0s invented| MarkInvalid
+    Val2 -->|Exact or Diff <= 0.5s| Snap[Snap to nearest source line cue<br/>Add alignment limitation note]
+    
+    Snap --> Val3{Duration between 20s and 60s?}
+    Val3 -->|Too short <20s or too long >60s| MarkInvalid
+    Val3 -->|20s <= Duration <= 60s| GroundCheck{Evidence Grounding Verification}
+    
+    GroundCheck -->|ACTION treated as speaker or character missing| FlagWarning[Status: Warning<br/>Attach evidence warning limitation]
+    GroundCheck -->|Characters exist in cues| DupCheck{Duplicate Detector}
+    
+    DupCheck -->|>=75% temporal overlap or hook repetition| DropDuplicate([Drop duplicate candidate])
+    DupCheck -->|Genuinely unique moment| RankCandidate[Compute Composite Rank Score<br/>Weighted 5-factor formula<br/>Apply -5 warning penalty if flagged]
+    
+    MarkInvalid --> SaveDB[(Persist to Database)]
+    FlagWarning --> RankCandidate
+    RankCandidate --> SaveDB
+    
+    SaveDB --> Review[Editorial Review Dashboard<br/>Human-in-the-loop inspects cues & decides]
+    
+    Review -->|Approve| ExportReady[Marked for Marketing CSV & JSON Export]
+    Review -->|Reject| Rejected[Flagged Rejected with Editor Feedback]
