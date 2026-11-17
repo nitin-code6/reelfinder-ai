@@ -190,7 +190,7 @@ python backend/scripts/run_batch_evaluation.py
 | [docs/QUALITY_AND_TESTING.md](docs/QUALITY_AND_TESTING.md) | Test suite breakdown (86 tests), failure analysis, real debugging case studies, and synthetic vs. real runs. |
 | [docs/LIMITATIONS.md](docs/LIMITATIONS.md) | Honest assessment of system limitations, screenplay vs. footage constraints, and scalability roadmap. |
 | [docs/AI_USAGE.md](docs/AI_USAGE.md) | Transparent disclosure of AI tools used, operational scope, and two concrete AI failures resolved. |
-| [docs/SUBMISSION_CHECKLIST.md](docs/SUBMISSION_CHECKLIST.md) | Complete checklist mapping assignment requirements to repository evidence, plus a 3-minute video script. |
+| [docs/KUKU_SOLUTION_DOCUMENT.md](docs/KUKU_SOLUTION_DOCUMENT.md) | Executive 2-page solution brief covering problem framing, architecture, quality, and economics. |
 
 ---
 
