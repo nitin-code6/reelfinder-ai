@@ -3,6 +3,11 @@ from typing import List, Tuple, Set, Optional
 from pydantic import BaseModel
 
 
+def normalize_beat_text(text: str) -> str:
+    """Removes punctuation and normalizes spacing for semantic comparison."""
+    return re.sub(r"[^\w\s]", "", text.lower()).strip()
+
+
 def compute_word_similarity(text_a: str, text_b: str) -> float:
     """Computes Jaccard word-level similarity between two texts."""
     words_a = set(re.findall(r"\b\w{3,}\b", text_a.lower()))
@@ -28,6 +33,18 @@ def compute_timestamp_overlap(
     return overlap / min_dur
 
 
+GENERIC_BEAT_PATTERNS = [
+    r"this was not here yesterday",
+    r"someone has been hiding something",
+    r"clock begins? to tick",
+    r"tense silence settles",
+    r"door slams? (?:shut|closed)",
+    r"footsteps echo(?:ing)?",
+    r"suspenseful silence",
+    r"shadows? fall(?:s)? across"
+]
+
+
 class CandidateMoment(BaseModel):
     id: str
     episode_number: int
@@ -36,20 +53,24 @@ class CandidateMoment(BaseModel):
     hook: str
     cliffhanger: str
     score: float
+    first_line: Optional[str] = None
+    last_line: Optional[str] = None
 
 
 class DuplicateDetector:
     """
-    Detects and eliminates identical or near-duplicate promotional candidates:
+    Detects and eliminates identical, near-duplicate, or generic repetitive promotional candidates:
     - Identifies candidates covering substantially identical timecodes (>= 75% temporal overlap).
-    - Detects narrative hook duplication across the same or multiple episodes (>= 80% word similarity).
+    - Detects narrative hook duplication across the same or multiple episodes (>= 75% word similarity).
+    - Detects verbatim identical cue endpoints (sharing first or last line within the same episode).
+    - Identifies repeated generic filler beats across episodes (e.g. repeated clock ticking or missing object tropes).
     - Preserves genuinely distinct moments even when they feature the same characters.
     """
 
     def __init__(
         self,
         temporal_overlap_threshold: float = 0.75,
-        hook_similarity_threshold: float = 0.80
+        hook_similarity_threshold: float = 0.75
     ):
         self.temporal_threshold = temporal_overlap_threshold
         self.hook_threshold = hook_similarity_threshold
@@ -63,6 +84,14 @@ class DuplicateDetector:
         Evaluates whether candidate is a duplicate of any moment in existing_pool.
         Returns (is_dup, reason).
         """
+        # Check generic trope repetition against existing pool
+        cand_combined = f"{candidate.hook} {candidate.cliffhanger}".lower()
+        cand_generic_match = None
+        for pat in GENERIC_BEAT_PATTERNS:
+            if re.search(pat, cand_combined):
+                cand_generic_match = pat
+                break
+
         for existing in existing_pool:
             # 1. Exact match
             if (
@@ -72,7 +101,21 @@ class DuplicateDetector:
             ):
                 return True, f"Identical timestamps to candidate '{existing.id}' in Ep {existing.episode_number}."
 
-            # 2. Temporal overlap within the same episode
+            # 2. Identical screenplay cue boundary within the same episode
+            if candidate.episode_number == existing.episode_number:
+                if (
+                    candidate.last_line and existing.last_line
+                    and normalize_beat_text(candidate.last_line) == normalize_beat_text(existing.last_line)
+                ):
+                    return True, f"Identical climactic cutoff line as candidate '{existing.id}' in Ep {existing.episode_number}."
+
+                if (
+                    candidate.first_line and existing.first_line
+                    and normalize_beat_text(candidate.first_line) == normalize_beat_text(existing.first_line)
+                ):
+                    return True, f"Identical opening hook line as candidate '{existing.id}' in Ep {existing.episode_number}."
+
+            # 3. Temporal overlap within the same episode
             if candidate.episode_number == existing.episode_number:
                 overlap_ratio = compute_timestamp_overlap(
                     candidate.start_seconds, candidate.end_seconds,
@@ -84,14 +127,22 @@ class DuplicateDetector:
                         f"'{existing.id}' ({existing.start_seconds:.1f}s-{existing.end_seconds:.1f}s) in Ep {existing.episode_number}."
                     )
 
-            # 3. Hook narrative similarity (same narrative beat repeated)
-            similarity = compute_word_similarity(candidate.hook, existing.hook)
-            if similarity >= self.hook_threshold:
-                # If they also share cliffhanger or are in the same episode, definitely duplicate
-                cliff_similarity = compute_word_similarity(candidate.cliffhanger, existing.cliffhanger)
-                if candidate.episode_number == existing.episode_number or cliff_similarity >= 0.60:
+            # 4. Hook narrative similarity (same narrative beat repeated)
+            hook_sim = compute_word_similarity(candidate.hook, existing.hook)
+            cliff_sim = compute_word_similarity(candidate.cliffhanger, existing.cliffhanger)
+
+            if hook_sim >= self.hook_threshold:
+                if candidate.episode_number == existing.episode_number or cliff_sim >= 0.50:
                     return True, (
-                        f"Repeated narrative hook ({similarity:.0%} match) with candidate '{existing.id}'."
+                        f"Repeated narrative hook ({hook_sim:.0%} similarity) with candidate '{existing.id}'."
+                    )
+
+            # 5. Generic trope repetition across episodes
+            if cand_generic_match:
+                exist_combined = f"{existing.hook} {existing.cliffhanger}".lower()
+                if re.search(cand_generic_match, exist_combined):
+                    return True, (
+                        f"Repeated generic suspense beat ('{cand_generic_match}') already utilized in candidate '{existing.id}'."
                     )
 
         return False, None
@@ -104,7 +155,6 @@ class DuplicateDetector:
         Filters out duplicate candidates from a candidate list, keeping highest-scoring variant.
         Returns (unique_candidates, dropped_duplicates_with_reason).
         """
-        # Sort candidates descending by score to always retain the higher quality candidate
         sorted_candidates = sorted(candidates, key=lambda c: c.score, reverse=True)
         unique: List[CandidateMoment] = []
         dropped: List[Tuple[CandidateMoment, str]] = []
@@ -120,3 +170,4 @@ class DuplicateDetector:
 
 
 duplicate_detector = DuplicateDetector()
+

@@ -65,7 +65,9 @@ class PromoRepository:
             overall_score=promo_in.overall_score,
             validation_status=promo_in.validation_status,
             limitations=promo_in.limitations,
-            approval_status=promo_in.approval_status
+            approval_status=promo_in.approval_status,
+            provider_name=promo_in.provider_name,
+            model_name=promo_in.model_name
         )
         self.db.add(promo)
         self.db.flush()

@@ -50,11 +50,18 @@ def export_promos_csv(
         "Why It Works",
         "Approval Status",
         "Validation Status",
+        "Provider",
+        "Model",
+        "Source Cue References",
         "Limitations / Warnings"
     ])
 
     for p in promos_to_export:
-        segment_strs = "; ".join([f"Ep {s.episode_number}: {s.start_timestamp} - {s.end_timestamp}" for s in p.segments]) if p.segments else "N/A"
+        segment_strs = " | ".join([f"Ep {s.episode_number}: {s.start_timestamp} - {s.end_timestamp}" for s in p.segments]) if p.segments else "N/A"
+        cues_str = " | ".join([
+            f"Seg {s.segment_order} (Ep {s.episode_number}): [{s.scene_heading or 'Scene'}] First: \"{s.first_line or ''}\" Cut: \"{s.last_line or ''}\""
+            for s in p.segments
+        ]) if p.segments else "N/A"
         lims_str = "; ".join(p.limitations) if p.limitations else "None"
         writer.writerow([
             p.promo_identifier,
@@ -73,6 +80,9 @@ def export_promos_csv(
             p.reason,
             p.approval_status,
             p.validation_status,
+            p.provider_name or "groq",
+            p.model_name or "openai/gpt-oss-120b",
+            cues_str,
             lims_str
         ])
 
@@ -136,6 +146,8 @@ def export_promos_json(
             "overall_score": p.overall_score,
             "reason": p.reason,
             "validation_status": p.validation_status,
+            "provider": p.provider_name or "groq",
+            "model": p.model_name or "openai/gpt-oss-120b",
             "limitations": p.limitations,
             "approval_status": p.approval_status
         })

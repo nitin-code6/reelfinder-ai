@@ -3,7 +3,7 @@ from pydantic import BaseModel, Field
 
 
 class AIPromoSegmentCandidate(BaseModel):
-    episode_number: int = Field(default=1, description="Episode number for this segment")
+    episode_number: Optional[int] = Field(default=None, description="Episode number for this segment")
     start_timestamp: str = Field(description="Start timestamp in MM:SS.ss format")
     end_timestamp: str = Field(description="End timestamp in MM:SS.ss format")
 

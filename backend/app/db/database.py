@@ -4,16 +4,22 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, declarative_base
 from app.core.config import settings
 
+db_url = settings.DATABASE_URL
+if db_url.startswith("postgres://"):
+    db_url = db_url.replace("postgres://", "postgresql://", 1)
+
 # Ensure sqlite directory exists if using sqlite
-if settings.DATABASE_URL.startswith("sqlite"):
-    db_path = settings.DATABASE_URL.replace("sqlite:///", "")
-    Path(os.path.dirname(os.path.abspath(db_path))).mkdir(parents=True, exist_ok=True)
+if db_url.startswith("sqlite"):
+    db_path = db_url.replace("sqlite:///", "")
+    dir_name = os.path.dirname(os.path.abspath(db_path))
+    if dir_name:
+        Path(dir_name).mkdir(parents=True, exist_ok=True)
     connect_args = {"check_same_thread": False}
 else:
-    connect_args = {"connect_timeout": 3}
+    connect_args = {"connect_timeout": 10}
 
 engine = create_engine(
-    settings.DATABASE_URL,
+    db_url,
     connect_args=connect_args,
     pool_pre_ping=True
 )

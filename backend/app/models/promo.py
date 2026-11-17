@@ -38,6 +38,10 @@ class Promo(Base):
     # Human-in-the-Loop Editorial State
     approval_status = Column(String(50), default="pending", index=True)  # pending, approved, rejected, modified
     
+    # Provider & Model Traceability
+    provider_name = Column(String(50), nullable=True, default="groq")
+    model_name = Column(String(100), nullable=True)
+
     created_at = Column(DateTime, default=datetime.datetime.utcnow)
 
     show = relationship("Show", back_populates="promos")

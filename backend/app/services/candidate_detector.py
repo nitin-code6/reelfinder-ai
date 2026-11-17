@@ -131,10 +131,12 @@ class CandidateDetector:
                         prev_end_sec = seg_res.end_seconds
 
                         total_duration += seg_res.duration_seconds
+                        # In episode processing, segments belong to the source episode being processed
+                        segment_ep_num = episode.episode_number
                         segments_to_save.append(
                             PromoSegmentCreate(
                                 episode_id=episode.id,
-                                episode_number=seg.episode_number or episode.episode_number,
+                                episode_number=segment_ep_num,
                                 start_timestamp=seg_res.start_timestamp,
                                 end_timestamp=seg_res.end_timestamp,
                                 duration_seconds=seg_res.duration_seconds,
@@ -227,6 +229,8 @@ class CandidateDetector:
                     validation_status=cand_status,
                     limitations=cand_limitations,
                     approval_status="pending",
+                    provider_name=getattr(self.llm, "last_provider", "groq"),
+                    model_name=getattr(self.llm, "last_model", "openai/gpt-oss-120b"),
                     segments=segments_to_save
                 )
 

@@ -55,6 +55,8 @@ class PromoCreate(PromoBase):
     validation_status: str = "valid"
     limitations: List[str] = []
     approval_status: str = "pending"
+    provider_name: Optional[str] = "groq"
+    model_name: Optional[str] = None
     segments: List[PromoSegmentCreate] = []
 
 
@@ -72,6 +74,8 @@ class PromoRead(PromoBase):
     validation_status: str
     limitations: List[Any] = []
     approval_status: str
+    provider_name: Optional[str] = None
+    model_name: Optional[str] = None
     created_at: datetime.datetime
     segments: List[PromoSegmentRead] = []
 

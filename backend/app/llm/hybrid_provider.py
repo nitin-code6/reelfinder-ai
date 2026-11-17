@@ -28,6 +28,8 @@ class HybridLLMProvider(BaseLLMProvider):
         self.groq = groq_provider or GroqProvider()
         self.gemini = gemini_provider or GeminiProvider()
         self.mock = mock_provider or MockLLMProvider()
+        self.last_provider: str = "groq"
+        self.last_model: str = "openai/gpt-oss-120b"
 
     def generate_structured(
         self,
@@ -47,7 +49,9 @@ class HybridLLMProvider(BaseLLMProvider):
                     response_schema=response_schema,
                     temperature=temperature
                 )
-                logger.info(f"Tier 1 (Groq) completed successfully in {time.time() - t0:.2f}s.")
+                self.last_provider = "groq"
+                self.last_model = self.groq.model_name
+                logger.info(f"Tier 1 (Groq - {self.last_model}) completed successfully in {time.time() - t0:.2f}s.")
                 return result
             except Exception as e:
                 logger.warning(f"Tier 1 (Groq) failed or rate-limited: {str(e)}. Falling back to Tier 2 (Gemini)...")
@@ -63,7 +67,9 @@ class HybridLLMProvider(BaseLLMProvider):
                     response_schema=response_schema,
                     temperature=temperature
                 )
-                logger.info(f"Tier 2 (Gemini) completed successfully in {time.time() - t0:.2f}s.")
+                self.last_provider = "gemini"
+                self.last_model = self.gemini.model_name
+                logger.info(f"Tier 2 (Gemini - {self.last_model}) completed successfully in {time.time() - t0:.2f}s.")
                 return result
             except Exception as e:
                 logger.warning(f"Tier 2 (Gemini) failed or exhausted: {str(e)}. Falling back to Tier 3 (Heuristic Engine)...")
@@ -73,6 +79,8 @@ class HybridLLMProvider(BaseLLMProvider):
             "All configured online AI providers (Groq and Gemini) unavailable, rate-limited, "
             "or quotas exhausted. Gracefully routing to Tier 3 (Deterministic Heuristic Engine)..."
         )
+        self.last_provider = "heuristic"
+        self.last_model = "deterministic-engine"
         return self.mock.generate_structured(
             prompt=prompt,
             system_instruction=system_instruction,

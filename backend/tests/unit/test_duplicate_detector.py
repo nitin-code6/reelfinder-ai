@@ -115,3 +115,82 @@ def test_duplicate_detector_filter_duplicates():
     assert "PROMO_B" in unique_ids
     assert "PROMO_C" in unique_ids
     assert "PROMO_A" not in unique_ids
+
+
+def test_duplicate_detector_flags_generic_story_beats():
+    detector = DuplicateDetector()
+
+    pool = [
+        CandidateMoment(
+            id="PROMO_EP02_01",
+            episode_number=2,
+            start_seconds=10.0,
+            end_seconds=35.0,
+            hook="Detective Ryan finds an unlocked safe",
+            cliffhanger="A tense silence settles as a clock begins to tick",
+            score=82.0
+        )
+    ]
+
+    # Candidate across another episode repeating the exact same generic trope ("clock begins to tick")
+    cand_generic_dup = CandidateMoment(
+        id="PROMO_EP05_01",
+        episode_number=5,
+        start_seconds=15.0,
+        end_seconds=45.0,
+        hook="Mira reads the encrypted ledger",
+        cliffhanger="The room falls into darkness as the clock begins to tick",
+        score=75.0
+    )
+
+    is_dup, reason = detector.is_near_duplicate(cand_generic_dup, pool)
+    assert is_dup is True
+    assert "Repeated generic suspense beat" in reason
+
+    # Genuinely distinct candidate in another episode
+    cand_distinct = CandidateMoment(
+        id="PROMO_EP05_02",
+        episode_number=5,
+        start_seconds=50.0,
+        end_seconds=80.0,
+        hook="The judge slams the gavel and demands the prisoner speak",
+        cliffhanger="The prisoner points directly at the chancellor in the gallery",
+        score=91.0
+    )
+
+    is_dup2, reason2 = detector.is_near_duplicate(cand_distinct, pool)
+    assert is_dup2 is False
+    assert reason2 is None
+
+
+def test_duplicate_detector_identical_cue_endpoints():
+    detector = DuplicateDetector()
+
+    pool = [
+        CandidateMoment(
+            id="PROMO_EP07_01",
+            episode_number=7,
+            start_seconds=10.0,
+            end_seconds=40.0,
+            hook="Opening confrontation",
+            cliffhanger="Cut on dramatic revelation",
+            score=85.0,
+            last_line="You were the one who signed the decree!"
+        )
+    ]
+
+    # Candidate in same episode ending on the exact same cutoff line
+    cand_same_line = CandidateMoment(
+        id="PROMO_EP07_02",
+        episode_number=7,
+        start_seconds=20.0,
+        end_seconds=40.0,
+        hook="Different opening line",
+        cliffhanger="Different cliffhanger phrasing",
+        score=75.0,
+        last_line="You were the one who signed the decree!"
+    )
+
+    is_dup, reason = detector.is_near_duplicate(cand_same_line, pool)
+    assert is_dup is True
+    assert "Identical climactic cutoff line" in reason

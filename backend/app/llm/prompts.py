@@ -5,12 +5,16 @@ Identify, extract, and construct the HIGHEST-CONVERTING promotional clips (ads) 
 
 WHAT MAKES A WINNING MICRODRAMA PROMO:
 1. STRICT DURATION: The clip MUST be between 20 and 60 seconds long (single segment or combined multi-segment).
-2. THE 3-SECOND HOOK: The opening 3 seconds MUST immediately grab scrolling viewers on TikTok, Instagram Reels, or YouTube Shorts. It should feature an intense conflict, a physical confrontation (slap, push), a shocking revelation, or a scandalous dialogue turn.
-3. THE UNRESOLVED CLIFFHANGER: The promo MUST end at the peak moment of tension BEFORE resolution, consequence, reaction, or confession. The viewer must feel an unbearable urge to watch the episode.
+2. THE 3-SECOND HOOK: The opening 3 seconds MUST immediately grab scrolling viewers. It should feature intense conflict, a physical confrontation, a shocking revelation, or a scandalous dialogue turn.
+3. THE UNRESOLVED CLIFFHANGER: The promo MUST end at the peak moment of tension BEFORE resolution, consequence, reaction, or confession. Select the actual strongest unresolved event, revelation, question or action in the screenplay.
 4. STANDALONE CLARITY: The clip must make complete narrative sense to someone who has NEVER heard of the show or characters.
 5. VERIFIABLE TIMESTAMPS: You MUST select verbatim start and end timestamps that actually exist in the screenplay transcript provided. Enforce canonical MM:SS.ss formatting. DO NOT fabricate timecodes.
-6. EVIDENCE GROUNDING MANDATE: Every hook, cliffhanger, and explanation MUST be directly grounded in the dialogue or action text of the screenplay. DO NOT invent sounds, music, visual expressions, or actions not explicitly written in the script. Quote or reference the exact character dialogue.
-7. MULTI-SEGMENT PROMOS: If joining two non-contiguous moments (e.g. an opening hook beat joined with a climactic ending cut) creates a superior promo, specify them in `segments` with their respective `start_timestamp` and `end_timestamp`. Ensure the combined duration is between 20 and 60 seconds.
+6. STRICT EVIDENCE GROUNDING MANDATE:
+   - Every hook, cliffhanger, and explanation MUST be directly grounded in the dialogue or action text of the screenplay.
+   - DO NOT invent audio or visual effects: NEVER generate statements such as "camera freezes", "clock begins to tick", "music becomes tense", "a door slams", or "someone embraces another" unless explicitly written in the script text.
+   - Quote verbatim lines from the script.
+   - NEVER treat an action heading or "ACTION" as a character or speaker. Use only named characters who speak in the cue sheet.
+7. MULTI-SEGMENT PROMOS: If joining two non-contiguous moments within the episode creates a superior promo, specify them in `segments` with their respective `start_timestamp` and `end_timestamp`. Segments must be chronological, non-overlapping, and their sum duration must be between 20 and 60 seconds.
 
 EVALUATION METRICS (Rate each 1 to 10):
 - hook_strength: Does the first 3 seconds stop a scrolling user dead in their tracks?
@@ -20,7 +24,7 @@ EVALUATION METRICS (Rate each 1 to 10):
 - narrative_continuity: Does the dialogue flow logically without jarring gaps?
 
 REALISTIC SCORING & QUALITY FILTER:
-Do not assign high scores to every candidate. If the episode consists only of mundane filler, calm conversation, polite greetings, or low dramatic tension without a strong hook or cliffhanger, assign low scores (< 5.0) or return an empty candidates list `[]`.
+Do not assign high scores to every candidate. Penalize generic suspense and repetitive tropes. If the episode consists only of mundane filler, calm conversation, polite greetings, or low dramatic tension without a strong hook or cliffhanger, assign low scores (< 5.0) or return an empty candidates list `[]`.
 
 You must output valid structured JSON conforming to the requested schema.
 """
