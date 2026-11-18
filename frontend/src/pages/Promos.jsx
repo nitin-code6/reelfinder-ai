@@ -301,6 +301,20 @@ export default function Promos() {
                         Ep {promo.primary_episode_number} &bull; {promo.total_duration_seconds?.toFixed(1) || '24.0'}s &bull; 1 segment
                       </span>
 
+                      {promo.provider_name === 'groq' ? (
+                        <span className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-amber-50 text-amber-800 border border-amber-200" title={`Model: ${promo.model_name || 'qwen3.8-27b'}`}>
+                          ⚡ Groq LPU
+                        </span>
+                      ) : promo.provider_name === 'gemini' ? (
+                        <span className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-blue-50 text-blue-800 border border-blue-200" title={`Model: ${promo.model_name || 'gemini-flash-lite'}`}>
+                          ✨ Gemini Flash
+                        </span>
+                      ) : (
+                        <span className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-slate-100 text-slate-600 border border-slate-200" title="Deterministic Rule-Based">
+                          ⚙️ Heuristic
+                        </span>
+                      )}
+
                       <div className="flex items-center gap-1.5 ml-auto">
                         {/* Validation Pill */}
                         <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${

@@ -14,10 +14,12 @@ T = TypeVar("T", bound=BaseModel)
 
 class HybridLLMProvider(BaseLLMProvider):
     """
-    Intelligent resilient LLM provider with automated multi-tier failover:
-    Tier 1 (Fastest): Groq LPU inference (sub-second completion)
-    Tier 2 (Fallback): Google Gemini (multi-model cascade)
-    Tier 3 (Zero-failure guarantee): Deterministic Heuristic Engine
+    Intelligent resilient LLM provider with transparent failover:
+    Tier 1: Groq LPU inference (multi-key pool with automatic rotation)
+    Tier 2: Google Gemini (multi-key pool with flash-lite failover)
+    Tier 3 (EXPLICIT ONLY): Deterministic Heuristic Engine
+      - ONLY used if settings.USE_MOCK_LLM is True (e.g. offline testing).
+      - NEVER silently replaces failed online LLMs in production.
     """
     def __init__(
         self,
@@ -29,7 +31,7 @@ class HybridLLMProvider(BaseLLMProvider):
         self.gemini = gemini_provider or GeminiProvider()
         self.mock = mock_provider or MockLLMProvider()
         self.last_provider: str = "groq"
-        self.last_model: str = "openai/gpt-oss-120b"
+        self.last_model: str = settings.GROQ_MODEL or "qwen/qwen3.8-27b"
 
     def generate_structured(
         self,
@@ -38,10 +40,24 @@ class HybridLLMProvider(BaseLLMProvider):
         response_schema: Type[T],
         temperature: float = 0.2
     ) -> T:
-        # Tier 1: Try Groq first if key exists and quota not exceeded
-        if self.groq.api_key and not self.groq.quota_exceeded:
+        # If offline mock mode is explicitly forced in configuration
+        if settings.USE_MOCK_LLM:
+            logger.info("Explicit USE_MOCK_LLM=True enabled. Routing to Deterministic Heuristic Engine...")
+            self.last_provider = "heuristic"
+            self.last_model = "deterministic-engine"
+            return self.mock.generate_structured(
+                prompt=prompt,
+                system_instruction=system_instruction,
+                response_schema=response_schema,
+                temperature=temperature
+            )
+
+        errors = []
+
+        # Tier 1: Try Groq if keys exist and not all in cooldown
+        if self.groq.api_keys and not self.groq.quota_exceeded:
             try:
-                logger.info("Attempting inference with Tier 1: Groq...")
+                logger.info("Attempting inference with Tier 1: Groq LPU...")
                 t0 = time.time()
                 result = self.groq.generate_structured(
                     prompt=prompt,
@@ -51,13 +67,15 @@ class HybridLLMProvider(BaseLLMProvider):
                 )
                 self.last_provider = "groq"
                 self.last_model = self.groq.model_name
-                logger.info(f"Tier 1 (Groq - {self.last_model}) completed successfully in {time.time() - t0:.2f}s.")
+                logger.info(f"Tier 1 (Groq - {self.last_model}) completed in {time.time() - t0:.2f}s.")
                 return result
             except Exception as e:
-                logger.warning(f"Tier 1 (Groq) failed or rate-limited: {str(e)}. Falling back to Tier 2 (Gemini)...")
+                err_msg = f"Groq failure: {str(e)}"
+                logger.warning(f"Tier 1 failed: {err_msg}. Cascading to Tier 2 (Gemini)...")
+                errors.append(err_msg)
 
-        # Tier 2: Try Gemini if key exists and quota not exceeded
-        if self.gemini.api_key and not self.gemini.quota_exceeded:
+        # Tier 2: Try Gemini if keys exist and not all in cooldown
+        if self.gemini.api_keys and not self.gemini.quota_exceeded:
             try:
                 logger.info("Attempting inference with Tier 2: Google Gemini...")
                 t0 = time.time()
@@ -69,21 +87,15 @@ class HybridLLMProvider(BaseLLMProvider):
                 )
                 self.last_provider = "gemini"
                 self.last_model = self.gemini.model_name
-                logger.info(f"Tier 2 (Gemini - {self.last_model}) completed successfully in {time.time() - t0:.2f}s.")
+                logger.info(f"Tier 2 (Gemini - {self.last_model}) completed in {time.time() - t0:.2f}s.")
                 return result
             except Exception as e:
-                logger.warning(f"Tier 2 (Gemini) failed or exhausted: {str(e)}. Falling back to Tier 3 (Heuristic Engine)...")
+                err_msg = f"Gemini failure: {str(e)}"
+                logger.warning(f"Tier 2 failed: {err_msg}.")
+                errors.append(err_msg)
 
-        # Tier 3 (Zero-failure guarantee): Deterministic Heuristic Engine
-        logger.warning(
-            "All configured online AI providers (Groq and Gemini) unavailable, rate-limited, "
-            "or quotas exhausted. Gracefully routing to Tier 3 (Deterministic Heuristic Engine)..."
-        )
-        self.last_provider = "heuristic"
-        self.last_model = "deterministic-engine"
-        return self.mock.generate_structured(
-            prompt=prompt,
-            system_instruction=system_instruction,
-            response_schema=response_schema,
-            temperature=temperature
-        )
+        # In production, DO NOT silently fall back to heuristic mock if online LLMs failed!
+        # Report the real failure transparently.
+        combined_error = " | ".join(errors) if errors else "No active online LLM keys available or all in cooldown."
+        logger.error(f"All online LLM providers failed: {combined_error}")
+        raise LLMInferenceException(f"All online LLM providers failed: {combined_error}")

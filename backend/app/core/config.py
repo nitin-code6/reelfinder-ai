@@ -46,11 +46,11 @@ class Settings(BaseSettings):
     GROQ_API_KEY: str = Field(default="", env="GROQ_API_KEY")
     GROQ_API_KEY_2: str = Field(default="", env="GROQ_API_KEY_2")
     GROQ_API_KEYS: str = Field(default="", env="GROQ_API_KEYS")
-    GROQ_MODEL: str = Field(default="openai/gpt-oss-120b", env="GROQ_MODEL")
+    GROQ_MODEL: str = Field(default="qwen/qwen3.8-27b", env="GROQ_MODEL")
     GEMINI_API_KEY: str = Field(default="", env="GEMINI_API_KEY")
     GEMINI_API_KEY_2: str = Field(default="", env="GEMINI_API_KEY_2")
     GEMINI_API_KEYS: str = Field(default="", env="GEMINI_API_KEYS")
-    GEMINI_MODEL: str = Field(default="gemini-3.8-flash", env="GEMINI_MODEL")
+    GEMINI_MODEL: str = Field(default="gemini-flash-lite-latest", env="GEMINI_MODEL")
     USE_MOCK_LLM: bool = Field(default=False, env="USE_MOCK_LLM")
 
     def get_groq_api_keys(self) -> List[str]:

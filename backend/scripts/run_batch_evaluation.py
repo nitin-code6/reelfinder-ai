@@ -1,6 +1,7 @@
 import os
 import sys
 import json
+import csv
 import time
 from pathlib import Path
 from typing import List, Dict, Any
@@ -14,7 +15,7 @@ from app.services.screenplay_parser import TxtScreenplayParser, ParsedScreenplay
 from app.services.scene_segmenter import scene_segmenter
 from app.services.timestamp_validator import timestamp_validator
 from app.services.ranking_service import ranking_service
-from app.llm.gemini_provider import GeminiProvider
+from app.llm.hybrid_provider import HybridLLMProvider
 from app.llm.mock_provider import MockLLMProvider
 from app.llm.prompts import SYSTEM_PROMPT_PROMO_DISCOVERY, USER_PROMPT_TEMPLATE
 from app.llm.schema import AIPromoDiscoveryResponse, AIPromoCandidate
@@ -36,26 +37,32 @@ def run_batch_evaluation(
 
     print(f"Found {len(files)} screenplay files.")
 
-    # Select LLM Provider
-    if not use_mock and settings.GEMINI_API_KEY and not settings.USE_MOCK_LLM:
-        print(f"Using Gemini Provider (Model: {settings.GEMINI_MODEL})")
-        llm = GeminiProvider()
-    else:
-        print("Using Deterministic Candidate Discovery Provider")
+    # Select LLM Provider: Use HybridLLMProvider (Groq -> Gemini -> Fail) unless use_mock is requested
+    if use_mock or settings.USE_MOCK_LLM:
+        print("Using Deterministic Heuristic Engine (explicit mock mode)")
         llm = MockLLMProvider()
+    else:
+        groq_k = settings.get_groq_api_keys()
+        gemini_k = settings.get_gemini_api_keys()
+        print(f"Using HybridLLMProvider ({len(groq_k)} Groq keys, {len(gemini_k)} Gemini keys)")
+        print(f"  Primary: Groq LPU ({settings.GROQ_MODEL})")
+        print(f"  Secondary: Gemini ({settings.GEMINI_MODEL})")
+        llm = HybridLLMProvider()
 
     parser = TxtScreenplayParser()
     raw_results = []
-    
+
     # Metrics collection
     total_episodes = len(files)
     total_promos = 0
     valid_count = 0
     warning_count = 0
     invalid_count = 0
+    provider_distribution = {"groq": 0, "gemini": 0, "heuristic": 0}
     duration_buckets = {"20-30s": 0, "30-45s": 0, "45-60s": 0, "out_of_bounds": 0}
     all_scores = []
     failure_cases = []
+    failed_episodes = []
 
     start_time = time.time()
 
@@ -70,6 +77,9 @@ def run_batch_evaluation(
                 system_instruction=SYSTEM_PROMPT_PROMO_DISCOVERY,
                 response_schema=AIPromoDiscoveryResponse
             )
+
+            current_provider = getattr(llm, "last_provider", "groq")
+            current_model = getattr(llm, "last_model", settings.GROQ_MODEL)
 
             ep_promos = []
             for c_idx, cand in enumerate(ai_response.candidates, start=1):
@@ -90,6 +100,8 @@ def run_batch_evaluation(
 
                 # Metrics accounting
                 total_promos += 1
+                provider_distribution[current_provider] = provider_distribution.get(current_provider, 0) + 1
+
                 if val_res.status == "valid":
                     valid_count += 1
                 elif val_res.status == "warning":
@@ -110,7 +122,6 @@ def run_batch_evaluation(
 
                 all_scores.append(overall_score)
 
-                # Quality / failure case detection
                 if cand.standalone_context_score < 7.0:
                     failure_cases.append({
                         "episode": screenplay.episode_number,
@@ -123,7 +134,7 @@ def run_batch_evaluation(
                     failure_cases.append({
                         "episode": screenplay.episode_number,
                         "candidate_id": cand.candidate_id,
-                        "issue": f"Timestamp Drift: {'; '.join(val_res.limitations)}",
+                        "issue": f"Timestamp Alignment: {'; '.join(val_res.limitations)}",
                         "hook": cand.hook,
                         "score": overall_score
                     })
@@ -131,6 +142,8 @@ def run_batch_evaluation(
                 promo_data = {
                     "promo_id": f"PROMO_EP{screenplay.episode_number:02d}_{c_idx:02d}",
                     "episode_number": screenplay.episode_number,
+                    "provider_name": current_provider,
+                    "model_name": current_model,
                     "segments": [
                         {
                             "episode": screenplay.episode_number,
@@ -156,22 +169,26 @@ def run_batch_evaluation(
                     },
                     "overall_score": overall_score,
                     "validation_status": val_res.status,
+                    "approval_status": "pending",
                     "limitations": val_res.limitations
                 }
                 ep_promos.append(promo_data)
 
             raw_results.extend(ep_promos)
+            print(f"  Ep {idx:02d}/{total_episodes:02d} [{f.name[:25]}...]: {len(ep_promos)} promo(s) via {current_provider} ({current_model})")
 
-            if idx % 10 == 0 or idx == total_episodes:
-                print(f"Processed {idx}/{total_episodes} episodes... ({total_promos} promos generated)")
+            # Inter-episode pacing to respect rate limits
+            time.sleep(1.2)
 
         except Exception as e:
-            print(f"Error processing episode {f.name}: {e}")
+            err_str = str(e)
+            print(f"  FAILED Ep {idx:02d} ({f.name}): {err_str}")
+            failed_episodes.append({"episode": idx, "filename": f.name, "error": err_str})
+            time.sleep(1.0)
 
     total_time = round(time.time() - start_time, 2)
     avg_score = round(sum(all_scores) / len(all_scores), 1) if all_scores else 0.0
 
-    # Sort promos by overall score descending to establish ranking
     raw_results.sort(key=lambda p: p["overall_score"], reverse=True)
     for rank, p in enumerate(raw_results, start=1):
         p["rank"] = rank
@@ -181,31 +198,66 @@ def run_batch_evaluation(
             "total_episodes_evaluated": total_episodes,
             "total_promos_discovered": total_promos,
             "total_execution_time_seconds": total_time,
-            "average_time_per_episode_seconds": round(total_time / total_episodes, 3),
+            "average_time_per_episode_seconds": round(total_time / total_episodes, 3) if total_episodes else 0,
             "average_overall_score": avg_score
         },
+        "provider_distribution": provider_distribution,
         "validation_statistics": {
             "valid_promos": valid_count,
             "valid_percentage": f"{(valid_count / total_promos) * 100:.1f}%" if total_promos else "0%",
             "warning_promos": warning_count,
             "invalid_promos": invalid_count
         },
+        "failed_episodes": failed_episodes,
         "duration_distribution": duration_buckets,
         "top_10_ranked_promos": raw_results[:10],
         "identified_failure_cases_sample": failure_cases[:10]
     }
 
-    # Save to disk
+    # Save JSON output
     output_path.parent.mkdir(parents=True, exist_ok=True)
     with open(output_path, "w", encoding="utf-8") as f:
         json.dump({"summary": summary, "all_promos": raw_results}, f, indent=2)
 
+    # Save CSV output
+    csv_path = output_path.with_suffix(".csv")
+    with open(csv_path, "w", newline="", encoding="utf-8") as f:
+        writer = csv.writer(f)
+        writer.writerow([
+            "rank", "promo_identifier", "episode_number", "provider_name", "model_name",
+            "start_timestamp", "end_timestamp", "duration_seconds",
+            "overall_score", "hook", "cliffhanger", "standalone_context",
+            "why_it_works", "validation_status", "approval_status"
+        ])
+        for p in raw_results:
+            seg = p["segments"][0] if p["segments"] else {}
+            writer.writerow([
+                p.get("rank", 0),
+                p.get("promo_id", ""),
+                p.get("episode_number", ""),
+                p.get("provider_name", ""),
+                p.get("model_name", ""),
+                seg.get("start_timestamp", ""),
+                seg.get("end_timestamp", ""),
+                p.get("total_duration_seconds", 0),
+                p.get("overall_score", 0),
+                p.get("hook", ""),
+                p.get("cliffhanger", ""),
+                p.get("standalone_context", ""),
+                p.get("why_it_works", ""),
+                p.get("validation_status", ""),
+                p.get("approval_status", "pending")
+            ])
+
     print(f"\n=== EVALUATION COMPLETE ===")
     print(f"Total Episodes Processed: {total_episodes}")
     print(f"Total Promos Generated: {total_promos}")
-    print(f"Valid Promo Rate: {summary['validation_statistics']['valid_percentage']}")
+    print(f"Provider Breakdown: {provider_distribution}")
+    print(f"Valid Promos: {valid_count} | Warnings: {warning_count} | Invalid: {invalid_count}")
+    print(f"Failed Episodes: {len(failed_episodes)}")
     print(f"Average Score: {avg_score}/100")
-    print(f"Results saved to: {output_path}")
+    print(f"JSON Output: {output_path}")
+    print(f"CSV Output:  {csv_path}")
 
     return summary
 

@@ -62,16 +62,16 @@ export default function Header({ onMenuClick }) {
         <div className="flex items-center gap-3">
           {/* AI / API Status Pill */}
           <div
-            className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium border ${
+            className={`inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs font-medium border shadow-2xs transition-all ${
               isNoKeys
-                ? 'bg-amber-50 text-amber-700 border-amber-200'
+                ? 'bg-amber-50 text-amber-800 border-amber-200'
                 : backendStatus === 'healthy'
-                ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
+                ? 'bg-teal-50/70 text-[#0F766E] border-teal-200'
                 : backendStatus === 'degraded'
                 ? 'bg-amber-50 text-amber-700 border-amber-200'
                 : 'bg-rose-50 text-rose-700 border-rose-200'
             }`}
-            title={aiInfo?.message || 'API Online'}
+            title={aiInfo?.message || 'AI Engine Online'}
           >
             <span
               className={`w-2 h-2 rounded-full ${
@@ -88,7 +88,7 @@ export default function Header({ onMenuClick }) {
               {isNoKeys
                 ? 'Heuristic Mode (No Keys)'
                 : backendStatus === 'healthy'
-                ? 'API Online'
+                ? `AI Engine Online • Groq (${aiInfo?.providers?.groq_keys_count || 4}) + Gemini (${aiInfo?.providers?.gemini_keys_count || 3})`
                 : backendStatus === 'degraded'
                 ? 'API Degraded'
                 : 'API Offline'}
