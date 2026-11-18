@@ -23,11 +23,26 @@ services:
       - key: GROQ_API_KEY_2
         sync: false
 
+      - key: GROQ_API_KEYS
+        sync: false
+
+      - key: GROQ_MODEL
+        value: "qwen/qwen3.8-27b"
+
       - key: GEMINI_API_KEY
         sync: false
 
       - key: GEMINI_API_KEY_2
         sync: false
+
+      - key: GEMINI_API_KEYS
+        sync: false
+
+      - key: GEMINI_MODEL
+        value: "gemini-flash-lite-latest"
+
+      - key: USE_MOCK_LLM
+        value: "false"
 
       - key: ENVIRONMENT
         value: production
