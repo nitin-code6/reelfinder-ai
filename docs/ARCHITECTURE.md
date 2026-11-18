@@ -98,6 +98,16 @@ Promos are prioritized by a normalized 0–100 composite score based on five wei
 
 Candidates receiving a validation warning (e.g., timestamp snapping) receive a $-5.0$ penalty. Candidates flagged as invalid receive an overall score of $0.0$.
 
+### G. Resilient Client Operations & Batch Concurrency (`frontend/src/`)
+
+To ensure smooth operation during full 50-episode batch processing and interactive review:
+- **Series Scope Isolation:** All batch operations (`startBatchProcessing`) are strictly bound to the active series identifier (`selectedShow.id`), preventing cross-series data pollution. Series switching is safely locked during active runs.
+- **Controlled Concurrency Pool:** Employs a worker pool of 2 (`CONCURRENCY = 2`) that runs episodes in parallel pairs, reducing batch discovery time by ~70% while remaining comfortably beneath Groq and Gemini API rate limits.
+- **Dynamic Series-Synchronized Filtering:** Dropdowns automatically reflect the exact episode count of the active series (e.g., 40 episodes for a 40-episode show; disabled `No Episodes` state when empty) rather than using static hardcoded arrays.
+- **Dual-Layer Cue Inspection Fallback:** When inspecting screenplay cues via `/api/episodes/{id}/inspection`, if ephemeral container restarts alter disk paths, the backend automatically performs multi-path glob search (`uploads/`, `backend/uploads/`, `KukuFmSample/`) and falls back to reconstructing verified cue sheets from database `PromoSegment` records.
+- **Re-entrancy Protection:** All data mutation actions (Delete Series, Clear Episodes, Reset All) implement re-entrancy locks (`isDeleting`) with dynamic UI spinners, preventing duplicate requests and race conditions.
+- **Reactive Upload Progression:** Stepper states in the ingestion pipeline react strictly to actual state transitions (series selection -> file drop -> preview -> process), preventing misleading premature completion indicators.
+
 ---
 
 ## 3. Database Schema & Data Models

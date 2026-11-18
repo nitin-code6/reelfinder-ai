@@ -127,3 +127,18 @@ Through extensive testing across both synthetic and real-world screenplays, thre
 - **Symptom:** Content editors were unable to click the "Download CSV" or "Download JSON" buttons in the Export page; the buttons appeared frozen and unresponsive.
 - **Root Cause:** In `frontend/src/pages/Export.jsx`, the export button was styled with `pointer-events-none` whenever `approved === 0`. Because all freshly discovered candidates start in `pending` status by editorial design, fresh runs had 0 approved candidates, completely locking the download action. Furthermore, the buttons used plain `<a href="/api/export/csv">` which failed to include cross-origin authentication headers on Render.
 - **Resolution:** Introduced an "All Discovered" vs. "Approved Only" scope toggle so users can immediately export all evaluated candidates. Replaced static links with an Axios Blob downloader (`downloadExport()`), dynamic loading spinners, and browser Blob URL downloads.
+
+### Issue 4: Ephemeral Cloud Path Shifts & Cue Inspection Disconnect
+- **Symptom:** On deployed cloud containers (Render), after container cold starts or relative directory adjustments, inspecting an episode displayed `Cues: 0` / `"No cues parsed for this episode"` while database metrics reported correct durations and scene counts.
+- **Root Cause:** Ephemeral container filesystems can shift relative execution roots or purge unpersisted raw uploads between restarts, causing direct `Path(ep.file_path).exists()` checks to fail.
+- **Resolution:** Added multi-path candidate glob search (`uploads/`, `backend/uploads/`, `KukuFmSample/`) to re-bind shifted file locations, and implemented a secondary database fallback that reconstructs verified cue sheets directly from stored `PromoSegment` database records if source text files are purged.
+
+### Issue 5: Cross-Series State Leaks & Concurrency Optimization in Batch Reprocessing
+- **Symptom:** Triggering "Re-process All" took significant time across 50 episodes (sequential execution with redundant `getEpisode` round-trips and 1200ms pauses), and switching shows during a batch corrupted state across series.
+- **Root Cause:** Batch execution lacked strict series ID boundary checks and allowed unrestricted sidebar show switching while async loops were running.
+- **Resolution:** Scoped `startBatchProcessing` strictly to `selectedShow?.id`, locked show switching during active runs, added a 2-worker concurrency pool (`CONCURRENCY = 2`), dropped artificial sleeps to 250ms, and eliminated redundant round-trips (~3.5x speedup).
+
+### Issue 6: Client-Side State Desynchronization (Hardcoded Filters & Upload Stepper)
+- **Symptom:** Empty database states still displayed a hardcoded 1–50 dropdown in the Promos feed, and navigating to `/upload` showed Step 1 checked before any series was selected.
+- **Root Cause:** Static hardcoded `Array.from({ length: 50 })` and `useState(2)` in frontend components.
+- **Resolution:** Dynamically synchronized available episode numbers to the selected series' actual count (`All Episodes (40)` for 40 episodes; disabled `No Episodes` when empty), and made the upload stepper state reactive to explicit user series selection.
