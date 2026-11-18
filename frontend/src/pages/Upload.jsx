@@ -3,15 +3,17 @@ import {
   UploadCloud, CheckCircle2, AlertCircle, FileText, ArrowRight, 
   Layers, Plus, Trash2, FileArchive, RefreshCw, Sparkles, Check, X
 } from 'lucide-react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { getShows, createShow, uploadScreenplay, processEpisode, getErrorMessage } from '../api';
 
 export default function Upload() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const queryShowId = searchParams.get('show_id');
   const fileInputRef = useRef(null);
 
   const [shows, setShows] = useState([]);
-  const [selectedShowId, setSelectedShowId] = useState('');
+  const [selectedShowId, setSelectedShowId] = useState(queryShowId ? Number(queryShowId) : '');
   
   // Inline New Series State
   const [isCreatingShow, setIsCreatingShow] = useState(false);
@@ -23,8 +25,8 @@ export default function Upload() {
   const [isDragging, setIsDragging] = useState(false);
   const [validationErrors, setValidationErrors] = useState([]);
 
-  // Stepper State: 1: Select, 2: Upload Files, 3: Preview, 4: Process / Summary
-  const [currentStep, setCurrentStep] = useState(2); // Start at step 2 as shown in mockup
+  // Stepper State: 1: Select Series, 2: Upload Files, 3: Preview, 4: Process / Summary
+  const [currentStep, setCurrentStep] = useState(1);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [processingStatus, setProcessingStatus] = useState('');
   const [processingSummary, setProcessingSummary] = useState(null);
@@ -39,8 +41,11 @@ export default function Upload() {
       const res = await getShows();
       const list = res.data || [];
       setShows(list);
-      if (list.length > 0 && !selectedShowId) {
-        setSelectedShowId(list[0].id);
+      if (queryShowId) {
+        const matching = list.find(s => String(s.id) === String(queryShowId));
+        if (matching) {
+          setSelectedShowId(matching.id);
+        }
       }
     } catch (err) {
       console.error('Failed to load shows:', err);
@@ -178,8 +183,29 @@ export default function Upload() {
           { num: 3, label: 'Preview' },
           { num: 4, label: 'Process' },
         ].map((step) => {
-          const isDone = currentStep > step.num || processingSummary;
-          const isActive = currentStep === step.num && !processingSummary;
+          let isDone = false;
+          let isActive = false;
+
+          if (processingSummary) {
+            isDone = true;
+          } else if (currentStep === 4) {
+            isDone = step.num < 4;
+            isActive = step.num === 4;
+          } else {
+            if (step.num === 1) {
+              isDone = Boolean(selectedShowId);
+              isActive = !selectedShowId;
+            } else if (step.num === 2) {
+              isDone = Boolean(selectedShowId) && selectedFiles.length > 0;
+              isActive = Boolean(selectedShowId) && selectedFiles.length === 0;
+            } else if (step.num === 3) {
+              isDone = false;
+              isActive = Boolean(selectedShowId) && selectedFiles.length > 0;
+            } else {
+              isDone = false;
+              isActive = false;
+            }
+          }
 
           return (
             <div key={step.num} className="flex items-center gap-2">
@@ -251,15 +277,22 @@ export default function Upload() {
               ) : (
                 <select
                   value={selectedShowId}
-                  onChange={(e) => setSelectedShowId(Number(e.target.value))}
+                  onChange={(e) => setSelectedShowId(e.target.value ? Number(e.target.value) : '')}
                   className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-[#172B4D] focus:ring-1 focus:ring-[#0F766E] focus:outline-none"
                 >
+                  <option value="">-- Choose a Series --</option>
                   {shows.map(show => (
                     <option key={show.id} value={show.id}>
                       {show.title}
                     </option>
                   ))}
                 </select>
+              )}
+
+              {!selectedShowId && !isCreatingShow && (
+                <p className="text-[11px] text-amber-700 bg-amber-50 border border-amber-200 rounded-lg p-2 leading-relaxed">
+                  ⚠️ Please choose a series above or create a new one to proceed with uploading.
+                </p>
               )}
 
               {!isCreatingShow && (
@@ -364,7 +397,17 @@ export default function Upload() {
           </div>
 
           {/* Bottom Action Button (Next: Preview / Process) */}
-          <div className="pt-2 flex justify-end border-t border-slate-100">
+          <div className="pt-3 flex flex-col sm:flex-row items-center justify-between gap-3 border-t border-slate-100">
+            <div className="text-xs">
+              {!selectedShowId ? (
+                <span className="text-amber-700 font-medium">⚠️ Step 1 incomplete: Please select or create a series first.</span>
+              ) : selectedFiles.length === 0 ? (
+                <span className="text-slate-500">Step 2: Add microdrama screenplay files (.txt, .pdf, .zip).</span>
+              ) : (
+                <span className="text-teal-700 font-medium">✓ Ready to process {selectedFiles.length} file(s).</span>
+              )}
+            </div>
+
             <button
               type="button"
               onClick={handleStartProcessing}
