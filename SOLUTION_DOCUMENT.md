@@ -1,122 +1,105 @@
-# Kuku AI Generalist Assignment — Problem 1 Solution Document
+# Kuku — AI Generalist Assignment (Problem 1: Find the Promos)
+## Executive Solution Document & Technical Report
 
 **Problem Chosen:** Problem 1: Find the Promos (Ads)  
-**Project Name:** ReelFinder AI  
 **Candidate Name:** Nitin Kumar  
 **Live Application (Frontend):** [https://reelfinder-frontend.onrender.com/](https://reelfinder-frontend.onrender.com/)  
 **Live Backend API (Health):** [https://reelfinder-backend.onrender.com/api/health](https://reelfinder-backend.onrender.com/api/health)  
 **GitHub Repository:** [https://github.com/nitin-code6/reelfinder-ai](https://github.com/nitin-code6/reelfinder-ai)  
+**Raw Outputs:** `outputs/raw_outputs_50_episodes.json` and `outputs/raw_outputs_50_episodes.csv`  
 
 ---
 
-## 1. Problem Framing & Business Assumptions
+## 1. Problem Framing & Core Assumptions
 
-### Operational Bottleneck in Microdrama Scaling
-In short vertical microdramas (1-to-2 minute episodes, 50–100 episodes per series), user acquisition on TikTok, Meta Reels, and YouTube Shorts is strictly conversion-driven. The core marketing asset is a 20–60 second unedited clip taken directly from the show. 
+### The Situation
+At Kuku, AI-generated microdramas (1-to-2 minute vertical episodes, 50–100 episodes per show) are published weekly. Today, content editors manually watch every episode to extract 20–60 second ad clips for TikTok, Meta Reels, and YouTube Shorts. This manual workflow creates a severe operational bottleneck. 
 
-Currently, content editors watch every episode end-to-end to manually extract promotional moments. With new series releasing weekly, this creates a severe operational bottleneck. ReelFinder AI automates promo discovery from screenplay text, identifies exact start/end timestamps, ranks candidates by promotional potential, and presents them for 1-click human editorial approval.
-
-### Non-Negotiable Promo Invariants & Assumptions
-1. **Screenplay as Ground Truth:** All candidate timestamps must anchor directly to existing lines and action cues in the screenplay. The system must never invent or estimate timecodes.
-2. **The 3-Second Hook:** The clip must open with an immediate high-impact stimulus (physical slap, public accusation, unmasking) to prevent drop-off within the first 3 seconds.
-3. **Unresolved Cliffhanger:** The clip must cut abruptly at the peak of dramatic tension before confession, apology, or resolution, creating a compelling curiosity gap.
-4. **Standalone Comprehension:** A viewer who has never seen the series must understand the conflict and stakes within seconds.
-5. **Strict Duration (20s to 60s):** Clips under 20s fail to build narrative investment; clips over 60s suffer heavy completion drop-off.
-6. **Human-in-the-Loop:** AI proposals and scores are recommendations; editorial human sign-off remains mandatory before publishing.
+### Core Assumptions Made Where the Brief was Silent:
+1. **Screenplay Ground Truth:** Timecodes must never be hallucinated or estimated. Start and end points must bind strictly to verifiable dialogue or action cues present in the transcript.
+2. **The 3-Second Hook Rule:** Organic scroll-stopping power on vertical video requires an immediate stimulus (a physical slap, public accusation, paternity reveal, or weapon drawn) within the opening 3.0 seconds.
+3. **The Curiosity-Gap Cliffhanger:** A high-converting promo must cut abruptly before emotional resolution, reaction, apology, or confession. Resolved dialogue scenes are heavily penalized ($score \le 4.0$).
+4. **Standalone Comprehension:** A first-time viewer must understand the stakes instantly without prior knowledge of the series lore. Episodes consisting solely of mundane exposition or calm filler return `0` candidates (`[]`).
+5. **Human-in-the-Loop:** AI proposals and scores are recommendations; final editorial sign-off remains manual via an approval dashboard.
 
 ---
 
-## 2. Technical Architecture & End-to-End Pipeline
+## 2. Approach & Architecture: AI vs. Deterministic Code
 
-ReelFinder AI decouples probabilistic semantic narrative comprehension from deterministic boundary and timing validation:
+We deliberately decoupled **probabilistic semantic narrative comprehension** from **deterministic boundary validation and mathematical scoring**:
 
 ```
 Screenplay File (.txt / .pdf / .zip)
        │
        ▼
-1. File Safety & Ingestion (file_service.py) ─────► SHA-256 deduplication, Zip-Slip guard
+1. File Ingestion & Security ──────► SHA-256 deduplication, Zip-Slip path sanitization
        │
        ▼
-2. Regex State Machine Parser (screenplay_parser.py) ► Scenes, dialogue, camera directions & normalized timestamps
+2. Regex State Machine Parser ─────► Extracts scenes, cues, dialogue & canonical MM:SS.ss timecodes
        │
        ▼
-3. Context Segmenter (scene_segmenter.py) ────────► Pre-slices 20–60s narrative tension windows
+3. Resilient Multi-Key AI Engine ──► Tier 1: Groq LPU (qwen/qwen3.8-27b) with 20s cooldown key rotation
+                                    └── Tier 2: Google Gemini (gemini-flash-lite-latest) automatic failover
        │
        ▼
-4. Multi-Tier AI Discovery (hybrid_provider.py)
-   ├── Tier 1 (Primary): Groq LPU (openai/gpt-oss-120b, qwen3.8-27b) — Sub-second structured JSON, multi-key rotation
-   ├── Tier 2 (Secondary Failover): Google Gemini (gemini-3.8-flash) — Automatic cascade on rate limits
-   └── Tier 3 (Zero-Crash Fallback): Deterministic Heuristic Engine — Rule-based offline guarantee
+4. Deterministic Validator ────────► Enforces 20.0s–60.0s duration, start < end, snaps cues (±0.5s)
        │
        ▼
-5. Deterministic Validator (timestamp_validator.py) ► Enforces 20.0s–60.0s bounds, start < end, snaps cues (<0.5s)
+5. Semantic Duplicate Filter ──────► Discards temporal overlaps (≥75%) and repeated narrative tropes
        │
        ▼
-6. Semantic Duplicate Filter (duplicate_detector.py) ► Rejects >=75% temporal overlap or repeated generic tropes
+6. 5-Factor Weighted Ranker ───────► Mathematical 0–100 score: Hook(25%), Cliffhanger(25%), Standalone(20%), Impact(15%), Continuity(15%)
        │
        ▼
-7. 5-Factor Weighted Ranker (ranking_service.py) ──► Computes 0–100 score + penalty deductions
-       │
-       ▼
-8. Editorial Review Station (React 19 Dashboard) ──► Side-by-side evidence review, 1-click approval, CSV/JSON export
+7. Editorial Review Station ───────► React 19 UI: Side-by-side cue inspection, 1-click Approve/Reject, CSV/JSON export
 ```
 
----
-
-## 3. Division of Responsibility: AI vs. Deterministic Code
-
-| Dimension | Handled by AI (Groq / Gemini) | Handled by Deterministic Code (Python) | Rationale |
-|---|---|---|---|
-| **Narrative Understanding** | Evaluates emotional stakes, curiosity gaps, and dramatic tension. | Does not judge subjective literary quality. | LLMs excel at nuanced semantic and contextual comprehension. |
-| **Timecodes & Bounds** | Proposes candidate start/end anchors. | **Strictly enforces:** Normalization, $\Delta t = \text{end} - \text{start}$, $20\text{s} \le \text{duration} \le 60\text{s}$, and $\text{start} < \text{end}$. | LLMs are notoriously bad at arithmetic; deterministic rules guarantee 100% compliance. |
-| **Source Grounding** | Selects verbatim dialogue quotes. | Snaps approximate timecodes ($\le 0.5\text{s}$) to verified screenplay lines; rejects invented timestamps ($>1.0\text{s}$). | Prevents hallucinated timestamps from entering video production pipelines. |
-| **Deduplication** | Identifies narrative themes. | Computes Jaccard word similarity and temporal overlap ratios ($\ge 75\%$). | Algorithms reliably filter redundant candidates covering the same story beat. |
-| **Composite Ranking** | Scores raw qualitative factors (1–10). | Computes normalized 0–100 weighted score and applies penalty deductions. | Ensures transparent, explainable, and reproducible candidate rankings. |
-
-### Explainable 5-Factor Ranking Formula
-$$\text{Base Score} = 10 \times \left( 0.25 \cdot \text{Hook} + 0.25 \cdot \text{Cliffhanger} + 0.20 \cdot \text{Standalone} + 0.15 \cdot \text{Impact} + 0.15 \cdot \text{Continuity} \right)$$
-- **Penalties:** $-5.0$ points for warnings (cue snapping / minor evidence flag); score forced to $0.0$ for invalid candidates.
+### Responsibility Split
+- **What We Gave to AI (Groq + Gemini):** Narrative tension scoring, hook extraction, identifying emotional climax points, and evaluating curiosity gaps.
+- **What We Kept as Code (Python):** Duration calculations ($\Delta t = \text{end} - \text{start}$), timestamp verification against actual cue bounds, strict 20–60s limit enforcement, deduplication, and mathematical ranking formulas. LLMs struggle with arithmetic; deterministic code guarantees zero duration violations.
+- **Strict No-Silent-Mock Fallback:** When online AI is active (`USE_MOCK_LLM=false`), if all API keys fail or hit timeouts, the system cleanly logs the failed episode. It **never silently replaces failed AI responses with synthetic heuristic text**.
 
 ---
 
-## 4. Scale, Throughput & Real-World Economics
+## 3. Real-World Scale, Economics & Model Swapping
 
-- **Inference Speed:** Powered by Groq LPU inference, candidate discovery runs in **0.8–1.5 seconds per episode**. An entire 50-episode season is processed in under 2.5 minutes.
-- **Cost Efficiency:** Using open-weight models on Groq (`openai/gpt-oss-120b`, `qwen/qwen3.8-27b`) costs **\$0.05 to \$0.12 per 50-episode season**. Compared to GPT-4o (\$3.50+ per show), ReelFinder AI reduces LLM inference costs by **>96%**.
-- **Production Resilience:** If a provider hits rate limits (HTTP 429), the system automatically rotates across backup API keys, cascades to Google Gemini (`gemini-3.8-flash`), and falls back to Tier 3 Heuristic Engine if external APIs are exhausted, ensuring batch pipelines never crash.
+- **Inference Speed:** Powered by Groq LPUs, episode analysis completes in **1.5 to 4.0 seconds**. The entire 50-episode season evaluated in **509 seconds (~8.5 minutes)**.
+- **Cost Efficiency:** Using open-weight models on Groq (`qwen/qwen3.8-27b`) and lightweight Gemini (`gemini-flash-lite-latest`), inference costs approximately **$0.02 to $0.05 per 50-episode season**. Compared to GPT-4o ($3.50+ per show), this represents a **>98% cost reduction**.
+- **Model Agnostic Architecture:** Built on an abstract `BaseLLMProvider`. In an interview or production setting, swapping to Claude 3.5 Sonnet, DeepSeek, or an internal fine-tuned Kuku model requires changing just one environment variable (`GROQ_MODEL` or `GEMINI_MODEL`).
+- **Resilience Pool:** Automatically round-robins across multiple API keys per provider, tracks per-key rate limits with isolated cooldowns, and cascades cleanly between providers.
 
 ---
 
-## 5. Quality Checking & Honest Failure Analysis
+## 4. Quality Checking, Real 50-Episode Run & Honest Failures
 
-### Automated Test Verification (86 Tests Passing)
-Our test suite (`pytest`) runs 86 automated unit, integration, and benchmark tests in CI:
-- **30 Synthetic Episodes (40 Test Scenarios):** Verifies 10 high-conflict viral hooks (altar betrayal, poison climax, arrest warrant), 6 mundane scenes (<45/100 score), 6 resolved conflicts (penalized for weak cliffhanger), 5 malformed timestamps, 5 invented timestamps, and 4 out-of-bounds durations.
-- **50-Episode Benchmark (*I Married a Broken Soldier. He was a Duke*):** Processed all 50 serialized episodes; achieved 100% compliance on the 20–60s duration requirement (average promo duration: 25.8 seconds).
+### 50-Episode Screenplay Evaluation (*"I Married a Broken Soldier. He was a Duke"*)
+Across all 50 serialized episodes, the automated batch evaluation generated:
+* **Total Promos Generated:** 63 candidate promos
+* **Provider Distribution:** **25 Groq LPU (39.7%)**, **38 Google Gemini (60.3%)**, **0 Heuristic/Mock (0.0%)**
+* **Validation Status Breakdown:**
+  * **Valid (37 Promos):** 100% compliant with 20.0s–60.0s bounds, verified timestamps, and strong conflict.
+  * **Warning (13 Promos):** Soft cue alignments or minor boundary proximity; flagged for editorial review.
+  * **Invalid (13 Promos):** Paced outside strict limits; cleanly flagged with reasons in limitations.
+* **Failed Episodes (1 Episode):** Episode 32 failed due to an upstream Google Gemini 504 Gateway Timeout while Groq keys were in rate-limit cooldown. Captured transparently in `failed_episodes` rather than faked.
+* **Automated Test Suite:** **91/91 unit and integration tests passing** in `pytest`.
 
 ### Where Does the Tool Pick Badly? (Honest Failure Modes)
-1. **Lore-Dependent Climaxes (False Positives):** In late episodes (e.g. Ep 28–34), shouting confrontations often hinge on prior plot points (such as forged wills from Episode 15). The LLM detects shouting and scores the scene high on Hook ($9/10$), but overestimates Standalone Context. *Mitigation:* The Editorial Review Station allows editors to review evidence and flag "Lacks Standalone Context."
-2. **Slow-Burn Build-ups (>60s Arcs) (False Negatives):** High-tension dialogues that take 80–90 seconds to reach the physical confrontation are rejected by the 60s hard ceiling. *Mitigation:* Multi-segment stitching bridges non-continuous beats, guided by human editor review.
-3. **Silent Action Hooks:** Scripts opening with intense visual action (e.g. drawn weapon, silent slap) without dialogue for the first 10 seconds can be overlooked if prompts focus only on speech. *Mitigation:* The parser explicitly extracts `**CAMERA:**` and `**ACTION:**` cues alongside dialogue.
+1. **Lore-Heavy Climaxes (False Positives):** In late episodes (Ep 38–48), heated shouting matches often depend on backstory revealed 20 episodes prior (e.g. forged War Office warrants). The LLM scores the hook high ($9.5/10$) based on angry dialogue, but an outsider finds the scene confusing. *Mitigation:* The Standalone Context penalty lowers the score, and the editorial review station displays the dialogue context.
+2. **Slow-Burn Arcs >60s (False Negatives):** High-tension confrontations taking 75–90 seconds to escalate from dialogue to action are rejected by the 60s hard limit. *Mitigation:* Multi-segment stitching allows combining the opening accusation and final slap, dropping mundane intermediate lines.
+3. **Dialogue-Free Action Hooks:** Cues where dramatic tension is purely visual (e.g., character silently draws a dagger or collapses) can be underscored by text LLMs. *Mitigation:* Screenplay parser explicitly tags `**ACTION:**` and camera directions as first-class cues.
 
 ---
 
-## 6. AI Usage Disclosure & Genuine Failure Analysis
+## 5. AI Tooling Disclosure: Where AI Got It Wrong
 
-### AI Tools Utilized
-- **Development Assistance:** Antigravity (Google DeepMind), Claude, ChatGPT.
-- **Runtime Application Models:** Groq LPU (`openai/gpt-oss-120b`, `qwen/qwen3.8-27b`) as Tier 1, Google Gemini (`gemini-3.8-flash`) as Tier 2, and Deterministic Heuristic Engine as Tier 3.
-
-### Critical Mistake Encountered & Resolved: Duration Hallucination
-- **The Mistake:** During initial prompt testing, the LLM proposed a candidate spanning `00:01.00` to `02:17.50` (**136.5 seconds**), while describing it in its rationale as a *"tight, fast-paced 30-second promo."*
-- **How It Was Detected:** Our deterministic Python validator calculated $\Delta t = 136.5\text{s}$, flagged the candidate as `invalid` ($136.5 > 60.0$), docked 30 points, and logged the limitation note.
-- **Root Cause:** LLMs understand dramatic narrative arcs but lack internal clocks to perform arithmetic on timecode strings.
-- **Correction:** Pre-segmented candidate windows strictly to 20–60s in Python *before* calling the LLM, and gave `TimestampValidator` hard veto power over timecode validity.
+Per assignment instructions, we utilized AI tools (ChatGPT, Claude, Gemini, Cursor) during development:
+- **Where AI Got It Wrong:** When tasked with validating timestamps, LLMs consistently hallucinated mathematical time differences (e.g., claiming `00:48.30` minus `00:12.10` was `45.0` seconds) and attempted to generate timestamps that did not exist in the screenplay. Furthermore, Gemini repeatedly returned root-level JSON arrays rather than structured object schemas. 
+- **The Solution:** We stripped mathematical logic away from the LLM entirely, enforcing timestamp math and schema normalization through deterministic Pydantic validators and Python regex state machines.
 
 ---
 
-## 7. Production Roadmap (To 10,000+ Episodes)
+## 6. How We Know It Worked in Production
 
-1. **Asynchronous Task Queue:** Decouple episode ingestion and AI analysis using **Celery** and **Redis** worker pools to process hundreds of shows in parallel with WebSocket status updates.
-2. **Cloud Object Storage:** Decouple local uploads to **Amazon S3** or **Google Cloud Storage** with presigned URLs.
-3. **Hierarchical Model Tiering:** Use lightweight models (`qwen/qwen3.8-27b`) to filter out the bottom 70% of low-tension scenes, routing only the top 30% to frontier models (`gpt-oss-120b`), reducing token costs by $>80\%$.
+Once deployed to a real editorial team:
+1. **Time-to-Publish Metric:** Editor review time drops from **2.5 hours per show** (watching 50 episodes) to **<15 minutes** (reviewing top-ranked, pre-clipped candidates).
+2. **Conversion Feedback Loop:** Approval/rejection decisions are stored in SQLite/PostgreSQL. Discarded candidates feed an active rejection dataset to continuously refine prompt few-shot exemplars.

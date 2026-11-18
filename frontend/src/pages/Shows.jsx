@@ -793,7 +793,7 @@ export default function Shows() {
                           return (
                             <div key={i} className="flex gap-2">
                               <span className="text-teal-400 shrink-0 font-mono">[{timeDisplay}]</span>
-                              <span className="text-slate-300">{c.speaker ? `${c.speaker}: ` : ''}{c.text}</span>
+                              <span className="text-slate-300">{c.speaker ? `${c.speaker}: ` : ''}{c.text || (c.line_type ? `[${c.line_type.toUpperCase()}]` : 'Cue beat')}</span>
                             </div>
                           );
                         })

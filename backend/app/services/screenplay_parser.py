@@ -173,7 +173,7 @@ class TxtScreenplayParser(BaseScreenplayParser):
             raise ScreenplayParseException("Screenplay content is empty or contains only whitespace.")
 
         lines = text.splitlines()
-        cue_pattern = re.compile(r"^[\[\(]\s*([0-9:.]+)\s*[\]\)]\s*(.*)$")
+        cue_pattern = re.compile(r"^[\[\(]\s*([0-9:.]+)(?:\s*[-–—]\s*([0-9:.]+))?\s*[\]\)]\s*(.*)$")
         has_bracket_ts = any(cue_pattern.match(l.strip()) for l in lines)
 
         if has_bracket_ts:
@@ -214,7 +214,7 @@ class TxtScreenplayParser(BaseScreenplayParser):
             if m_con:
                 continuity_notes = m_con.group(1).strip()
 
-        cue_pattern = re.compile(r"^[\[\(]\s*([0-9:.]+)\s*[\]\)]\s*(.*)$")
+        cue_pattern = re.compile(r"^[\[\(]\s*([0-9:.]+)(?:\s*[-–—]\s*([0-9:.]+))?\s*[\]\)]\s*(.*)$")
         items = []
         current_scene_num = 1
         current_heading = "SCENE 1"
@@ -243,7 +243,20 @@ class TxtScreenplayParser(BaseScreenplayParser):
             if m_ts:
                 ts_str = m_ts.group(1)
                 ts_sec = parse_timestamp_to_seconds(ts_str)
-                content = m_ts.group(2).strip()
+                explicit_end_str = m_ts.group(2).strip() if m_ts.group(2) else None
+                explicit_end_sec = parse_timestamp_to_seconds(explicit_end_str) if explicit_end_str else None
+                content = m_ts.group(3).strip() if m_ts.group(3) else ""
+
+                # If content is empty on the timestamp line, peek ahead to next non-empty line
+                if not content:
+                    for next_idx in range(idx + 1, min(idx + 5, len(lines))):
+                        peek_line = lines[next_idx].strip()
+                        if not peek_line:
+                            continue
+                        if cue_pattern.match(peek_line) or re.match(r"^SCENE\b", peek_line, re.IGNORECASE):
+                            break
+                        content = peek_line
+                        break
                 
                 # Check if this timestamped line is a scene boundary e.g. '[00:00.00] SCENE: INT. ...'
                 m_ts_sc = re.match(r"^SCENE(?:\s+\d+)?:\s*(.+)$", content, re.IGNORECASE)
@@ -252,7 +265,14 @@ class TxtScreenplayParser(BaseScreenplayParser):
                     items.append({"type": "scene_start", "ts_str": ts_str, "ts_sec": ts_sec, "heading": heading})
                     continue
 
-                items.append({"type": "cue", "ts_str": ts_str, "ts_sec": ts_sec, "content": content})
+                items.append({
+                    "type": "cue",
+                    "ts_str": ts_str,
+                    "ts_sec": ts_sec,
+                    "explicit_end_str": explicit_end_str,
+                    "explicit_end_sec": explicit_end_sec,
+                    "content": content
+                })
 
         scenes: List[ParsedScene] = []
         current_scene: Optional[ParsedScene] = None
@@ -304,19 +324,24 @@ class TxtScreenplayParser(BaseScreenplayParser):
                 start_ts = it["ts_str"]
                 start_sec = it["ts_sec"]
                 
-                # Find next cue timestamp to determine end time
-                next_cue = None
-                for later in items[i+1:]:
-                    if later.get("ts_sec") is not None and later["ts_sec"] > start_sec:
-                        next_cue = later
-                        break
-                        
-                if next_cue:
-                    end_sec = next_cue["ts_sec"]
-                    end_ts = next_cue["ts_str"]
+                # Check if cue line had an explicit end timestamp e.g. [00:16.00 - 00:23.00]
+                if it.get("explicit_end_str") and it.get("explicit_end_sec") is not None:
+                    end_ts = it["explicit_end_str"]
+                    end_sec = it["explicit_end_sec"]
                 else:
-                    end_sec = start_sec + 4.0
-                    end_ts = format_seconds_to_timestamp(end_sec)
+                    # Find next cue timestamp to determine end time
+                    next_cue = None
+                    for later in items[i+1:]:
+                        if later.get("ts_sec") is not None and later["ts_sec"] > start_sec:
+                            next_cue = later
+                            break
+                            
+                    if next_cue:
+                        end_sec = next_cue["ts_sec"]
+                        end_ts = next_cue["ts_str"]
+                    else:
+                        end_sec = start_sec + 4.0
+                        end_ts = format_seconds_to_timestamp(end_sec)
 
                 dur_sec = max(0.5, end_sec - start_sec)
 
@@ -348,6 +373,9 @@ class TxtScreenplayParser(BaseScreenplayParser):
                                 speaker = m_spk.group(1).strip()
                                 parenthetical = m_spk.group(2).strip() if m_spk.group(2) else None
                                 text = m_spk.group(3).strip("\"' ")
+
+                if not text or not text.strip():
+                    text = f"Scene action / cue beat"
 
                 current_scene.lines.append(ScreenplayLine(
                     line_type=line_type,

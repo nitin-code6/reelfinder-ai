@@ -238,8 +238,6 @@ def inspect_episode(episode_id: int, db: Session = Depends(get_db)):
                         })
         except Exception as e:
             parsing_warnings.append(f"Parsing notice: {str(e)}")
-    else:
-        parsing_warnings.append(f"Original file not found on disk: {target_path.name}")
 
     # Promo summary for this episode
     promo_repo = PromoRepository(db)
@@ -258,6 +256,8 @@ def inspect_episode(episode_id: int, db: Session = Depends(get_db)):
                     "end_seconds": s.end_timestamp,
                     "text": f"[{s.scene_heading or 'Scene'}] First: \"{s.first_line or ''}\" Cut: \"{s.last_line or ''}\""
                 })
+    elif not cues_data and not target_path.exists():
+        parsing_warnings.append(f"Screenplay file archived. Re-upload to re-inspect raw cue sheets.")
     
     # AI provider configuration
     ai_info = {
