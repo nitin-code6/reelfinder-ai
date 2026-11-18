@@ -3,13 +3,14 @@ import {
   Sparkles, Filter, Check, X, ArrowUpRight, Clock, AlertTriangle, 
   CheckCircle2, ShieldCheck, Download, ArrowUpDown, ChevronRight, Eye, AlertCircle
 } from 'lucide-react';
-import { getPromos, getShows, approvePromo, rejectPromo, getErrorMessage } from '../api';
+import { getPromos, getShows, getEpisodes, approvePromo, rejectPromo, getErrorMessage } from '../api';
 import { Link, useNavigate } from 'react-router-dom';
 
 export default function Promos() {
   const navigate = useNavigate();
   const [promos, setPromos] = useState([]);
   const [shows, setShows] = useState([]);
+  const [availableEpisodes, setAvailableEpisodes] = useState([]);
   
   // Filters matching Panel 4
   const [selectedShow, setSelectedShow] = useState('');
@@ -25,6 +26,42 @@ export default function Promos() {
     loadShows();
     fetchPromos();
   }, [selectedShow]);
+
+  // Synchronize available episodes dynamically based on the selected series
+  useEffect(() => {
+    async function updateEpisodes() {
+      if (selectedShow) {
+        try {
+          const res = await getEpisodes(selectedShow);
+          const eps = (res.data || []).map(e => e.episode_number).filter(n => typeof n === 'number');
+          const uniqueEps = Array.from(new Set(eps)).sort((a, b) => a - b);
+          setAvailableEpisodes(uniqueEps);
+          if (episodeFilter && !uniqueEps.includes(Number(episodeFilter))) {
+            setEpisodeFilter('');
+          }
+        } catch (err) {
+          const found = shows.find(s => String(s.id) === String(selectedShow));
+          const count = found?.episode_count || 0;
+          const fallback = count > 0 ? Array.from({ length: count }, (_, i) => i + 1) : [];
+          setAvailableEpisodes(fallback);
+          if (episodeFilter && !fallback.includes(Number(episodeFilter))) {
+            setEpisodeFilter('');
+          }
+        }
+      } else {
+        // "All Series" selected: dynamically find highest episode count across loaded shows and promos
+        const maxFromShows = shows.reduce((max, s) => Math.max(max, s.episode_count || 0), 0);
+        const epsFromPromos = promos.map(p => p.primary_episode_number).filter(n => typeof n === 'number');
+        const highestEp = Math.max(maxFromShows, ...epsFromPromos, 0);
+        const allEps = highestEp > 0 ? Array.from({ length: highestEp }, (_, i) => i + 1) : [];
+        setAvailableEpisodes(allEps);
+        if (episodeFilter && !allEps.includes(Number(episodeFilter))) {
+          setEpisodeFilter('');
+        }
+      }
+    }
+    updateEpisodes();
+  }, [selectedShow, shows, promos]);
 
   async function loadShows() {
     try {
@@ -129,7 +166,10 @@ export default function Promos() {
             <div className="w-36 sm:w-44">
               <select
                 value={selectedShow}
-                onChange={(e) => setSelectedShow(e.target.value)}
+                onChange={(e) => {
+                  setSelectedShow(e.target.value);
+                  setEpisodeFilter('');
+                }}
                 className="w-full px-2.5 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-xs font-medium text-[#172B4D] focus:outline-none"
               >
                 <option value="">All Series</option>
@@ -140,14 +180,17 @@ export default function Promos() {
             </div>
 
             {/* Episode */}
-            <div className="w-28 sm:w-32">
+            <div className="w-28 sm:w-36">
               <select
                 value={episodeFilter}
                 onChange={(e) => setEpisodeFilter(e.target.value)}
-                className="w-full px-2.5 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-xs font-medium text-[#172B4D] focus:outline-none"
+                disabled={availableEpisodes.length === 0}
+                className="w-full px-2.5 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-xs font-medium text-[#172B4D] focus:outline-none disabled:opacity-50"
               >
-                <option value="">All Episodes</option>
-                {Array.from({ length: 50 }, (_, i) => i + 1).map(n => (
+                <option value="">
+                  {availableEpisodes.length === 0 ? 'No Episodes' : `All Episodes (${availableEpisodes.length})`}
+                </option>
+                {availableEpisodes.map(n => (
                   <option key={n} value={n}>Episode {n}</option>
                 ))}
               </select>
